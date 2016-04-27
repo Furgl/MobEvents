@@ -1,0 +1,29 @@
+entity.mobEvents.runtZombie.name=Zombie Runt
+entity.mobEvents.pyromaniacZombie.name=Zombie Pyromaniac
+entity.mobEvents.bardZombie.name=Zombie Bard
+entity.mobEvents.riderZombie.name=Zombie Rider
+entity.mobEvents.summonerZombie.name=Zombie Summoner
+entity.mobEvents.minionZombie.name=Zombie Minion
+entity.mobEvents.cloneZombie.name=Zombie Clone
+
+item.event_book.name=Event Book
+item.creative_event_book.name=Creative Event Book
+
+item.zombie_bard.name=Spawn Bard
+item.zombie_clone.name=Spawn Clone
+item.zombie_minion.name=Spawn Minion
+item.zombie_pyromaniac.name=Spawn Pyromaniac
+item.zombie_rider.name=Spawn Rider
+item.zombie_runt.name=Spawn Runt
+item.zombie_summoner.name=Spawn Summoner
+
+itemGroup.tabMobEvents=Mob Events
+
+achievement.itsFinallyOver=It's Finally Over
+achievement.itsFinallyOver.desc=Make it through a Mob Event
+achievement.iSurvived=I Survived!
+achievement.iSurvived.desc=Make it through a Mob Event without dying
+achievement.thatWasEasy=That Was Easy
+achievement.thatWasEasy.desc=Defeat a Mob Event's boss
+achievement.expert=Expert
+achievement.expert.desc=Make it through a Mob Event and defeat its boss without dying

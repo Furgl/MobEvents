@@ -1,0 +1,27 @@
+{
+    "mob.event_zombie.say":
+    {
+        "category": "neutral",
+        "sounds":
+        [
+            "mob/event_zombie/say1",
+            "mob/event_zombie/say2"
+        ]
+    },
+    "mob.event_zombie.hurt":
+    {
+        "category": "neutral",
+        "sounds":
+        [
+            "mob/event_zombie/hurt1"
+        ]
+    },
+    "mob.event_zombie.death":
+    {
+        "category": "neutral",
+        "sounds":
+        [
+            "mob/event_zombie/death1" 
+        ]
+    }
+}

@@ -1,0 +1,17 @@
+[
+{
+  "modid": "mobEvents",
+  "name": "Mob Events",
+  "description": "TBD",
+  "version": "1.0",
+  "mcversion": "1.8.9",
+  "url": "https://sites.google.com/site/furglsmods/mob-events",
+  "updateUrl": "",
+  "authorList": ["Furgl"],
+  "credits": "2piradians - Testing",
+  "logoFile": "/MobEvents.png",
+  "screenshots": [],
+  "requiredMods": ["Forge"],
+  "dependencies": []
+}
+]
