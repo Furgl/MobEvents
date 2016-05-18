@@ -7,12 +7,16 @@ import furgl.mobEvents.client.gui.progressBar.GuiEventProgress;
 import furgl.mobEvents.common.block.ModBlocks;
 import furgl.mobEvents.common.config.Config;
 import furgl.mobEvents.common.entity.ModEntities;
+import furgl.mobEvents.common.event.CancelFireOverlayEvent;
 import furgl.mobEvents.common.event.EventFogEvent;
 import furgl.mobEvents.common.event.EventSetupEvent;
 import furgl.mobEvents.common.event.FireExtinguishEvent;
 import furgl.mobEvents.common.event.FirstJoinEvent;
 import furgl.mobEvents.common.event.ParticleUpdateEvent;
+import furgl.mobEvents.common.event.UnlockItemEvent;
 import furgl.mobEvents.common.item.ModItems;
+import furgl.mobEvents.common.tileentity.ModTileEntities;
+import furgl.mobEvents.packets.PacketGiveItem;
 import furgl.mobEvents.packets.PacketSummonMob;
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.common.MinecraftForge;
@@ -44,9 +48,10 @@ public class MobEvents
 	public void preInit(FMLPreInitializationEvent event)
 	{
 		network = NetworkRegistry.INSTANCE.newSimpleChannel("mobEventsChannel");
-		network.registerMessage(PacketSummonMob.Handler.class, PacketSummonMob.class, 0, Side.SERVER);
+		registerPackets();
 		ModEntities.registerEntities();
 		ModBlocks.init();
+		ModTileEntities.init();
 		ModItems.init();
 		Achievements.init();
 		Config.init(event.getSuggestedConfigurationFile());		
@@ -69,14 +74,22 @@ public class MobEvents
 		event.registerServerCommand(new CommandMobEvents());
 	}
 	
-	public void registerEventListeners() 
+	private void registerEventListeners() 
 	{
-		//MinecraftForge.EVENT_BUS.register(new MobEvents());
 		MinecraftForge.EVENT_BUS.register(new GuiEventProgress(Minecraft.getMinecraft()));
 		MinecraftForge.EVENT_BUS.register(new EventFogEvent());
 		MinecraftForge.EVENT_BUS.register(new EventSetupEvent());
 		MinecraftForge.EVENT_BUS.register(new ParticleUpdateEvent());
 		MinecraftForge.EVENT_BUS.register(new FireExtinguishEvent());
 		MinecraftForge.EVENT_BUS.register(new FirstJoinEvent());
+		MinecraftForge.EVENT_BUS.register(new CancelFireOverlayEvent());
+		MinecraftForge.EVENT_BUS.register(new UnlockItemEvent());
+	}
+	
+	private void registerPackets()
+	{
+		int id = 0;
+		network.registerMessage(PacketSummonMob.Handler.class, PacketSummonMob.class, id++, Side.SERVER);
+		network.registerMessage(PacketGiveItem.Handler.class, PacketGiveItem.class, id++, Side.SERVER);
 	}
 }

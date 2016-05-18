@@ -27,7 +27,7 @@ public class GuiButtonStartEvent extends GuiButton
 	{
 		if (this.visible)
 		{
-			if (Event.EVENTS[book.currentTab-1].getClass() == Event.currentEvent.getClass())
+			if (Event.EVENTS[book.currentTab-book.numNonEventTabs].getClass() == Event.currentEvent.getClass())
 				this.displayString = "Stop Event";
 			else
 				this.displayString = "Start Event";

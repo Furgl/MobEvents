@@ -1,16 +1,18 @@
 {
     "mob.event_zombie.say":
     {
-        "category": "neutral",
+        "category": "hostile",
         "sounds":
         [
             "mob/event_zombie/say1",
-            "mob/event_zombie/say2"
+            "mob/event_zombie/say2",
+            "mob/event_zombie/say3",
+            "mob/event_zombie/say4"
         ]
     },
     "mob.event_zombie.hurt":
     {
-        "category": "neutral",
+        "category": "hostile",
         "sounds":
         [
             "mob/event_zombie/hurt1"
@@ -18,10 +20,51 @@
     },
     "mob.event_zombie.death":
     {
-        "category": "neutral",
+        "category": "hostile",
         "sounds":
         [
             "mob/event_zombie/death1" 
         ]
+    },
+    "ambience.zombie_ambience":
+    {
+        "category": "ambient",
+        "sounds":
+        [
+            "ambience/zombie_ambience1" 
+        ]
+    },
+    "records.record1":
+    {
+        "category": "record",
+        "sounds":
+        [
+            "records/record1" 
+        ]
+    },
+    "records.record2":
+    {
+        "category": "record",
+        "sounds":
+        [
+            "records/record2" 
+        ]
+    },
+    "records.record3":
+    {
+        "category": "record",
+        "sounds":
+        [
+            "records/record3" 
+        ]
+    },
+    "records.record4":
+    {
+        "category": "record",
+        "sounds":
+        [
+            "records/record4" 
+        ]
     }
+
 }

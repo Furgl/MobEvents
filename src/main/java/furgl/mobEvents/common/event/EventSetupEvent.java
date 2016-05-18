@@ -17,7 +17,8 @@ public class EventSetupEvent
 {
 	/**0 = not set, 1 = day, 2 = night*/
 	private int lastTickTime;
-	
+	public static int timeTillWave1;
+
 	@SubscribeEvent(priority=EventPriority.NORMAL, receiveCanceled=true)
 	public void onEvent(LivingDeathEvent event)
 	{
@@ -48,7 +49,11 @@ public class EventSetupEvent
 		if (event.world.provider.getDimensionId() == 0 && event.phase == Phase.START)
 		{
 			if (Event.currentEvent.getClass() != Event.class)
+			{
+				if (EventSetupEvent.timeTillWave1-- == 0)
+					Event.currentEvent.wave1();
 				Event.currentEvent.onUpdate();
+			}
 			if (Event.world.isDaytime() && this.lastTickTime == 2) //just turned day
 			{
 				this.lastTickTime = 1;

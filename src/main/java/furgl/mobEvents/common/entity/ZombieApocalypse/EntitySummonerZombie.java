@@ -3,6 +3,8 @@ package furgl.mobEvents.common.entity.ZombieApocalypse;
 
 import java.util.ArrayList;
 
+import furgl.mobEvents.common.item.ModItems;
+import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.IEntityLivingData;
 import net.minecraft.entity.SharedMonsterAttributes;
@@ -28,6 +30,7 @@ public class EntitySummonerZombie extends EntityEventZombie
 		super(world);
 		this.setBookDescription();
 		this.progressOnDeath = 5;
+		this.maxSpawnedInChunk = 2;
 		if (this.worldObj != null)
 		{
 			int modifier = -1;
@@ -46,18 +49,14 @@ public class EntitySummonerZombie extends EntityEventZombie
 	public void setBookDescription()
 	{
 		this.bookDescription = "Summons Zombies to aid it.";
-		this.bookDrops = new ArrayList<Item>();
-		bookDrops.add(Items.blaze_rod);bookDrops.add(Items.blaze_rod);bookDrops.add(Items.blaze_rod);
-		bookDrops.add(Items.gold_ingot);bookDrops.add(Items.gold_ingot);bookDrops.add(Items.gold_ingot);
-		bookDrops.add(Items.golden_apple);bookDrops.add(Items.golden_apple);bookDrops.add(Items.golden_apple);
-		bookDrops.add(Items.emerald);bookDrops.add(Items.emerald);
-		bookDrops.add(Items.diamond);bookDrops.add(Items.diamond);
-	}
-	
-	@Override
-	protected void addRandomDrop()
-	{
-		this.dropItem(bookDrops.get(rand.nextInt(bookDrops.size())), 1);
+		this.addDrops(Items.blaze_rod, 3);
+		this.addDrops(Items.gold_ingot, 3);
+		this.addDrops(Items.golden_apple, 3);
+		this.addDrops(Items.emerald, 2);
+		this.addDrops(Items.diamond, 2);
+		ItemStack stack = new ItemStack(ModItems.summonersHelm);
+		stack.addEnchantment(Enchantment.fireProtection, 5);
+		this.addDrops(stack, 2);
 	}
 
 	@Override
@@ -167,7 +166,7 @@ public class EntitySummonerZombie extends EntityEventZombie
 		stack = new ItemStack(Item.getItemFromBlock(Blocks.pumpkin));
 		this.setCurrentItemOrArmor(4, stack);
 		for (int i=0; i<this.equipmentDropChances.length; i++)
-			this.setEquipmentDropChance(i, 0.08f);
+			this.setEquipmentDropChance(i, i == 4 ? 0f : 0.08f);
 	}
 
 	@Override

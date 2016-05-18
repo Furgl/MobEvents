@@ -40,7 +40,7 @@ public class GuiButtonMobPage extends GuiButton
 					GlStateManager.color(0.7F, 0.0F, 0.7F, 1.0F);				
 				else
 				{
-					float difficulty = (float)(mob.getProgressOnDeath()-1)/(book.maxProgress.get(book.currentTab-1)-1);
+					float difficulty = (float)(mob.getProgressOnDeath()-1)/(book.maxProgress.get(book.currentTab-book.numNonEventTabs)-1);
 					GlStateManager.color(255F, 1F-difficulty, 1F-difficulty, 1.0F);
 				}
 			}

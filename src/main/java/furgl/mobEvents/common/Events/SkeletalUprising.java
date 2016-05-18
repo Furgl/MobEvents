@@ -13,6 +13,10 @@ public class SkeletalUprising extends Event
 	public SkeletalUprising() 
 	{	
 		this.color = 0xcccccc;
+		this.red = 0.9f;
+		this.green = 0.9f;
+		this.blue = 0.9f;
+		this.enumColor = EnumChatFormatting.GRAY;
 		this.setBookDescription();
 	}
 	
@@ -41,22 +45,22 @@ public class SkeletalUprising extends Event
 	
 	public void wave1() 
 	{
-		MinecraftServer.getServer().getConfigurationManager().sendChatMsg(new ChatComponentTranslation("My bones are rattling.").setChatStyle(new ChatStyle().setBold(true).setColor(EnumChatFormatting.DARK_GRAY).setItalic(true)));
+		super.wave1();
 		this.updatePlayers();
 		for (EntityPlayer player : players)
-			Event.world.playSoundAtEntity(player, "mob.zombie.infect", 10f, 0f);
+			Event.world.playSoundAtEntity(player, "mob.skeleton.say", 0.5f, 1.5f); //change to custom say
 	}
 	public void wave2() 
 	{
-		
+		super.wave2();
 	}
 	public void wave3() 
 	{
-		
+		super.wave3();
 	}
 	public void bossWave()
 	{
-		
+		super.bossWave();
 	}
 	
 	public void increaseProgress(int amount)
@@ -70,13 +74,16 @@ public class SkeletalUprising extends Event
 	{ 
 		Event.currentEvent = new SkeletalUprising();
 		super.startEvent();
-		wave1();
+		MinecraftServer.getServer().getConfigurationManager().sendChatMsg(new ChatComponentTranslation("My bones are rattling.").setChatStyle(new ChatStyle().setBold(true).setColor(this.enumColor).setItalic(true)));
+		this.updatePlayers();
+		for (EntityPlayer player : players)
+			Event.world.playSoundAtEntity(player, "mob.zombie.infect", 10f, 0f);
 	}
 
 	public void stopEvent() 
 	{
 		super.stopEvent();
-		MinecraftServer.getServer().getConfigurationManager().sendChatMsg(new ChatComponentTranslation(this.toString() + " has ended.").setChatStyle(new ChatStyle().setBold(true).setColor(EnumChatFormatting.DARK_GRAY)));
+		MinecraftServer.getServer().getConfigurationManager().sendChatMsg(new ChatComponentTranslation(this.toString() + " has ended.").setChatStyle(new ChatStyle().setBold(true).setColor(this.enumColor)));
 		this.updatePlayers();
 		for (EntityPlayer player : players)
 			Event.world.playSoundAtEntity(player, "mob.zombie.remedy", 0.2f, 2f);

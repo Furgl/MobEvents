@@ -38,11 +38,14 @@ public class EntityEventZombie extends EntityZombie implements IEventMob
 	/**Bosses have 100 progressOnDeath*/
 	public int progressOnDeath;
 	public int armorColor = -1;
+	public int maxSpawnedInChunk = 4;
 	private int bardsBoost;
 	public boolean summoned;
 	public String bookDescription;
-	public ArrayList<Item> bookDrops;
+	public ArrayList<ItemStack> bookDrops;
 	public int bookArmor;
+	/**Wave that mob thinks it is currently*/
+	public int currentWave;
 
 	public EntityEventZombie(World world) 
 	{
@@ -50,13 +53,20 @@ public class EntityEventZombie extends EntityZombie implements IEventMob
 		if (world == null)
 			this.setEquipmentBasedOnDifficulty(null);
 		this.bookArmor = this.getTotalArmorValue();
+		this.currentWave = Event.currentWave;
 	}
 
 	public void setBookDescription()
 	{
 		this.bookDescription = "";
-		this.bookDrops = new ArrayList<Item>();
+		this.bookDrops = new ArrayList<ItemStack>();
 		this.bookArmor = 0;
+	}
+
+	@Override
+	public int getMaxSpawnedInChunk()
+	{
+		return this.maxSpawnedInChunk;
 	}
 
 	@Override
@@ -76,6 +86,13 @@ public class EntityEventZombie extends EntityZombie implements IEventMob
 	@Override
 	public void onUpdate()
 	{
+		//play living sound on wave change
+		if (this.currentWave != Event.currentWave)
+		{
+			this.currentWave = Event.currentWave;
+			this.playLivingSound();
+		}
+		
 		//set summoned from datawatcher
 		if (this.ticksExisted == 1 && this.worldObj.isRemote && this.getDataWatcher().getWatchableObjectByte(20) == 1)
 		{
@@ -200,7 +217,7 @@ public class EntityEventZombie extends EntityZombie implements IEventMob
 		super.applyEntityAttributes();
 		this.getEntityAttribute(SharedMonsterAttributes.followRange).setBaseValue(60.0D);
 	}
-	
+
 	@Override
 	public ItemStack getPickedResult(MovingObjectPosition target)
 	{
@@ -211,7 +228,11 @@ public class EntityEventZombie extends EntityZombie implements IEventMob
 	protected void setEquipmentBasedOnDifficulty(DifficultyInstance difficulty) { }
 
 	@Override
-	protected void addRandomDrop() { }
+	protected void addRandomDrop()
+	{
+		if (bookDrops != null && bookDrops.size() > 0)
+			this.entityDropItem(bookDrops.get(rand.nextInt(bookDrops.size())), 0);
+	}
 
 	@Override
 	public IEntityLivingData onInitialSpawn(DifficultyInstance difficulty, IEntityLivingData livingdata)
@@ -264,6 +285,22 @@ public class EntityEventZombie extends EntityZombie implements IEventMob
 			return true;
 	}
 
+	protected void addDrops(Item item, int amount)
+	{
+		if (this.bookDrops == null)
+			this.bookDrops = new ArrayList<ItemStack>();
+		for (int i=0; i<amount; i++)
+			this.bookDrops.add(new ItemStack(item));
+	}
+
+	protected void addDrops(ItemStack stack, int amount)
+	{
+		if (this.bookDrops == null)
+			this.bookDrops = new ArrayList<ItemStack>();
+		for (int i=0; i<amount; i++)
+			this.bookDrops.add(stack);
+	}
+
 	@Override
 	public String getBookDescription() 
 	{
@@ -271,7 +308,7 @@ public class EntityEventZombie extends EntityZombie implements IEventMob
 	}
 
 	@Override
-	public ArrayList<Item> getBookDrops() 
+	public ArrayList<ItemStack> getBookDrops() 
 	{
 		return this.bookDrops;
 	}

@@ -32,29 +32,27 @@ public class GuiEventProgress extends Gui
 		if (event.type != ElementType.EXPERIENCE || Event.currentEvent.getClass() == Event.class || Config.eventProgressGuiLocation.equals(Config.eventProgressGuiLocations[Config.NONE])) 
 			return;
 
-        ScaledResolution sr = new ScaledResolution(this.mc);
-        int xPos;
-        int yPos;
-        //if left
-        if (Config.eventProgressGuiLocation.equals(Config.eventProgressGuiLocations[Config.TOP_LEFT]) || Config.eventProgressGuiLocation.equals(Config.eventProgressGuiLocations[Config.BOTTOM_LEFT]))
-        	xPos = 2;
-        else
-        	xPos = sr.getScaledWidth() - 125;
-        //if right
-        if (Config.eventProgressGuiLocation.equals(Config.eventProgressGuiLocations[Config.TOP_LEFT]) || Config.eventProgressGuiLocation.equals(Config.eventProgressGuiLocations[Config.TOP_RIGHT]))
-        	yPos = 2;
-        else
-        	yPos = sr.getScaledHeight() - 42;
+		ScaledResolution sr = new ScaledResolution(this.mc);
+		int xPos;
+		int yPos;
+		//if left
+		if (Config.eventProgressGuiLocation.equals(Config.eventProgressGuiLocations[Config.TOP_LEFT]) || Config.eventProgressGuiLocation.equals(Config.eventProgressGuiLocations[Config.BOTTOM_LEFT]))
+			xPos = 2;
+		else
+			xPos = sr.getScaledWidth() - 125;
+		//if right
+		if (Config.eventProgressGuiLocation.equals(Config.eventProgressGuiLocations[Config.TOP_LEFT]) || Config.eventProgressGuiLocation.equals(Config.eventProgressGuiLocations[Config.TOP_RIGHT]))
+			yPos = 2;
+		else
+			yPos = sr.getScaledHeight() - 42;
 		this.mc.getTextureManager().bindTexture(texture);
 
-		// Add this block of code before you draw the section of your texture containing transparency
 		GlStateManager.pushAttrib();
 		GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
 		GlStateManager.disableLighting();
 		// alpha test and blend needed due to vanilla or Forge rendering bug
 		GlStateManager.enableAlpha();
 		GlStateManager.enableBlend();
-		// Here we draw the background bar which contains a transparent section; note the new size
 		drawTexturedModalRect(xPos, yPos, 0, 0, 123, 40);
 		// You can keep drawing without changing anything
 		int manabarwidth = (int)(((double)Event.progress / (double)Event.progressNeededForBoss) * 104);
@@ -69,7 +67,10 @@ public class GuiEventProgress extends Gui
 		this.mc.fontRendererObj.drawString(s, xPos, yPos, 1572663);
 		yPos += 11;
 		xPos += this.mc.fontRendererObj.getStringWidth(s)/2;
-		s = Event.progress < Event.progressNeededForBoss ? "Wave " + Event.currentWave : "Boss Wave";
+		if (Event.currentWave == 0)
+			s = "";
+		else
+			s = Event.progress < Event.progressNeededForBoss ? "Wave " + Event.currentWave : "Boss Wave";
 		xPos -= this.mc.fontRendererObj.getStringWidth(s)/2;
 		this.mc.fontRendererObj.drawString(s, xPos + 1, yPos, 0);
 		this.mc.fontRendererObj.drawString(s, xPos - 1, yPos, 0);

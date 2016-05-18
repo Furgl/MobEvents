@@ -32,23 +32,23 @@ public class EntityBardZombie extends EntityEventZombie
 		super(world);
 		this.setBookDescription();
 		this.progressOnDeath = 4;
+		this.maxSpawnedInChunk = 1;
 	}
 	
 	@Override
 	public void setBookDescription()
 	{
 		this.bookDescription = "Plays music to strengthen nearby Zombies.";
-		this.bookDrops = new ArrayList<Item>();
-		bookDrops.add(Item.getItemFromBlock(Blocks.noteblock));bookDrops.add(Item.getItemFromBlock(Blocks.noteblock));
-		bookDrops.add(Item.getItemFromBlock(Blocks.jukebox));
-		bookDrops.add(Items.record_11);
+		this.addDrops(Item.getItemFromBlock(Blocks.noteblock), 2);
+		this.addDrops(Item.getItemFromBlock(Blocks.jukebox), 1);
+		this.addDrops(Items.record_11, 1);
 	}
 	
 	@Override
 	protected void addRandomDrop()
 	{
 		bookDrops.remove(3); //remove record
-		this.dropItem(bookDrops.get(rand.nextInt(bookDrops.size())), 1);
+		super.addRandomDrop();
 	}
 	
 	@Override

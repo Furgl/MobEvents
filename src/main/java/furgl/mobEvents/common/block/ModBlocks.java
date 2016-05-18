@@ -1,5 +1,6 @@
 package furgl.mobEvents.common.block;
 
+import furgl.mobEvents.common.MobEvents;
 import net.minecraft.block.Block;
 import net.minecraft.block.properties.IProperty;
 import net.minecraft.client.Minecraft;
@@ -14,24 +15,33 @@ public class ModBlocks
 	//public static Block disappearingWeb;
 	public static Block disappearingFire;
 
+	public static Block summoners_helm;
+	public static Block lit_summoners_helm;
+
 	public static void init()
 	{
 		disappearingFire = registerBlockWithoutTab(new BlockDisappearingFire().setHardness(0.0F).setLightLevel(1.0F).setStepSound(new Block.SoundType("cloth", 1.0F, 1.0F)).setUnlocalizedName("fire")/*.disableStats()*/, "fire");
 		ModelLoader.setCustomStateMapper(disappearingFire, (new StateMap.Builder()).ignore(new IProperty[] {BlockDisappearingFire.AGE}).build());
 		//disappearingWeb = registerBlockWithoutTab(new BlockDisappearingWeb().setLightOpacity(1).setHardness(4.0F), "disappearingWeb");
+
+		summoners_helm = registerBlockWithTab(new BlockSummonersHelm(false).setHardness(1.0F).setStepSound(new Block.SoundType("wood", 1.0F, 1.0F)), "summoners_helm");
+		lit_summoners_helm = registerBlockWithoutTab(new BlockSummonersHelm(true).setHardness(1.0F).setStepSound(new Block.SoundType("wood", 1.0F, 1.0F)), "lit_summoners_helm");
 	}
 
 	public static void registerRenders() 
 	{
 		registerRender(disappearingFire);
+
+		registerRender(summoners_helm);
+		registerRender(lit_summoners_helm);
 	}
 
-	/*public static Block registerBlockWithTab(final Block block, final String unlocalizedName) {
+	public static Block registerBlockWithTab(final Block block, final String unlocalizedName) {
 		block.setUnlocalizedName(unlocalizedName);
-		block.setCreativeTab(BabyMobs.tab);
-		GameRegistry.registerBlock(block, unlocalizedName);
+		block.setCreativeTab(MobEvents.tab);
+		GameRegistry.registerBlock(block, null, unlocalizedName);
 		return block;
-	}*/
+	}
 
 	public static Block registerBlockWithoutTab(final Block block, final String unlocalizedName) {
 		block.setUnlocalizedName(unlocalizedName);

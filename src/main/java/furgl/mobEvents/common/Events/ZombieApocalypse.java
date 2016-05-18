@@ -2,6 +2,7 @@ package furgl.mobEvents.common.Events;
 
 import java.util.ArrayList;
 
+import furgl.mobEvents.common.MobEvents;
 import furgl.mobEvents.common.entity.ZombieApocalypse.EntityBardZombie;
 import furgl.mobEvents.common.entity.ZombieApocalypse.EntityCloneZombie;
 import furgl.mobEvents.common.entity.ZombieApocalypse.EntityEventZombie;
@@ -25,6 +26,10 @@ public class ZombieApocalypse extends Event
 	public ZombieApocalypse() 
 	{ 
 		this.color = 1572663;
+		this.red = 0.23f;
+		this.green = 0.43f;
+		this.blue = 0.23f;
+		this.enumColor = EnumChatFormatting.DARK_GREEN;
 		this.setSounds();
 		this.setMobs();
 		this.setBookDescription();
@@ -50,10 +55,11 @@ public class ZombieApocalypse extends Event
 	public void setSounds()
 	{
 		sounds = new ArrayList<String>();
-		sounds.add("mob.zombie.hurt");
+		sounds.add(MobEvents.MODID+":ambience.zombie_ambience");
+		/*sounds.add("mob.zombie.hurt");
 		sounds.add("mob.zombie.say");
 		sounds.add("mob.zombie.step");
-		sounds.add("mob.zombie.wood");
+		sounds.add("mob.zombie.wood");*/
 	}
 
 	@Override
@@ -86,7 +92,7 @@ public class ZombieApocalypse extends Event
 
 	public void onUpdate()
 	{
-		if (rand.nextInt(500) == 0)
+		if (rand.nextInt(200) == 0)
 		{
 			this.updatePlayers();
 			this.playSound(sounds);
@@ -101,10 +107,10 @@ public class ZombieApocalypse extends Event
 
 	public void wave1() 
 	{
-		MinecraftServer.getServer().getConfigurationManager().sendChatMsg(new ChatComponentTranslation("Did I hear something?").setChatStyle(new ChatStyle().setBold(true).setColor(EnumChatFormatting.DARK_GRAY).setItalic(true)));
+		super.wave1();
 		this.updatePlayers();
 		for (EntityPlayer player : players)
-			Event.world.playSoundAtEntity(player, "mob.zombie.infect", 10f, 0f);
+			Event.world.playSoundAtEntity(player, MobEvents.MODID+":mob.event_zombie.say", 0.4f, 1.5f);
 		EntityRegistry.addSpawn(EntityRuntZombie.class, 2000, 4, 4, EnumCreatureType.MONSTER, Event.biomes);
 		EntityRegistry.addSpawn(EntityPyromaniacZombie.class, 90, 1, 1, EnumCreatureType.MONSTER, Event.biomes);
 		EntityRegistry.addSpawn(EntityBardZombie.class, 90, 1, 1, EnumCreatureType.MONSTER, Event.biomes);
@@ -115,9 +121,8 @@ public class ZombieApocalypse extends Event
 
 	public void wave2() 
 	{
+		super.wave2();
 		this.removeCustomSpawns();
-		MinecraftServer.getServer().getConfigurationManager().sendChatMsg(new ChatComponentTranslation("Wave "+Event.currentWave).setChatStyle(new ChatStyle().setBold(true).setColor(EnumChatFormatting.DARK_GRAY)));
-
 		EntityRegistry.addSpawn(EntityRuntZombie.class, 2000, 4, 4, EnumCreatureType.MONSTER, Event.biomes);
 		EntityRegistry.addSpawn(EntityPyromaniacZombie.class, 130, 1, 1, EnumCreatureType.MONSTER, Event.biomes);
 		EntityRegistry.addSpawn(EntityBardZombie.class, 130, 1, 1, EnumCreatureType.MONSTER, Event.biomes);
@@ -128,9 +133,8 @@ public class ZombieApocalypse extends Event
 
 	public void wave3() 
 	{
+		super.wave3();
 		this.removeCustomSpawns();
-		MinecraftServer.getServer().getConfigurationManager().sendChatMsg(new ChatComponentTranslation("Wave "+Event.currentWave).setChatStyle(new ChatStyle().setBold(true).setColor(EnumChatFormatting.DARK_GRAY)));
-
 		EntityRegistry.addSpawn(EntityRuntZombie.class, 2000, 4, 4, EnumCreatureType.MONSTER, Event.biomes);
 		EntityRegistry.addSpawn(EntityPyromaniacZombie.class, 150, 1, 1, EnumCreatureType.MONSTER, Event.biomes);
 		EntityRegistry.addSpawn(EntityBardZombie.class, 150, 1, 1, EnumCreatureType.MONSTER, Event.biomes);
@@ -141,21 +145,24 @@ public class ZombieApocalypse extends Event
 
 	public void bossWave()
 	{
+		super.bossWave();
 		this.removeCustomSpawns();
-		MinecraftServer.getServer().getConfigurationManager().sendChatMsg(new ChatComponentTranslation("Boss Wave").setChatStyle(new ChatStyle().setBold(true).setColor(EnumChatFormatting.DARK_GRAY)));
 	}
 
 	public void startEvent() 
 	{ 
 		Event.currentEvent = new ZombieApocalypse();
 		super.startEvent();
-		wave1();
+		MinecraftServer.getServer().getConfigurationManager().sendChatMsg(new ChatComponentTranslation("Did I hear something?").setChatStyle(new ChatStyle().setBold(true).setColor(this.enumColor).setItalic(true)));
+		this.updatePlayers();
+		for (EntityPlayer player : players)
+			Event.world.playSoundAtEntity(player, "mob.zombie.infect", 10f, 0f);
 	}
 
 	public void stopEvent() 
 	{
 		super.stopEvent();
-		MinecraftServer.getServer().getConfigurationManager().sendChatMsg(new ChatComponentTranslation(this.toString() + " has ended.").setChatStyle(new ChatStyle().setBold(true).setColor(EnumChatFormatting.DARK_GRAY)));
+		MinecraftServer.getServer().getConfigurationManager().sendChatMsg(new ChatComponentTranslation(this.toString() + " has ended.").setChatStyle(new ChatStyle().setBold(true).setColor(this.enumColor)));
 		this.updatePlayers();
 		for (EntityPlayer player : players)
 			Event.world.playSoundAtEntity(player, "mob.zombie.remedy", 0.2f, 2f);

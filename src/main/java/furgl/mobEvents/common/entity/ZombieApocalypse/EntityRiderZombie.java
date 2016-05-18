@@ -1,12 +1,9 @@
 package furgl.mobEvents.common.entity.ZombieApocalypse;
 
-import java.util.ArrayList;
-
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.IEntityLivingData;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.init.Items;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.World;
@@ -18,24 +15,18 @@ public class EntityRiderZombie extends EntityEventZombie
 		super(world);
 		this.setBookDescription();
 		this.progressOnDeath = 5;
+		this.maxSpawnedInChunk = 1;
 	}
 	
 	@Override
 	public void setBookDescription()
 	{
 		this.bookDescription = "Rides a Zombie Horse into battle.";
-		this.bookDrops = new ArrayList<Item>();
-		bookDrops.add(Items.name_tag);bookDrops.add(Items.name_tag);bookDrops.add(Items.name_tag);bookDrops.add(Items.name_tag);
-		bookDrops.add(Items.saddle);bookDrops.add(Items.saddle);bookDrops.add(Items.saddle);bookDrops.add(Items.saddle);
-		bookDrops.add(Items.iron_horse_armor);bookDrops.add(Items.iron_horse_armor);bookDrops.add(Items.iron_horse_armor);
-		bookDrops.add(Items.golden_horse_armor);bookDrops.add(Items.golden_horse_armor);
-		bookDrops.add(Items.diamond_horse_armor);
-	}
-	
-	@Override
-	protected void addRandomDrop()
-	{
-		this.dropItem(bookDrops.get(rand.nextInt(bookDrops.size())), 1);
+		this.addDrops(Items.name_tag, 4);
+		this.addDrops(Items.saddle, 4);
+		this.addDrops(Items.iron_horse_armor, 3);
+		this.addDrops(Items.golden_horse_armor, 2);
+		this.addDrops(Items.diamond_horse_armor, 1);
 	}
 	
 	@Override

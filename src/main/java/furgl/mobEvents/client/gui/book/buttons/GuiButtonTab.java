@@ -32,10 +32,6 @@ public class GuiButtonTab extends GuiButton
 		if (visible)
 		{
 			this.hovered = mouseX >= this.xPosition && mouseY >= this.yPosition && mouseX < this.xPosition + this.width && mouseY < this.yPosition + this.height && book.currentTab != this.id;
-			/*if (hovered)
-				this.yPosition = this.startYPos-1;
-			else
-				this.yPosition = this.startYPos;*/
 			mc.getTextureManager().bindTexture(book.bookPageTexture);
 			GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
 			GlStateManager.disableLighting();
@@ -49,17 +45,17 @@ public class GuiButtonTab extends GuiButton
 			int y = this.yPosition+(hovered ? 3 : 4);
 			int borderColor = 0xb3b3b3;	
 			int mainColor = 0xC6ECC6; //faded color
-			if (id == 0) //introduction
+			if (id < book.numNonEventTabs) //introduction
 			{
 				//borderColor = 0x0;
 				mainColor = 0x0;
 			}
-			else if (Config.unlockedTabs.contains(Event.EVENTS[id-1].toString()) || book.creative)
+			else if (Config.unlockedTabs.contains(Event.EVENTS[id-book.numNonEventTabs].toString()) || book.creative)
 			{
 				borderColor = 0x0;
-				mainColor = Event.EVENTS[id-1].color;
+				mainColor = Event.EVENTS[id-book.numNonEventTabs].color;
 			}
-			if (id != 0)
+			if (id >= book.numNonEventTabs)
 			{
 				mc.fontRendererObj.drawString(this.displayString, x + 1, y, borderColor);
 				mc.fontRendererObj.drawString(this.displayString, x - 1, y, borderColor);

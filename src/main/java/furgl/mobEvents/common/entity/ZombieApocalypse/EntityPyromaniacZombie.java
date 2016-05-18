@@ -1,7 +1,5 @@
 package furgl.mobEvents.common.entity.ZombieApocalypse;
 
-import java.util.ArrayList;
-
 import furgl.mobEvents.common.block.ModBlocks;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.IEntityLivingData;
@@ -22,27 +20,19 @@ public class EntityPyromaniacZombie extends EntityEventZombie
 		this.setBookDescription();
 		this.progressOnDeath = 2;
 		this.armorColor = 10027008;
+		this.maxSpawnedInChunk = 2;
 	}
 	
 	@Override
 	public void setBookDescription()
 	{
 		this.bookDescription = "Likes lighting players on fire.";
-		this.bookDrops = new ArrayList<Item>();
-		bookDrops.add(Items.flint_and_steel);bookDrops.add(Items.flint_and_steel);bookDrops.add(Items.flint_and_steel);
-		bookDrops.add(Item.getItemFromBlock(Blocks.torch));bookDrops.add(Item.getItemFromBlock(Blocks.torch));bookDrops.add(Item.getItemFromBlock(Blocks.torch));
-		bookDrops.add(Items.coal);bookDrops.add(Items.coal);bookDrops.add(Items.coal);
-		bookDrops.add(Item.getItemFromBlock(Blocks.coal_block));
-	}
-	
-	@Override
-	protected void addRandomDrop()
-	{
-		Item item = bookDrops.get(rand.nextInt(bookDrops.size()));
-		if (item == Items.coal || item == Item.getItemFromBlock(Blocks.torch))
-			this.dropItem(item, rand.nextInt(3)+1);
-		else
-			this.dropItem(item, 1);
+		ItemStack torches = new ItemStack(Item.getItemFromBlock(Blocks.torch), rand.nextInt(3)+1);
+		ItemStack coal = new ItemStack(Items.coal, rand.nextInt(3)+1);
+		this.addDrops(Items.flint_and_steel, 3);
+		this.addDrops(torches, 3);
+		this.addDrops(coal, 3);
+		this.addDrops(Item.getItemFromBlock(Blocks.coal_block), 1);
 	}
 	
 	@Override

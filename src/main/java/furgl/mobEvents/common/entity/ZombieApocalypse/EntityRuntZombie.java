@@ -1,11 +1,8 @@
 package furgl.mobEvents.common.entity.ZombieApocalypse;
 
-import java.util.ArrayList;
-
 import net.minecraft.entity.IEntityLivingData;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.init.Items;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.EnumDifficulty;
@@ -24,18 +21,11 @@ public class EntityRuntZombie extends EntityEventZombie
 	public void setBookDescription()
 	{
 		this.bookDescription = "A common Zombie warrior.";
-		this.bookDrops = new ArrayList<Item>();
-		bookDrops.add(Items.iron_ingot);bookDrops.add(Items.iron_ingot);bookDrops.add(Items.iron_ingot);
-		bookDrops.add(Items.gold_ingot);bookDrops.add(Items.gold_ingot);bookDrops.add(Items.gold_ingot);
-		bookDrops.add(Items.golden_apple);bookDrops.add(Items.golden_apple);bookDrops.add(Items.golden_apple);
-		bookDrops.add(Items.emerald);
-		bookDrops.add(Items.diamond);
-	}
-
-	@Override
-	protected void addRandomDrop()
-	{
-		this.dropItem(bookDrops.get(rand.nextInt(bookDrops.size())), 1);
+		this.addDrops(Items.iron_ingot, 3);
+		this.addDrops(Items.gold_ingot, 3);
+		this.addDrops(Items.golden_apple, 3);
+		this.addDrops(Items.emerald, 1);
+		this.addDrops(Items.diamond, 1);
 	}
 
 	@Override

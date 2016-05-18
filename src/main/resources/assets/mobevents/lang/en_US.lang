@@ -9,6 +9,17 @@ entity.mobEvents.cloneZombie.name=Zombie Clone
 item.event_book.name=Event Book
 item.creative_event_book.name=Creative Event Book
 
+item.record1.name=Music Disc
+item.record.record1.desc=Record 1
+item.record2.name=Music Disc
+item.record.record2.desc=Record 2
+item.record3.name=Music Disc
+item.record.record3.desc=Record 3
+item.record4.name=Music Disc
+item.record.record4.desc=Record 4
+
+item.summoners_helm.name=Summoner's Helm
+
 item.zombie_bard.name=Spawn Bard
 item.zombie_clone.name=Spawn Clone
 item.zombie_minion.name=Spawn Minion

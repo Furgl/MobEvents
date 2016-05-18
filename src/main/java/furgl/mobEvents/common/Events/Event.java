@@ -7,6 +7,7 @@ import furgl.mobEvents.client.gui.achievements.Achievements;
 import furgl.mobEvents.common.config.Config;
 import furgl.mobEvents.common.entity.ZombieApocalypse.IEventMob;
 import furgl.mobEvents.common.event.EventFogEvent;
+import furgl.mobEvents.common.event.EventSetupEvent;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ChatComponentTranslation;
@@ -29,6 +30,12 @@ public class Event
 	public String bookWaves;
 	/**Color of text displayed on progress bar*/
 	public int color;
+	/**Colors for fog*/
+	public float red;
+	public float green;
+	public float blue;
+	/**Color for chat messages*/
+	public EnumChatFormatting enumColor;
 
 	public static int progress;
 	public static int progressNeededForBoss;
@@ -67,10 +74,25 @@ public class Event
 	public void setSounds() { }
 	public void setMobs() { }
 	public void onUpdate() { }
-	public void wave1() { }
-	public void wave2() { }
-	public void wave3() { }
-	public void bossWave() { }
+	
+	public void wave1() { 
+		Event.currentWave = 1;
+		MinecraftServer.getServer().getConfigurationManager().sendChatMsg(new ChatComponentTranslation("Wave "+Event.currentWave).setChatStyle(new ChatStyle().setBold(true).setColor(this.enumColor).setItalic(true)));
+	}
+	
+	public void wave2() { 
+		Event.currentWave = 2;
+		MinecraftServer.getServer().getConfigurationManager().sendChatMsg(new ChatComponentTranslation("Wave "+Event.currentWave).setChatStyle(new ChatStyle().setBold(true).setColor(this.enumColor).setItalic(true)));
+	}
+	
+	public void wave3() { 
+		Event.currentWave = 3;
+		MinecraftServer.getServer().getConfigurationManager().sendChatMsg(new ChatComponentTranslation("Wave "+Event.currentWave).setChatStyle(new ChatStyle().setBold(true).setColor(this.enumColor).setItalic(true)));
+	}
+	public void bossWave() { 
+		Event.currentWave = 4;
+		MinecraftServer.getServer().getConfigurationManager().sendChatMsg(new ChatComponentTranslation("Boss Wave").setChatStyle(new ChatStyle().setBold(true).setColor(this.enumColor).setItalic(true)));
+	}
 
 	public static Event stringToEvent(String string) 
 	{
@@ -83,18 +105,11 @@ public class Event
 	public void increaseProgress(int amount)
 	{
 		if (currentWave == 1 && progress + amount >= progressNeededForBoss/3)
-		{
-			currentWave = 2;
 			wave2();
-		}
 		else if (currentWave == 2 && progress + amount >= (progressNeededForBoss/3*2))
-		{
-			currentWave = 3;
 			wave3();
-		}
 		else if (currentWave == 3 && progress + amount >= progressNeededForBoss)
 		{
-			currentWave = 4;
 			bossWave();
 			progress = progressNeededForBoss;
 		}
@@ -131,6 +146,7 @@ public class Event
 
 	public void startEvent() 
 	{ 
+		EventSetupEvent.timeTillWave1 = 200;
 		this.updatePlayers();
 		//check if event should be unlocked
 		for (EntityPlayer player : Event.players)
@@ -155,11 +171,12 @@ public class Event
 		Event.progressNeededForBoss = 100 * players.size();
 		playerDeaths = new ArrayList<String>();
 		Event.progress = 0;
-		Event.currentWave = 1;
+		Event.currentWave = 0;
 	}
 
 	public void stopEvent() 
 	{
+		EventSetupEvent.timeTillWave1 = 0;
 		EventFogEvent.resetFogDensity = true;
 		this.updatePlayers();
 		if (bossDefeated)

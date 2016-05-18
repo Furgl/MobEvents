@@ -1,4 +1,4 @@
-package furgl.mobEvents.common.item;
+package furgl.mobEvents.common.item.books;
 
 import furgl.mobEvents.common.MobEvents;
 import furgl.mobEvents.common.Events.Event;
@@ -9,9 +9,12 @@ import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-public class ItemCreativeEventBook extends Item 
+public class ItemEventBook extends Item 
 {
-	public ItemCreativeEventBook()
+	//used to ignore interact when book was just created
+	public boolean justCreated;
+
+	public ItemEventBook()
 	{
 		this.setMaxStackSize(1);
 	}
@@ -26,8 +29,10 @@ public class ItemCreativeEventBook extends Item
 	@Override
 	public ItemStack onItemRightClick(ItemStack stack, World world, EntityPlayer player)
 	{
-		if (player.worldObj.isRemote)
-			MobEvents.proxy.openBookGui(player, true);
+		if (this.justCreated)
+			this.justCreated = false;
+		else if (player.worldObj.isRemote)
+			MobEvents.proxy.openBookGui(player, false);
 		return stack;
 	}
 }

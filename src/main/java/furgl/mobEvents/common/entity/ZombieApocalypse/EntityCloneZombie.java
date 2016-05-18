@@ -7,7 +7,6 @@ import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.IEntityLivingData;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Items;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemArmor;
 import net.minecraft.item.ItemSkull;
 import net.minecraft.item.ItemStack;
@@ -27,24 +26,17 @@ public class EntityCloneZombie extends EntityEventZombie
 		super(world);
 		this.setBookDescription();
 		this.progressOnDeath = 7;
+		this.maxSpawnedInChunk = 1;
 	}
 	
 	@Override
 	public void setBookDescription()
 	{
 		this.bookDescription = "Copies a nearby player's best armor and weapon.";
-		this.bookDrops = new ArrayList<Item>();
-		bookDrops.add(Items.iron_ingot);bookDrops.add(Items.iron_ingot);
-		bookDrops.add(Items.gold_ingot);bookDrops.add(Items.gold_ingot);
-		bookDrops.add(Items.golden_apple);bookDrops.add(Items.golden_apple);
-		bookDrops.add(Items.emerald);
-		bookDrops.add(Items.diamond);
-	}
-	
-	@Override
-	protected void addRandomDrop()
-	{
-		this.dropItem(bookDrops.get(rand.nextInt(bookDrops.size())), 1);
+		this.addDrops(Items.iron_ingot, 2);
+		this.addDrops(Items.gold_ingot, 2);
+		this.addDrops(Items.emerald, 1);
+		this.addDrops(Items.diamond, 1);
 	}
 	
 	@Override

@@ -1,7 +1,5 @@
 package furgl.mobEvents.common.entity.ZombieApocalypse;
 
-import java.util.ArrayList;
-
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.IEntityLivingData;
 import net.minecraft.entity.SharedMonsterAttributes;
@@ -18,22 +16,15 @@ public class EntityMinionZombie extends EntityEventZombie
 	{
 		super(world);
 		this.setBookDescription();
-		this.progressOnDeath = 100;
+		this.progressOnDeath = 1;
 	}
 	
 	@Override
 	public void setBookDescription()
 	{
 		this.bookDescription = "A tiny Zombie Summoner's minion.";
-		this.bookDrops = new ArrayList<Item>();
-		bookDrops.add(Items.gold_ingot);
-		bookDrops.add(Items.golden_apple);
-	}
-	
-	@Override
-	protected void addRandomDrop()
-	{
-		this.dropItem(bookDrops.get(rand.nextInt(bookDrops.size())), 1);
+		this.addDrops(Items.gold_ingot, 1);
+		this.addDrops(Items.golden_apple, 1);
 	}
 
 	@Override
