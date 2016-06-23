@@ -7,7 +7,6 @@ import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemArmor;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.World;
@@ -64,10 +63,7 @@ public class EntityPyromaniacZombie extends EntityEventZombie
 		this.setCurrentItemOrArmor(2, new ItemStack(Items.leather_leggings));
 		this.setCurrentItemOrArmor(3, new ItemStack(Items.leather_chestplate));
 		this.setCurrentItemOrArmor(4, new ItemStack(Items.leather_helmet));
-		for (int i=0; i<5; i++)
-			this.setEquipmentDropChance(i, 0.01f);
-		for (int i=0; i<4; i++)
-			((ItemArmor)this.getCurrentArmor(i).getItem()).setColor(this.getCurrentArmor(i), this.armorColor);
+		super.setEquipmentBasedOnDifficulty(difficulty);
 	}
 
 	@Override

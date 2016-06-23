@@ -9,9 +9,8 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
 public class CancelFireOverlayEvent 
 {
-
 	@SubscribeEvent(priority=EventPriority.NORMAL, receiveCanceled=true)
-	public void viewRenderEvent(RenderBlockOverlayEvent event)
+	public void onEvent(RenderBlockOverlayEvent event)
 	{
 		if (event.overlayType == RenderBlockOverlayEvent.OverlayType.FIRE && 
 				event.player.getEquipmentInSlot(4) != null && 

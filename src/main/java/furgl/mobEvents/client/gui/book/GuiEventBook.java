@@ -2,6 +2,7 @@ package furgl.mobEvents.client.gui.book;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.lwjgl.input.Keyboard;
 
@@ -16,25 +17,23 @@ import furgl.mobEvents.client.gui.book.buttons.GuiButtonTab;
 import furgl.mobEvents.common.MobEvents;
 import furgl.mobEvents.common.Events.Event;
 import furgl.mobEvents.common.config.Config;
+import furgl.mobEvents.common.entity.EntityGuiPlayer;
 import furgl.mobEvents.common.entity.ZombieApocalypse.EntityCloneZombie;
-import furgl.mobEvents.common.entity.ZombieApocalypse.EntityMinionZombie;
-import furgl.mobEvents.common.entity.ZombieApocalypse.EntitySummonerZombie;
+import furgl.mobEvents.common.entity.ZombieApocalypse.EntityRiderZombie;
 import furgl.mobEvents.common.entity.ZombieApocalypse.IEventMob;
 import furgl.mobEvents.common.item.ModItems;
 import furgl.mobEvents.common.item.drops.IEventItem;
-import furgl.mobEvents.common.item.drops.ItemSummonersHelm;
 import furgl.mobEvents.packets.PacketGiveItem;
 import furgl.mobEvents.packets.PacketSummonMob;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderHelper;
-import net.minecraft.enchantment.Enchantment;
+import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.EnumCreatureAttribute;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
@@ -51,8 +50,6 @@ public class GuiEventBook extends GuiScreen
 	public final ResourceLocation bookPageTexture = new ResourceLocation(MobEvents.MODID+":textures/gui/event_book.png");
 	protected final int bookImageWidth = 292/2;
 	protected final int bookImageHeight = 180/2;
-	private final int entityImageWidth = 768;
-	private final int entityImageHeight = 768;
 	public ArrayList<String> introPages = new ArrayList<String>() {{
 		add("Events");
 		add("Waves");
@@ -79,16 +76,15 @@ public class GuiEventBook extends GuiScreen
 	private GuiButtonGiveItem buttonGiveItem;
 	/**list of mobs unlocked inside list of Events*/
 	public ArrayList<ArrayList<IEventMob>> unlockedEntities;
+	/**list of items unlocked*/
+	public ArrayList<IEventItem> unlockedItems;
 	/**list of max progressOnDeath ordered by Event*/
 	public ArrayList<Integer> maxProgress;
 	/**list of random numbers to pick a joke ordered by Event*/
 	public ArrayList<Integer> randomJoke;
 	public int currentPage;
 	public int currentTab;
-	/**Rendering Zombie Summoner/Minions' pumpkins as lit or not*/
-	private boolean litPumpkin;
-	/**Used to calculate when to switch Zombie Summoners/Minions' lit*/
-	private long startTime;
+	private float partialTicks;
 
 	public GuiEventBook(EntityPlayer player, boolean creative)
 	{
@@ -102,9 +98,16 @@ public class GuiEventBook extends GuiScreen
 		this.currentPage = creative ? Config.currentCreativePage : Config.currentPage;
 		this.currentTab = creative ? Config.currentCreativeTab : Config.currentTab;
 		unlockedEntities = new ArrayList<ArrayList<IEventMob>>();
+		unlockedItems = new ArrayList<IEventItem>();
 		maxProgress = new ArrayList<Integer>();
 		randomJoke = new ArrayList<Integer>();
 		Config.syncFromConfig(player);
+		for (String itemName : Config.unlockedItems)
+		{
+			for (IEventItem item : ModItems.drops)
+				if (itemName.equalsIgnoreCase(item.getName()))
+					this.unlockedItems.add(item);
+		}
 		for (int i=0; i<Event.EVENTS.length; i++) //iterate through events
 		{  
 			this.randomJoke.add(i, this.editingPlayer.worldObj.rand.nextInt(Event.EVENTS[i].bookJokes.size()));
@@ -126,7 +129,7 @@ public class GuiEventBook extends GuiScreen
 						this.maxProgress.add(0);
 						for (String entity : Config.unlockedEntities) //iterate through unlockedEntities in Config 
 						{
-							if (entity.equalsIgnoreCase(((Entity) mob).getName()))
+							if (entity.equalsIgnoreCase(((Entity) mob).getName())) 
 								entities.add(mob);
 							if (this.maxProgress.get(i) < mob.getProgressOnDeath() && mob.getProgressOnDeath() != 100)
 								this.maxProgress.set(i, mob.getProgressOnDeath());
@@ -144,6 +147,14 @@ public class GuiEventBook extends GuiScreen
 	@Override
 	public void initGui() 
 	{
+		//set world and do onInitialSpawn (for mob portraits)
+		for (ArrayList<IEventMob> list : this.unlockedEntities)
+			for (IEventMob mob : list) {
+				if (((EntityLiving)mob).worldObj == null) 
+					((EntityLiving)mob).setWorld(mc.theWorld);
+				((EntityLiving)mob).onInitialSpawn(null, null);
+			}
+
 		int w = (this.width - this.bookImageWidth) / 2;
 		int h = (this.height - this.bookImageHeight) / 2;	
 		Keyboard.enableRepeatEvents(true);
@@ -162,7 +173,7 @@ public class GuiEventBook extends GuiScreen
 		buttonItemPages = new ArrayList<GuiButtonItemPage>();
 		for (int i=0; i<ModItems.drops.size(); i++)
 		{
-			buttonItemPages.add(new GuiButtonItemPage(i, 65, this.creative ? 23*i-45 : 23*i-33, 90, 20, ModItems.drops.get(i).getName(), this));
+			buttonItemPages.add(new GuiButtonItemPage(i, 65, this.creative ? 23*i-45 : 23*i-33, 98, 20, ModItems.drops.get(i).getName(), this));
 			buttonList.add(buttonItemPages.get(i));
 		}
 		for (int i=0; i<this.numNonEventTabs; i++)
@@ -178,7 +189,7 @@ public class GuiEventBook extends GuiScreen
 			{
 				for (int j=0; j<Event.EVENTS[i].mobs.size(); j++) //iterate through mobs in event
 				{
-					eventMobPages.add(new GuiButtonMobPage(i, 97, 23*j-80, 110, 20, ((Entity) Event.EVENTS[i].mobs.get(j)).getName(), this, Event.EVENTS[i].mobs.get(j)));
+					eventMobPages.add(new GuiButtonMobPage(i, 97, 20*j-85, 110, 20, ((Entity) Event.EVENTS[i].mobs.get(j)).getName(), this, Event.EVENTS[i].mobs.get(j)));
 					buttonList.add(eventMobPages.get(j));
 				}
 			}
@@ -209,7 +220,7 @@ public class GuiEventBook extends GuiScreen
 		if (currentTab == 0)
 			buttonNextPage.visible = currentPage < this.numIntroPages;
 		else if (currentTab == 1)
-			buttonNextPage.visible = currentPage < ModItems.drops.size();
+			buttonNextPage.visible = currentPage < Config.unlockedItems.size();//ModItems.drops.size();
 		else
 			buttonNextPage.visible = currentPage < this.unlockedEntities.get(currentTab-numNonEventTabs).size();
 		buttonPreviousPage.visible = currentPage > 0;
@@ -231,6 +242,12 @@ public class GuiEventBook extends GuiScreen
 		this.buttonStartEvent.visible = this.creative && this.currentTab > numNonEventTabs-1 && this.currentPage == 0;
 		this.buttonSummonMob.visible = this.creative && this.currentTab > numNonEventTabs-1 && this.currentPage > 0;
 		this.buttonGiveItem.visible = this.creative && this.currentTab < numNonEventTabs && this.nonEventTabs.get(this.currentTab).equals("Items") && this.currentPage > 0;
+	}
+
+	@Override
+	public boolean doesGuiPauseGame()
+	{
+		return false;
 	}
 
 	@Override
@@ -268,38 +285,35 @@ public class GuiEventBook extends GuiScreen
 			GlStateManager.popMatrix();
 
 			//mob portrait
-			if (this.unlockedEntities.get(currentTab-numNonEventTabs).get(currentPage-1) instanceof EntitySummonerZombie || this.unlockedEntities.get(currentTab-numNonEventTabs).get(currentPage-1) instanceof EntityMinionZombie)
-			{
-				if (Minecraft.getSystemTime() >= this.startTime + 1500L)
-				{
-					startTime = Minecraft.getSystemTime();
-					if (this.litPumpkin)
-					{
-						mc.getTextureManager().bindTexture(new ResourceLocation(MobEvents.MODID+":/textures/entity/"+((Entity) this.unlockedEntities.get(currentTab-numNonEventTabs).get(currentPage-1)).getName()+" Off"+".png"));
-						this.litPumpkin = false;
-					}
-					else
-					{
-						mc.getTextureManager().bindTexture(new ResourceLocation(MobEvents.MODID+":/textures/entity/"+((Entity) this.unlockedEntities.get(currentTab-numNonEventTabs).get(currentPage-1)).getName()+" On"+".png"));
-						this.litPumpkin = true;
-					}
-				}
-				else if (this.litPumpkin)
-					mc.getTextureManager().bindTexture(new ResourceLocation(MobEvents.MODID+":/textures/entity/"+((Entity) this.unlockedEntities.get(currentTab-numNonEventTabs).get(currentPage-1)).getName()+" On"+".png"));
-				else 
-					mc.getTextureManager().bindTexture(new ResourceLocation(MobEvents.MODID+":/textures/entity/"+((Entity) this.unlockedEntities.get(currentTab-numNonEventTabs).get(currentPage-1)).getName()+" Off"+".png"));
-			}
-			else
-				mc.getTextureManager().bindTexture(new ResourceLocation(MobEvents.MODID+":/textures/entity/"+((Entity) this.unlockedEntities.get(currentTab-numNonEventTabs).get(currentPage-1)).getName()+".png"));
+			EntityLiving entity = (EntityLiving) this.unlockedEntities.get(currentTab-numNonEventTabs).get(currentPage-1);
+			((IEventMob) entity).doSpecialRender();
 			GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
 			GlStateManager.pushMatrix();
-			scale = 0.25f;
+			scale = 40f;
 			GlStateManager.translate(w - 100, h, 0);
 			GlStateManager.scale(scale, scale, scale);
-			Gui.drawModalRectWithCustomSizedTexture(609, -248, 0, 0, this.entityImageWidth, this.entityImageHeight, this.entityImageWidth, this.entityImageHeight);
+			GlStateManager.rotate(180F, 0F, 0F, 1F);
+			GlStateManager.rotate(135.0F, 0.0F, 1, 0.0f);
+			RenderHelper.enableStandardItemLighting();
+			GlStateManager.rotate(-165.0F, 0.0F, 1, -0.0f);
+			GlStateManager.rotate(-10.0F, -1F, 0F, 0.5f);
+			entity.rotationYawHead = 0.0F;
+			entity.renderYawOffset = 0.0F;
+			this.partialTicks += 0.3F;
+			mc.getRenderManager().setPlayerViewY(-20f);
+			if (entity instanceof EntityRiderZombie) {
+				entity.hurtTime = 0;
+				((EntityLiving)entity.ridingEntity).rotationYawHead = 0.0F;
+				((EntityLiving)entity.ridingEntity).renderYawOffset = 0.0F;
+				mc.getRenderManager().renderEntityWithPosYaw(entity, -4D, -1.3D, 5.0D, 0.0F, this.partialTicks);
+				mc.getRenderManager().renderEntityWithPosYaw(entity.ridingEntity, -4D, -2D, 5.0D, 0.0F, this.partialTicks);
+			}
+			else
+				mc.getRenderManager().renderEntityWithPosYaw(entity, -4D, -1.5D, 5.0D, 0.0F, this.partialTicks);
+			RenderHelper.disableStandardItemLighting();
+			this.mc.entityRenderer.disableLightmap();
 			GlStateManager.popMatrix();
 		}
-
 		//Event text
 		if (this.currentTab > numNonEventTabs-1 && this.currentPage == 0)
 		{
@@ -350,12 +364,12 @@ public class GuiEventBook extends GuiScreen
 			double health = (((EntityLivingBase)mob).getEntityAttribute(SharedMonsterAttributes.maxHealth).getBaseValue())/2;
 			int healthOffset = (int) h+11;
 			/**Full armor*/
-			double armor = mob.getBookArmor()/2;
+			double armor = ((EntityLivingBase) mob).getTotalArmorValue()/2;
 			int armorOffset = (int) (healthOffset + 11*(health > 20 ? 1 : Math.ceil(health/10d)));
 			/**Hearts per hit on normal mode*/
 			double damage = ((((EntityLivingBase)mob).getEntityAttribute(SharedMonsterAttributes.attackDamage).getBaseValue()+mobWeaponDamage(mob)))/2;
 			int damageOffset = (int) (armorOffset + 11*(armor > 20 ? 1 : Math.ceil(armor/10d)));
-			int dropsOffset = damageOffset + 11;
+			int dropsOffset = (int) (damageOffset + 11*(damage > 20 ? 1 : Math.ceil(damage/10d)));
 			float x = w+3-this.fontRendererObj.getStringWidth(title)/2;
 			float y = h-30;
 			this.mc.fontRendererObj.drawString(EnumChatFormatting.BOLD+title, x, y, color, true);
@@ -367,11 +381,9 @@ public class GuiEventBook extends GuiScreen
 			this.mc.fontRendererObj.drawSplitString(EnumChatFormatting.BOLD.toString()+EnumChatFormatting.ITALIC+mob.getBookDescription(), 73, -26, 145, 0);
 			this.mc.fontRendererObj.drawString(EnumChatFormatting.BOLD+"Difficulty: "+mob.getProgressOnDeath(), 73, 2, 0, false);
 			this.mc.fontRendererObj.drawString(EnumChatFormatting.BOLD+"Health: "+(health>20 ? health+" x" : ""), 73, healthOffset-h+6, 0, false);
-			this.mc.fontRendererObj.drawString(EnumChatFormatting.BOLD+"Armor: "+(mob instanceof EntityCloneZombie ? EnumChatFormatting.RESET+"varies" : (armor>20 ? armor+" x" : "")), 73, armorOffset/scale-h/scale+2, 0, false);
-			this.mc.fontRendererObj.drawString(EnumChatFormatting.BOLD+"Damage: "+(mob instanceof EntityCloneZombie ? EnumChatFormatting.RESET+"varies" : ""), 73, damageOffset/scale-h/scale+2, 0, false);
+			this.mc.fontRendererObj.drawString(EnumChatFormatting.BOLD+"Armor: "+(armor>20 ? armor+" x" : ""), 73, armorOffset/scale-h/scale+2, 0, false);
+			this.mc.fontRendererObj.drawString(EnumChatFormatting.BOLD+"Damage: "+(damage>20 ? damage+" x" : ""), 73, damageOffset/scale-h/scale+2, 0, false);
 			this.mc.fontRendererObj.drawString(EnumChatFormatting.BOLD+"Drops: ", 73, dropsOffset/scale-h/scale+2, 0, false);
-			if (mob instanceof EntityCloneZombie)
-				this.mc.fontRendererObj.drawString("and any cloned items", 110, +73, 0, false);
 
 			RenderHelper.disableStandardItemLighting();
 			GlStateManager.popMatrix();
@@ -379,7 +391,7 @@ public class GuiEventBook extends GuiScreen
 			mc.getTextureManager().bindTexture(bookPageTexture);
 			//health
 			if (health > 20)
-				this.drawTexturedModalRect(w+26, healthOffset+1, 0, 133, 9, 9);
+				this.drawTexturedModalRect(w+3+this.fontRendererObj.getStringWidth(String.valueOf(health)), healthOffset+1, 0, 133, 9, 9);
 			else
 			{
 				for (int r=0; r<health/10; r++)//rows
@@ -387,62 +399,92 @@ public class GuiEventBook extends GuiScreen
 						this.drawTexturedModalRect(c*8+w-12, r*11+healthOffset, 0, 133, r == (int)health/10 && c == (int)Math.min(health-r*10, 10) && health % health == 0 ? 5 : 9, 9);
 			}
 			//armor
-			if (!(mob instanceof EntityCloneZombie))
+			if (armor > 20)
+				this.drawTexturedModalRect(w+2+this.fontRendererObj.getStringWidth(String.valueOf(armor)), armorOffset+1, 0, 143, 9, 8);
+			else
 			{
-				if (armor > 20)
-					this.drawTexturedModalRect(w+24, armorOffset+1, 0, 143, 9, 8);
-				else
-				{
-					for (int r=0; r<armor/10; r++)//rows
-						for (int c=0; c<Math.min(armor-r*10, 10); c++)//columns
-							this.drawTexturedModalRect(c*8+w-12, r*11+armorOffset, 0, 143, r == (int)armor/10 && c == (int)Math.min(armor-r*10, 10) && armor % armor == 0 ? 5 : 9, 8);
-				}
+				for (int r=0; r<armor/10; r++)//rows
+					for (int c=0; c<Math.min(armor-r*10, 10); c++)//columns
+						this.drawTexturedModalRect(c*8+w-12, r*11+armorOffset, 0, 143, r == (int)armor/10 && c == (int)Math.min(armor-r*10, 10) && armor % armor == 0 ? 5 : 9, 8);
 			}
 			//damage
-			if (!(mob instanceof EntityCloneZombie))
+			if (damage > 20) 
+				this.drawTexturedModalRect(w+6+this.fontRendererObj.getStringWidth(String.valueOf(damage)), damageOffset, 0, 152, 9, 8);
+			else
 			{
-				for (int i=0; i<damage; i++)
-					this.drawTexturedModalRect(i*8+w-8, damageOffset, 0, 152, i == (int)damage && damage % damage == 0 ? 5 : 9, 8);
+				for (int r=0; r<damage/10; r++)//rows
+					for (int c=0; c<Math.min(damage-r*10, 10); c++)//columns
+						this.drawTexturedModalRect(c*8+w-8, r*11+damageOffset, 0, 152, r == (int)damage && damage % damage == 0 ? 5 : 9, 8);
 			}
-
 			GlStateManager.pushMatrix();
 			scale = 0.781f;
 			GlStateManager.translate(w - 100, h, 0);
 			GlStateManager.scale(scale, scale, scale);
 			//drops
-			RenderHelper.enableStandardItemLighting();
-			ArrayList<ItemStack> list = new ArrayList<ItemStack>();//get rid of duplicates
+			ArrayList<ItemStack> drops = new ArrayList<ItemStack>();//get rid of duplicates
+			ArrayList<Double> dropChances = new ArrayList<Double>();//drop chances
 			if (mob.getBookDrops() != null)
 			{
-				for (ItemStack stack1 : mob.getBookDrops())
+				for (ItemStack stack1 : mob.getBookDrops())//get rid of duplicates
 				{
 					boolean add = true;
-					for (ItemStack stack2 : list)
+					for (ItemStack stack2 : drops)
 					{
 						if (stack1.getItem() == stack2.getItem())
 							add = false;
 					}
-					if (add)
-						list.add(stack1.copy());
+					if (add) 
+						drops.add(stack1.copy());
 				}
-				for (int i=0; i<list.size(); i++)//max items to display = 6                  
+				for (ItemStack stack1 : drops)//calculate drop chances
+				{
+					double chance = 0;
+					for (ItemStack stack2 : mob.getBookDrops())
+					{
+						if (stack1.getItem() == stack2.getItem())
+							chance++;//# occurrences
+					}
+					chance /= mob.getBookDrops().size();
+					int i = EnchantmentHelper.getLootingModifier(mc.thePlayer);
+					chance *= (double)100/(20 + i * 5);
+					chance = Math.round((chance / 10 * 10) * 10) / 10.0;
+					dropChances.add(chance); 
+				}
+				if (mob instanceof EntityCloneZombie) {//add cloned items
+					for (int i=0; i<4; i++) {
+						if (((EntityLiving)mob).getCurrentArmor(i) != null)
+						{
+							drops.add(((EntityLiving)mob).getCurrentArmor(i));
+							dropChances.add(5.0);
+						}
+					}
+					if (((EntityLiving)mob).getHeldItem() != null)
+					{
+						drops.add(((EntityLiving)mob).getHeldItem());
+						dropChances.add(5.0);
+					}
+				}
+				for (int i=0; i<drops.size(); i++)//max items to display = 6                  
 				{//min 110, max 200
-					int spaceBetween = 130/(list.size()+1);
+					int spaceBetween = 130/(drops.size()+1);
 					int xPos = 94 + (i+1)*spaceBetween;
 					int yPos = (int) (dropsOffset/scale-h/scale-2);
-					this.itemRender.renderItemAndEffectIntoGUI(list.get(i), xPos, yPos);
+					RenderHelper.enableGUIStandardItemLighting();
+					this.itemRender.renderItemAndEffectIntoGUI(drops.get(i), xPos, yPos);
 				}
-				for (int i=0; i<list.size(); i++)                  
+				for (int i=0; i<drops.size(); i++)                  
 				{
-					int spaceBetween = 130/(list.size()+1);
+					int spaceBetween = 130/(drops.size()+1);
 					int xPos = 94 + (i+1)*spaceBetween;
 					int yPos = (int) (dropsOffset/scale-h/scale-2);
 					int mX = (int) ((mouseX-w+100)/scale);
 					int mY = (int) ((mouseY-h)/scale);
-					if (mX >= xPos && mY >= yPos && mX < xPos + 16 && mY < yPos + 16)
-						this.drawHoveringText(list.get(i).getTooltip(this.editingPlayer, false), mX, mY);
+					if (mX >= xPos && mY >= yPos && mX < xPos + 16 && mY < yPos + 16) {
+						List<String> tooltip = drops.get(i).getTooltip(this.editingPlayer, false);
+						tooltip.add(EnumChatFormatting.DARK_PURPLE+""+EnumChatFormatting.BOLD+dropChances.get(i)+"% drop chance");
+						this.drawHoveringText(tooltip, mX, mY);
+					}
 				}
-				RenderHelper.disableStandardItemLighting();
 				GlStateManager.popMatrix();
 			}
 		}
@@ -509,7 +551,7 @@ public class GuiEventBook extends GuiScreen
 			{
 				String title = "Creative";
 				String text1 = "This Creative Event Book can only be obtained in creative mode.\n\n"
-						+ "It has all tabs and monsters unlocked.";
+						+ "It has all tabs, items, and monsters unlocked.";
 				String text2 = "This book has buttons that allow you to start and stop Events, summon monsters, and spawn in items.\n\n"
 						+ "These buttons are only visible in this Creative Event Book and have a purple glowing effect.";
 				float x = w+3-this.fontRendererObj.getStringWidth(title)/2;
@@ -533,18 +575,16 @@ public class GuiEventBook extends GuiScreen
 			}
 			else
 			{
-				IEventItem item = ModItems.drops.get(this.currentPage-1);
-				ItemStack stack = new ItemStack((Item) item);
-				if (item instanceof ItemSummonersHelm)
-					stack.addEnchantment(Enchantment.fireProtection, 5);
+				IEventItem item = this.unlockedItems.get(this.currentPage-1);//ModItems.drops.get(this.currentPage-1);
+				ItemStack stack = item.getItemStack();
 				String title = item.getName();
 				float x = w+3-this.fontRendererObj.getStringWidth(title)/2;
 				float y = h-30;
 				this.mc.fontRendererObj.drawString(EnumChatFormatting.BOLD+title, x, y, item.getColor(), true);
 				//dropped by
-				this.mc.fontRendererObj.drawString(EnumChatFormatting.BOLD+"Dropped by:", w-38, h+45, 0, false);
+				this.mc.fontRendererObj.drawString(EnumChatFormatting.BOLD+"Dropped by:", w-38, h+50, 0, false);
 				if (item.droppedBy().size() == 1)
-					this.mc.fontRendererObj.drawString(item.droppedBy().get(0), w-30, h+60, 0, false);
+					this.mc.fontRendererObj.drawString(item.droppedBy().get(0), w-38, h+65, 0, false);
 				//render item
 				RenderHelper.enableStandardItemLighting();
 				GlStateManager.pushMatrix();
@@ -575,35 +615,47 @@ public class GuiEventBook extends GuiScreen
 				this.drawTexturedModalRect(103, -17, 146, 6, 58, 77);
 				GlStateManager.popMatrix();
 				//player portrait
-				if (item instanceof ItemSummonersHelm)
-				{
-					if (Minecraft.getSystemTime() >= this.startTime + 1500L)
-					{
-						startTime = Minecraft.getSystemTime();
-						if (this.litPumpkin)
-						{
-							mc.getTextureManager().bindTexture(new ResourceLocation(MobEvents.MODID+":/textures/entity/"+item.getName()+" Off"+".png"));
-							this.litPumpkin = false;
-						}
-						else
-						{
-							mc.getTextureManager().bindTexture(new ResourceLocation(MobEvents.MODID+":/textures/entity/"+item.getName()+" On"+".png"));
-							this.litPumpkin = true;
-						}
+				EntityGuiPlayer player = new EntityGuiPlayer(mc.theWorld, mc.thePlayer.getGameProfile(), mc.thePlayer);
+				int slot = -1;
+				for (int i=0; i<5; i++)
+					if (((Item)item).isValidArmor(stack, i, player)) {
+						slot = i;
+						break;
 					}
-					else if (this.litPumpkin)
-						mc.getTextureManager().bindTexture(new ResourceLocation(MobEvents.MODID+":/textures/entity/"+item.getName()+" On"+".png"));
-					else 
-						mc.getTextureManager().bindTexture(new ResourceLocation(MobEvents.MODID+":/textures/entity/"+item.getName()+" Off"+".png"));
+				switch(slot)
+				{
+				case 0:
+					slot = 4;
+					break;
+				case 1:
+					slot = 3;
+					break;
+				case 2: 
+					slot = 2;
+					break;
+				case 3:
+					slot = 1;
+					break;
 				}
-				else
-					mc.getTextureManager().bindTexture(new ResourceLocation(MobEvents.MODID+":/textures/entity/"+item.getName()+".png"));
+				player.setCurrentItemOrArmor(slot, stack);
+				player.doSpecialRender();
 				GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
 				GlStateManager.pushMatrix();
-				scale = 0.25f;
+				scale = 40f;
 				GlStateManager.translate(w - 100, h, 0);
 				GlStateManager.scale(scale, scale, scale);
-				Gui.drawModalRectWithCustomSizedTexture(609, -248, 0, 0, this.entityImageWidth, this.entityImageHeight, this.entityImageWidth, this.entityImageHeight);
+				GlStateManager.rotate(180F, 0F, 0F, 1F);
+				GlStateManager.rotate(135.0F, 0.0F, 1, 0.0f);
+				RenderHelper.enableStandardItemLighting();
+				GlStateManager.rotate(-165.0F, 0.0F, 1, -0.0f);
+				GlStateManager.rotate(-10.0F, -1F, 0F, 0.5f);
+				player.rotationYawHead = 0.0F;
+				player.renderYawOffset = 0.0F;
+				this.partialTicks += 0.3F;
+				mc.getRenderManager().setPlayerViewY(-20f);
+				mc.getRenderManager().renderEntityWithPosYaw(player, -4D, -1.5D, 5.0D, 0.0F, this.partialTicks);
+				RenderHelper.disableStandardItemLighting();
+				this.mc.entityRenderer.disableLightmap();
 				GlStateManager.popMatrix();
 			}
 		}
@@ -633,7 +685,7 @@ public class GuiEventBook extends GuiScreen
 				{
 					Field field = ItemSword.class.getDeclaredField("attackDamage");
 					field.setAccessible(true);
-					return field.getFloat(stack.getItem());
+					return field.getFloat(stack.getItem()) + (float)EnchantmentHelper.func_152377_a(stack, EnumCreatureAttribute.UNDEFINED);
 				} 
 				catch (Exception e) { 
 					e.printStackTrace();
@@ -743,9 +795,9 @@ public class GuiEventBook extends GuiScreen
 		}
 		else if (button instanceof GuiButtonItemPage)
 		{
-			for (int i=0; i<this.buttonItemPages.size(); i++) //iterate through Item pages
+			for (int i=0; i<this.unlockedItems.size(); i++) //iterate through Item pages
 			{
-				if (ModItems.drops.get(i).getName().equals(button.displayString))
+				if (this.unlockedItems.get(i).getName().equals(button.displayString))
 				{
 					if (creative)
 						Config.currentCreativePage = i+1;

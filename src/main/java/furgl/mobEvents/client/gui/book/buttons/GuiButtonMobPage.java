@@ -48,7 +48,7 @@ public class GuiButtonMobPage extends GuiButton
 				GlStateManager.color(1F, 1F, 1F, 1.0F);
 
 			GlStateManager.pushMatrix();
-			scale = 0.8f;
+			scale = 0.7f;
 			float w = (book.width - this.width) / 2;
 			float h = (book.height - this.height) / 2;
 			GlStateManager.translate(w, h, 0);

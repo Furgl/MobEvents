@@ -1,6 +1,7 @@
 package furgl.mobEvents.common;
 
 import furgl.mobEvents.client.commands.CommandMobEvents;
+import furgl.mobEvents.client.gui.GuiHandler;
 import furgl.mobEvents.client.gui.achievements.Achievements;
 import furgl.mobEvents.client.gui.creativeTab.MobEventsCreativeTab;
 import furgl.mobEvents.client.gui.progressBar.GuiEventProgress;
@@ -13,6 +14,8 @@ import furgl.mobEvents.common.event.EventSetupEvent;
 import furgl.mobEvents.common.event.FireExtinguishEvent;
 import furgl.mobEvents.common.event.FirstJoinEvent;
 import furgl.mobEvents.common.event.ParticleUpdateEvent;
+import furgl.mobEvents.common.event.PreventBossLootExplosionEvent;
+import furgl.mobEvents.common.event.RenderThievesMaskEvent;
 import furgl.mobEvents.common.event.UnlockItemEvent;
 import furgl.mobEvents.common.item.ModItems;
 import furgl.mobEvents.common.tileentity.ModTileEntities;
@@ -60,6 +63,7 @@ public class MobEvents
 	@EventHandler
 	public void init(FMLInitializationEvent event)
 	{
+		NetworkRegistry.INSTANCE.registerGuiHandler(instance, new GuiHandler());
 		proxy.registerRenders();
 		proxy.registerAchievements();
 		registerEventListeners();
@@ -84,6 +88,8 @@ public class MobEvents
 		MinecraftForge.EVENT_BUS.register(new FirstJoinEvent());
 		MinecraftForge.EVENT_BUS.register(new CancelFireOverlayEvent());
 		MinecraftForge.EVENT_BUS.register(new UnlockItemEvent());
+		MinecraftForge.EVENT_BUS.register(new RenderThievesMaskEvent());
+		MinecraftForge.EVENT_BUS.register(new PreventBossLootExplosionEvent());
 	}
 	
 	private void registerPackets()

@@ -1,0 +1,8 @@
+{
+    "variants": {
+        "facing=east": { "model": "mobevents:boss_loot" },
+		"facing=west": { "model": "mobevents:boss_loot" },
+		"facing=north": { "model": "mobevents:boss_loot" },
+		"facing=south": { "model": "mobevents:boss_loot" }
+    }
+}

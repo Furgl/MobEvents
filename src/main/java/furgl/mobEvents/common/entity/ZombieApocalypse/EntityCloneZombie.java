@@ -33,8 +33,6 @@ public class EntityCloneZombie extends EntityEventZombie
 	public void setBookDescription()
 	{
 		this.bookDescription = "Copies a nearby player's best armor and weapon.";
-		this.addDrops(Items.iron_ingot, 2);
-		this.addDrops(Items.gold_ingot, 2);
 		this.addDrops(Items.emerald, 1);
 		this.addDrops(Items.diamond, 1);
 	}
@@ -53,6 +51,11 @@ public class EntityCloneZombie extends EntityEventZombie
 	{ 
 		if (this.worldObj == null)
 			return;
+		this.setCurrentItemOrArmor(0, null);
+		this.setCurrentItemOrArmor(1, null);
+		this.setCurrentItemOrArmor(2, null);
+		this.setCurrentItemOrArmor(3, null);
+		this.setCurrentItemOrArmor(4, null);
 		EntityPlayer player = this.worldObj.getClosestPlayerToEntity(this, -1);
 		if (player != null)
 		{
@@ -65,9 +68,10 @@ public class EntityCloneZombie extends EntityEventZombie
 			stacks.addAll(Arrays.asList(player.inventory.armorInventory));
 			copyBestEquipment(stacks);
 			for (int i=0; i<this.equipmentDropChances.length; i++)
-				this.setEquipmentDropChance(i, 0.25f / this.equipmentDropChances.length);
+				this.setEquipmentDropChance(i, 0.05f); //% chance matched in book (manually)
 			this.setAttackTarget(player);
 		}
+		super.setEquipmentBasedOnDifficulty(difficulty);
 	}
 
 	public void copyBestEquipment(ArrayList<ItemStack> stacks)

@@ -52,8 +52,7 @@ public class EntityRuntZombie extends EntityEventZombie
 		this.setCurrentItemOrArmor(2, new ItemStack(Items.leather_leggings));
 		this.setCurrentItemOrArmor(3, new ItemStack(Items.leather_chestplate));
 		this.setCurrentItemOrArmor(4, new ItemStack(Items.leather_helmet));
-		for (int i=0; i<5; i++)
-			this.setEquipmentDropChance(i, 0.01f);
+		super.setEquipmentBasedOnDifficulty(difficulty);
 	}
 
 	@Override

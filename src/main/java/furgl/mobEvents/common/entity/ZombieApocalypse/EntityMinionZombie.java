@@ -18,13 +18,16 @@ public class EntityMinionZombie extends EntityEventZombie
 		this.setBookDescription();
 		this.progressOnDeath = 1;
 	}
-	
+
 	@Override
 	public void setBookDescription()
 	{
 		this.bookDescription = "A tiny Zombie Summoner's minion.";
-		this.addDrops(Items.gold_ingot, 1);
-		this.addDrops(Items.golden_apple, 1);
+		this.addDrops(Items.gold_ingot, 3);
+		this.addDrops(Items.golden_apple, 3);
+		this.addDrops(Items.glowstone_dust, 2);
+		this.addDrops(Item.getItemFromBlock(Blocks.gold_ore), 1);
+		this.addDrops(Item.getItemFromBlock(Blocks.glowstone), 1);
 	}
 
 	@Override
@@ -33,7 +36,15 @@ public class EntityMinionZombie extends EntityEventZombie
 		super.onUpdate();
 
 		//swap pumpkin head
-		if (!this.worldObj.isRemote && this.ticksExisted % 30 == 0)
+		if (!this.worldObj.isRemote)
+			this.doSpecialRender();
+	}
+
+	@Override
+	public void doSpecialRender() 
+	{ 
+		//swap pumpkin head
+		if (this.worldObj.getTotalWorldTime() % 30 == 0)
 		{
 			if (this.getCurrentArmor(3) != null && this.getCurrentArmor(3).getItem() == Item.getItemFromBlock(Blocks.pumpkin))
 			{
@@ -58,7 +69,6 @@ public class EntityMinionZombie extends EntityEventZombie
 	@Override
 	protected void setEquipmentBasedOnDifficulty(DifficultyInstance difficulty) 
 	{ 
-		//TODO held item?
 		ItemStack stack = new ItemStack(Items.golden_boots);
 		EnchantmentHelper.addRandomEnchantment(rand, stack, 10);
 		this.setCurrentItemOrArmor(1, stack);
@@ -70,8 +80,7 @@ public class EntityMinionZombie extends EntityEventZombie
 		this.setCurrentItemOrArmor(3, stack);
 		stack = new ItemStack(Item.getItemFromBlock(Blocks.pumpkin));
 		this.setCurrentItemOrArmor(4, stack);
-		for (int i=0; i<this.equipmentDropChances.length; i++)
-			this.setEquipmentDropChance(i, 0.02f);
+		super.setEquipmentBasedOnDifficulty(difficulty);
 	}
 
 	@Override

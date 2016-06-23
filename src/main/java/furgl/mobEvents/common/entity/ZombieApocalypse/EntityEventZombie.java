@@ -43,7 +43,6 @@ public class EntityEventZombie extends EntityZombie implements IEventMob
 	public boolean summoned;
 	public String bookDescription;
 	public ArrayList<ItemStack> bookDrops;
-	public int bookArmor;
 	/**Wave that mob thinks it is currently*/
 	public int currentWave;
 
@@ -52,7 +51,6 @@ public class EntityEventZombie extends EntityZombie implements IEventMob
 		super(world);
 		if (world == null)
 			this.setEquipmentBasedOnDifficulty(null);
-		this.bookArmor = this.getTotalArmorValue();
 		this.currentWave = Event.currentWave;
 	}
 
@@ -60,7 +58,6 @@ public class EntityEventZombie extends EntityZombie implements IEventMob
 	{
 		this.bookDescription = "";
 		this.bookDrops = new ArrayList<ItemStack>();
-		this.bookArmor = 0;
 	}
 
 	@Override
@@ -75,6 +72,12 @@ public class EntityEventZombie extends EntityZombie implements IEventMob
 		super.entityInit();
 		this.getDataWatcher().addObject(20, Byte.valueOf((byte)0)); //summoned
 	}
+	
+	@Override
+	public boolean interact(EntityPlayer player)
+    {
+		return false;
+    }
 
 	@Override
 	public void setNoAI(boolean disable)
@@ -92,7 +95,7 @@ public class EntityEventZombie extends EntityZombie implements IEventMob
 			this.currentWave = Event.currentWave;
 			this.playLivingSound();
 		}
-		
+
 		//set summoned from datawatcher
 		if (this.ticksExisted == 1 && this.worldObj.isRemote && this.getDataWatcher().getWatchableObjectByte(20) == 1)
 		{
@@ -125,6 +128,8 @@ public class EntityEventZombie extends EntityZombie implements IEventMob
 				{
 					if (this instanceof EntityBardZombie)
 						Minecraft.getMinecraft().getSoundHandler().stopSounds();
+					else if (this instanceof EntityThiefZombie)
+						this.onDeath(DamageSource.outOfWorld);
 					this.playSound(this.getDeathSound(), this.getSoundVolume(), this.getSoundPitch());
 				}
 			}
@@ -225,7 +230,15 @@ public class EntityEventZombie extends EntityZombie implements IEventMob
 	}
 
 	@Override
-	protected void setEquipmentBasedOnDifficulty(DifficultyInstance difficulty) { }
+	protected void setEquipmentBasedOnDifficulty(DifficultyInstance difficulty) 
+	{ 
+		for (int i=0; i<5; i++)
+			this.setEquipmentDropChance(i, 0.01f);
+		if (this.armorColor > -1)
+			for (int i=0; i<4; i++)
+				if (this.getCurrentArmor(i) != null && this.getCurrentArmor(i).getItem() instanceof ItemArmor && ((ItemArmor)this.getCurrentArmor(i).getItem()).getArmorMaterial() == ItemArmor.ArmorMaterial.LEATHER)
+					((ItemArmor)this.getCurrentArmor(i).getItem()).setColor(this.getCurrentArmor(i), this.armorColor);
+	}
 
 	@Override
 	protected void addRandomDrop()
@@ -273,7 +286,7 @@ public class EntityEventZombie extends EntityZombie implements IEventMob
 		Config.unlockedEntities.add(this.getName());
 		Config.syncToConfig(player);
 		if (!player.worldObj.isRemote)
-			MinecraftServer.getServer().getConfigurationManager().sendChatMsg(new ChatComponentTranslation("Unlocked information about "+this.getName()+"s in the Event Book").setChatStyle(new ChatStyle().setItalic(true).setColor(EnumChatFormatting.DARK_GRAY)));
+			MinecraftServer.getServer().getConfigurationManager().sendChatMsg(new ChatComponentTranslation("Unlocked information about "+(this instanceof EntityThiefZombie ? "Zombie Thieve" : this.getName())+"s in the Event Book").setChatStyle(new ChatStyle().setItalic(true).setColor(EnumChatFormatting.DARK_GRAY)));
 	}
 
 	@Override
@@ -314,15 +327,11 @@ public class EntityEventZombie extends EntityZombie implements IEventMob
 	}
 
 	@Override
-	public int getBookArmor() 
-	{
-		return this.bookArmor;
-	}
-
-	@Override
 	public int getProgressOnDeath() 
 	{
 		return this.progressOnDeath;
 	}
-
+	
+	@Override
+	public void doSpecialRender() { }
 }

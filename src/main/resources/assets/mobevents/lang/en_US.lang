@@ -5,6 +5,8 @@ entity.mobEvents.riderZombie.name=Zombie Rider
 entity.mobEvents.summonerZombie.name=Zombie Summoner
 entity.mobEvents.minionZombie.name=Zombie Minion
 entity.mobEvents.cloneZombie.name=Zombie Clone
+entity.mobEvents.jumperZombie.name=Zombie Jumper
+entity.mobEvents.thiefZombie.name=Zombie Thief
 
 item.event_book.name=Event Book
 item.creative_event_book.name=Creative Event Book
@@ -19,14 +21,19 @@ item.record4.name=Music Disc
 item.record.record4.desc=Record 4
 
 item.summoners_helm.name=Summoner's Helm
+item.double_jump_boots.name=Double Jump Boots
+item.thieves_mask.name=Thieve's Mask
 
-item.zombie_bard.name=Spawn Bard
-item.zombie_clone.name=Spawn Clone
-item.zombie_minion.name=Spawn Minion
-item.zombie_pyromaniac.name=Spawn Pyromaniac
-item.zombie_rider.name=Spawn Rider
-item.zombie_runt.name=Spawn Runt
-item.zombie_summoner.name=Spawn Summoner
+item.zombie_bard.name=Spawn Zombie Bard
+item.zombie_clone.name=Spawn Zombie Clone
+item.zombie_minion.name=Spawn Zombie Minion
+item.zombie_pyromaniac.name=Spawn Zombie Pyromaniac
+item.zombie_rider.name=Spawn Zombie Rider
+item.zombie_runt.name=Spawn Zombie Runt
+item.zombie_summoner.name=Spawn Zombie Summoner
+item.zombie_jumper.name=Spawn Zombie Jumper
+item.zombie_thief.name=Spawn Zombie Thief
+item.zombie_boss_spawner.name=Spawn Zombie Boss Spawner
 
 itemGroup.tabMobEvents=Mob Events
 

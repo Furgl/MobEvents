@@ -4,7 +4,7 @@ package furgl.mobEvents.common.entity.ZombieApocalypse;
 import java.util.ArrayList;
 
 import furgl.mobEvents.common.item.ModItems;
-import net.minecraft.enchantment.Enchantment;
+import furgl.mobEvents.common.item.drops.ItemSummonersHelm;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.IEntityLivingData;
 import net.minecraft.entity.SharedMonsterAttributes;
@@ -44,7 +44,7 @@ public class EntitySummonerZombie extends EntityEventZombie
 					summons.add((EntityEventZombie)zombie);
 		}
 	}
-	
+
 	@Override
 	public void setBookDescription()
 	{
@@ -54,9 +54,7 @@ public class EntitySummonerZombie extends EntityEventZombie
 		this.addDrops(Items.golden_apple, 3);
 		this.addDrops(Items.emerald, 2);
 		this.addDrops(Items.diamond, 2);
-		ItemStack stack = new ItemStack(ModItems.summonersHelm);
-		stack.addEnchantment(Enchantment.fireProtection, 5);
-		this.addDrops(stack, 2);
+		this.addDrops(((ItemSummonersHelm) ModItems.summonersHelm).getItemStack(), 2);
 	}
 
 	@Override
@@ -114,30 +112,38 @@ public class EntitySummonerZombie extends EntityEventZombie
 			this.worldObj.spawnParticle(EnumParticleTypes.SMOKE_LARGE, this.posX+rand.nextDouble()-0.5D, this.posY+rand.nextDouble()-0.5D, this.posZ+rand.nextDouble()-0.5D, 0, 0, 0, 0);
 
 		//swap pumpkin head
-		if (!this.worldObj.isRemote && this.ticksExisted % 30 == 0)
+		if (!this.worldObj.isRemote)
+			this.doSpecialRender();
+
+		if (this.summonCooldown > 0)
+			this.summonCooldown--;
+	}
+
+	@Override
+	public void doSpecialRender() 
+	{ 
+		//swap pumpkin head
+		if (this.worldObj.getTotalWorldTime() % 30 == 0)
 		{
 			if (this.getCurrentArmor(3) != null && this.getCurrentArmor(3).getItem() == Item.getItemFromBlock(Blocks.pumpkin))
 			{
 				this.setCurrentItemOrArmor(4, new ItemStack(Item.getItemFromBlock(Blocks.lit_pumpkin)));
-				this.worldObj.playSoundEffect(this.posX, this.posY, this.posZ, "fire.ignite", 1.0F, rand.nextFloat()+0.0F);
+				this.worldObj.playSoundEffect(this.posX, this.posY, this.posZ, "fire.ignite", 1.0F, this.worldObj.rand.nextFloat()+0.0F);
 				this.setFire(30);
 			}
 			else if (this.getCurrentArmor(3) != null && this.getCurrentArmor(3).getItem() == Item.getItemFromBlock(Blocks.lit_pumpkin))
 			{
 				this.setCurrentItemOrArmor(4, new ItemStack(Item.getItemFromBlock(Blocks.pumpkin)));
-				this.worldObj.playSoundEffect(this.posX, this.posY, this.posZ, "random.fizz", 1.0F, rand.nextFloat()/2+1.1F);
+				this.worldObj.playSoundEffect(this.posX, this.posY, this.posZ, "random.fizz", 1.0F, this.worldObj.rand.nextFloat()/2+1.1F);
 				this.extinguish();
 			}
 		}
-
-		if (this.summonCooldown > 0)
-			this.summonCooldown--;
 	}
-	
+
 	@Override
 	protected String getLivingSound()
 	{
-        return "mob.blaze.breathe";
+		return "mob.blaze.breathe";
 	}
 
 	@Override
@@ -165,6 +171,7 @@ public class EntitySummonerZombie extends EntityEventZombie
 		this.setCurrentItemOrArmor(3, stack);
 		stack = new ItemStack(Item.getItemFromBlock(Blocks.pumpkin));
 		this.setCurrentItemOrArmor(4, stack);
+		super.setEquipmentBasedOnDifficulty(difficulty);
 		for (int i=0; i<this.equipmentDropChances.length; i++)
 			this.setEquipmentDropChance(i, i == 4 ? 0f : 0.08f);
 	}

@@ -3,6 +3,8 @@ package furgl.mobEvents.client.commands;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang3.math.NumberUtils;
+
 import furgl.mobEvents.common.Events.Event;
 import furgl.mobEvents.common.config.Config;
 import net.minecraft.command.CommandException;
@@ -48,7 +50,7 @@ public class CommandMobEvents implements ICommand
 	@Override
 	public void processCommand(ICommandSender sender, String[] args) throws CommandException 
 	{
-		if (args.length == 2 && args[0].equals("setEvent"))
+		if (args.length == 2 && args[0].equalsIgnoreCase("setEvent"))
 		{	
 			Event event = Event.stringToEvent(args[1].replace("_", " "));
 			if (event.getClass() != Event.class)
@@ -59,7 +61,7 @@ public class CommandMobEvents implements ICommand
 			else if (args[1].equalsIgnoreCase("none"))
 				Event.currentEvent.stopEvent();				
 		}
-		else if (args.length == 2 && args[0].equals("moveGui"))
+		else if (args.length == 2 && args[0].equalsIgnoreCase("moveGui"))
 		{
 			for (String location : Config.eventProgressGuiLocations)
 				if (args[1].equalsIgnoreCase(location.replace(" ", "_")))
@@ -67,6 +69,14 @@ public class CommandMobEvents implements ICommand
 					Config.eventProgressGuiLocation = location;
 					Config.syncToConfig(null);
 				}
+		}
+		else if (args.length == 2 && args[0].equalsIgnoreCase("setWave"))
+		{
+			if (NumberUtils.isNumber(args[1]) && Integer.valueOf(args[1]) >= 0 && Integer.valueOf(args[1]) <= 4 && Event.currentEvent.getClass() != Event.class)
+			{
+				Event.currentEvent.startWave(Integer.valueOf(args[1]));
+				Config.syncToConfig(null);
+			}
 		}
 	}
 
@@ -84,24 +94,35 @@ public class CommandMobEvents implements ICommand
 	@Override
 	public List<String> addTabCompletionOptions(ICommandSender sender, String[] args, BlockPos pos) 
 	{
+		ArrayList<String> list = null;
+
 		if (args.length == 1)
 		{
-			ArrayList<String> list = new ArrayList<String>();
+			list = new ArrayList<String>();
 			list.add("setEvent");
 			list.add("moveGui");
+			list.add("setWave");
 			return list;
 		}
 		else if (args.length == 2 && args[0].equalsIgnoreCase("setEvent"))
 			return CommandMobEvents.events;
 		else if (args.length == 2 && args[0].equalsIgnoreCase("moveGui"))
 		{
-			ArrayList<String> list = new ArrayList<String>();
+			list = new ArrayList<String>();
 			for (String location : Config.eventProgressGuiLocations)
 				list.add(location.replace(" ", "_"));
 			return list;
 		}
-		else
-			return null;
+		else if (args.length == 2 && args[0].equalsIgnoreCase("setWave"))
+		{
+			list = new ArrayList<String>();
+			list.add("0");
+			list.add("1");
+			list.add("2");
+			list.add("3");
+			list.add("4");
+		}
+		return list;
 	}
 
 	@Override

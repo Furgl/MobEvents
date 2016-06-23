@@ -2,18 +2,22 @@ package furgl.mobEvents.client;
 
 import furgl.mobEvents.client.gui.achievements.Achievements;
 import furgl.mobEvents.client.gui.book.GuiEventBook;
-import furgl.mobEvents.client.gui.progressBar.GuiEventProgress;
+import furgl.mobEvents.client.model.entity.ModelZombieThief;
 import furgl.mobEvents.client.particle.EntitySummonerZombieSmokeFX;
 import furgl.mobEvents.client.renderer.entity.RenderEventZombie;
 import furgl.mobEvents.common.CommonProxy;
 import furgl.mobEvents.common.block.ModBlocks;
+import furgl.mobEvents.common.entity.EntityGuiPlayer;
 import furgl.mobEvents.common.entity.ZombieApocalypse.EntityBardZombie;
+import furgl.mobEvents.common.entity.ZombieApocalypse.EntityBossZombieSpawner;
 import furgl.mobEvents.common.entity.ZombieApocalypse.EntityCloneZombie;
+import furgl.mobEvents.common.entity.ZombieApocalypse.EntityJumperZombie;
 import furgl.mobEvents.common.entity.ZombieApocalypse.EntityMinionZombie;
 import furgl.mobEvents.common.entity.ZombieApocalypse.EntityPyromaniacZombie;
 import furgl.mobEvents.common.entity.ZombieApocalypse.EntityRiderZombie;
 import furgl.mobEvents.common.entity.ZombieApocalypse.EntityRuntZombie;
 import furgl.mobEvents.common.entity.ZombieApocalypse.EntitySummonerZombie;
+import furgl.mobEvents.common.entity.ZombieApocalypse.EntityThiefZombie;
 import furgl.mobEvents.common.entity.ZombieApocalypse.EntityZombieHorse;
 import furgl.mobEvents.common.item.ModItems;
 import furgl.mobEvents.util.EntitySpawner;
@@ -21,6 +25,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.ModelHorse;
 import net.minecraft.client.particle.EntityFX;
 import net.minecraft.client.renderer.entity.RenderHorse;
+import net.minecraft.client.renderer.entity.RenderPlayer;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.stats.Achievement;
 import net.minecraft.util.Vec3;
@@ -30,8 +35,6 @@ import net.minecraftforge.fml.client.registry.RenderingRegistry;
 
 public class ClientProxy extends CommonProxy
 {
-	GuiEventProgress gui;
-	
 	@Override
 	public void registerRenders() 
 	{	
@@ -43,6 +46,8 @@ public class ClientProxy extends CommonProxy
 	@SuppressWarnings("deprecation")
 	private void registerEntityRenders() 
 	{
+		RenderingRegistry.registerEntityRenderingHandler(EntityGuiPlayer.class, new RenderPlayer(Minecraft.getMinecraft().getRenderManager()));
+		
 		RenderingRegistry.registerEntityRenderingHandler(EntityRuntZombie.class, new RenderEventZombie(Minecraft.getMinecraft().getRenderManager()));
 		RenderingRegistry.registerEntityRenderingHandler(EntityPyromaniacZombie.class, new RenderEventZombie(Minecraft.getMinecraft().getRenderManager()));
 		RenderingRegistry.registerEntityRenderingHandler(EntityRiderZombie.class, new RenderEventZombie(Minecraft.getMinecraft().getRenderManager()));
@@ -51,6 +56,10 @@ public class ClientProxy extends CommonProxy
 		RenderingRegistry.registerEntityRenderingHandler(EntityCloneZombie.class, new RenderEventZombie(Minecraft.getMinecraft().getRenderManager()));
 		RenderingRegistry.registerEntityRenderingHandler(EntitySummonerZombie.class, new RenderEventZombie(Minecraft.getMinecraft().getRenderManager()));
 		RenderingRegistry.registerEntityRenderingHandler(EntityMinionZombie.class, new RenderEventZombie(Minecraft.getMinecraft().getRenderManager()));
+		RenderingRegistry.registerEntityRenderingHandler(EntityJumperZombie.class, new RenderEventZombie(Minecraft.getMinecraft().getRenderManager()));
+		RenderingRegistry.registerEntityRenderingHandler(EntityThiefZombie.class, new RenderEventZombie(Minecraft.getMinecraft().getRenderManager(), new ModelZombieThief()));
+		
+		RenderingRegistry.registerEntityRenderingHandler(EntityBossZombieSpawner.class, new RenderEventZombie(Minecraft.getMinecraft().getRenderManager()));
 	}
 	
 	@Override

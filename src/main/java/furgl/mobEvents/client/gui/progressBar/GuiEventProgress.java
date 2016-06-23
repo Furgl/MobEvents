@@ -36,14 +36,14 @@ public class GuiEventProgress extends Gui
 		int xPos;
 		int yPos;
 		//if left
-		if (Config.eventProgressGuiLocation.equals(Config.eventProgressGuiLocations[Config.TOP_LEFT]) || Config.eventProgressGuiLocation.equals(Config.eventProgressGuiLocations[Config.BOTTOM_LEFT]))
+		if (Config.eventProgressGuiLocation.equalsIgnoreCase(Config.eventProgressGuiLocations[Config.TOP_LEFT]) || Config.eventProgressGuiLocation.equalsIgnoreCase(Config.eventProgressGuiLocations[Config.BOTTOM_LEFT]))
 			xPos = 2;
-		else
+		else//if right
 			xPos = sr.getScaledWidth() - 125;
-		//if right
-		if (Config.eventProgressGuiLocation.equals(Config.eventProgressGuiLocations[Config.TOP_LEFT]) || Config.eventProgressGuiLocation.equals(Config.eventProgressGuiLocations[Config.TOP_RIGHT]))
+		//if top
+		if (Config.eventProgressGuiLocation.equalsIgnoreCase(Config.eventProgressGuiLocations[Config.TOP_LEFT]) || Config.eventProgressGuiLocation.equalsIgnoreCase(Config.eventProgressGuiLocations[Config.TOP_RIGHT]))
 			yPos = 2;
-		else
+		else//if bottom
 			yPos = sr.getScaledHeight() - 42;
 		this.mc.getTextureManager().bindTexture(texture);
 
@@ -55,8 +55,8 @@ public class GuiEventProgress extends Gui
 		GlStateManager.enableBlend();
 		drawTexturedModalRect(xPos, yPos, 0, 0, 123, 40);
 		// You can keep drawing without changing anything
-		int manabarwidth = (int)(((double)Event.progress / (double)Event.progressNeededForBoss) * 104);
-		drawTexturedModalRect(xPos + 9, yPos + 29, 0, 40, manabarwidth, 3);
+		int progressBarWidth = (int)(((double)Event.progress / (double)Event.progressNeededForBoss) * 104);
+		drawTexturedModalRect(xPos + 9, yPos + 29, 0, 40, progressBarWidth, 3);
 		String s = Event.currentEvent.toString();
 		yPos += 6;
 		xPos += 60 - this.mc.fontRendererObj.getStringWidth(s)/2;
@@ -64,13 +64,13 @@ public class GuiEventProgress extends Gui
 		this.mc.fontRendererObj.drawString(s, xPos - 1, yPos, 0);
 		this.mc.fontRendererObj.drawString(s, xPos, yPos + 1, 0);
 		this.mc.fontRendererObj.drawString(s, xPos, yPos - 1, 0);
-		this.mc.fontRendererObj.drawString(s, xPos, yPos, 1572663);
+		this.mc.fontRendererObj.drawString(s, xPos, yPos, Event.currentEvent.color);
 		yPos += 11;
 		xPos += this.mc.fontRendererObj.getStringWidth(s)/2;
 		if (Event.currentWave == 0)
 			s = "";
 		else
-			s = Event.progress < Event.progressNeededForBoss ? "Wave " + Event.currentWave : "Boss Wave";
+			s = Event.currentWave < 4 ? "Wave " + Event.currentWave : "Boss Wave";
 		xPos -= this.mc.fontRendererObj.getStringWidth(s)/2;
 		this.mc.fontRendererObj.drawString(s, xPos + 1, yPos, 0);
 		this.mc.fontRendererObj.drawString(s, xPos - 1, yPos, 0);

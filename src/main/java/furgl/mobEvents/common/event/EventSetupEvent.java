@@ -27,7 +27,7 @@ public class EventSetupEvent
 	}
 
 	@SubscribeEvent(priority=EventPriority.NORMAL, receiveCanceled=true)
-	public void onConfigChanged(final ConfigChangedEvent.OnConfigChangedEvent event) 
+	public void onEvent(final ConfigChangedEvent.OnConfigChangedEvent event) 
 	{
 		if (event.modID.equals(MobEvents.MODID)) 
 			Config.syncFromConfig(null);
@@ -39,7 +39,7 @@ public class EventSetupEvent
 		if (event.world.provider.getDimensionId() == 0 && !event.world.isRemote)
 		{
 			Event.world = event.world;
-			Event.currentEvent.stopEvent();
+			//Event.currentEvent.stopEvent();
 		}
 	}
 
@@ -50,8 +50,10 @@ public class EventSetupEvent
 		{
 			if (Event.currentEvent.getClass() != Event.class)
 			{
-				if (EventSetupEvent.timeTillWave1-- == 0)
-					Event.currentEvent.wave1();
+				if (Event.currentWave == 0 && EventSetupEvent.timeTillWave1 < 0)
+					EventSetupEvent.timeTillWave1 = 200;
+				if (--EventSetupEvent.timeTillWave1 == 0)
+					Event.currentEvent.startWave(1);
 				Event.currentEvent.onUpdate();
 			}
 			if (Event.world.isDaytime() && this.lastTickTime == 2) //just turned day

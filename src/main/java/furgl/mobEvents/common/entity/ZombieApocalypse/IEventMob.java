@@ -9,5 +9,5 @@ public interface IEventMob
 	public int getProgressOnDeath();
 	public String getBookDescription();
 	public ArrayList<ItemStack> getBookDrops();
-	public int getBookArmor();
+	public void doSpecialRender();
 }

@@ -34,7 +34,7 @@ public class EntityBardZombie extends EntityEventZombie
 		this.progressOnDeath = 4;
 		this.maxSpawnedInChunk = 1;
 	}
-	
+
 	@Override
 	public void setBookDescription()
 	{
@@ -43,14 +43,14 @@ public class EntityBardZombie extends EntityEventZombie
 		this.addDrops(Item.getItemFromBlock(Blocks.jukebox), 1);
 		this.addDrops(Items.record_11, 1);
 	}
-	
+
 	@Override
 	protected void addRandomDrop()
 	{
 		bookDrops.remove(3); //remove record
 		super.addRandomDrop();
 	}
-	
+
 	@Override
 	protected void applyEntityAttributes()
 	{
@@ -62,24 +62,12 @@ public class EntityBardZombie extends EntityEventZombie
 	public void onLivingUpdate()
 	{
 		super.onLivingUpdate();
-		this.worldObj.getBiomeGenForCoords(this.getPosition()).setColor(1);
-		//Armor color and notes
-		if (this.worldObj.isRemote)
-		{
-			for (int i=0; i<4; i++)
-			{
-				if (this.getCurrentArmor(i) != null && this.getCurrentArmor(i).getItem() instanceof ItemArmor && ((ItemArmor)this.getCurrentArmor(i).getItem()).getColor(this.getCurrentArmor(i)) != -1)
-				{
-					int color = ((ItemArmor)this.getCurrentArmor(i).getItem()).getColor(this.getCurrentArmor(i));
-					color = color + 5 >= 16777215 ? 0 : color + 5;
-					((ItemArmor)this.getCurrentArmor(i).getItem()).setColor(this.getCurrentArmor(i), color);
-				}
-			}
-
-			if (rand.nextInt(2) == 0)
-				this.worldObj.spawnParticle(EnumParticleTypes.NOTE, this.posX-2.5D+rand.nextDouble()*4, this.posY+1.0D+rand.nextDouble()*2, this.posZ-2.5D+rand.nextDouble()*4, rand.nextDouble(), 0, 0, null);
-		}
 		
+		this.worldObj.getBiomeGenForCoords(this.getPosition()).setColor(1);
+
+		//Armor color and notes
+		this.doSpecialRender();
+
 		//Bard's boost
 		if (!this.isAIDisabled() && this.isPlaying > 0 && this.ticksExisted % 100 == 0)
 		{
@@ -103,6 +91,26 @@ public class EntityBardZombie extends EntityEventZombie
 
 		if (this.isPlaying > 0)
 			this.isPlaying--;
+	}
+
+	@Override
+	public void doSpecialRender() 
+	{ 
+		if (this.worldObj.isRemote)
+		{
+			for (int i=0; i<4; i++)
+			{
+				if (this.getCurrentArmor(i) != null && this.getCurrentArmor(i).getItem() instanceof ItemArmor && ((ItemArmor)this.getCurrentArmor(i).getItem()).getColor(this.getCurrentArmor(i)) != -1)
+				{
+					int color = ((ItemArmor)this.getCurrentArmor(i).getItem()).getColor(this.getCurrentArmor(i));
+					color = color + 5 >= 16777215 ? 0 : color + 5;
+					((ItemArmor)this.getCurrentArmor(i).getItem()).setColor(this.getCurrentArmor(i), color);
+				}
+			}
+
+			if (rand.nextInt(2) == 0)
+				this.worldObj.spawnParticle(EnumParticleTypes.NOTE, this.posX-2.5D+rand.nextDouble()*4, this.posY+1.0D+rand.nextDouble()*2, this.posZ-2.5D+rand.nextDouble()*4, rand.nextDouble(), 0, 0, null);
+		}
 	}
 
 	@Override
@@ -144,17 +152,11 @@ public class EntityBardZombie extends EntityEventZombie
 		add(Items.record_blocks);add(Items.record_cat);add(Items.record_chirp);add(Items.record_far);add(Items.record_mall);
 		add(Items.record_mellohi);add(Items.record_stal);add(Items.record_strad);add(Items.record_wait);add(Items.record_ward);}};
 		this.setCurrentItemOrArmor(0, new ItemStack(list.get(rand.nextInt(12))));
-		this.setEquipmentDropChance(0, 0.2F);
-		ItemArmor boots = Items.leather_boots;
-		boots.setColor(new ItemStack(boots), 0);
-		ItemArmor leggings = Items.leather_leggings;
-		leggings.setColor(new ItemStack(leggings), 0);
-		ItemArmor chestplate = Items.leather_chestplate;
-		chestplate.setColor(new ItemStack(chestplate), 0);
-		this.setCurrentItemOrArmor(1, new ItemStack(boots));
-		this.setCurrentItemOrArmor(2, new ItemStack(leggings));
-		this.setCurrentItemOrArmor(3, new ItemStack(chestplate));
+		this.setCurrentItemOrArmor(1, new ItemStack(Items.leather_boots));
+		this.setCurrentItemOrArmor(2, new ItemStack(Items.leather_leggings));
+		this.setCurrentItemOrArmor(3, new ItemStack(Items.leather_chestplate));
 		this.setCurrentItemOrArmor(4, new ItemStack(Item.getItemFromBlock(Blocks.jukebox)));
+		super.setEquipmentBasedOnDifficulty(difficulty);
 	}
 
 	@Override

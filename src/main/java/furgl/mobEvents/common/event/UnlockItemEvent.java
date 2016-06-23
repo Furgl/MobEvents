@@ -12,7 +12,7 @@ import net.minecraftforge.fml.common.gameevent.PlayerEvent.ItemPickupEvent;
 public class UnlockItemEvent 
 {
 	@SubscribeEvent(priority=EventPriority.NORMAL, receiveCanceled=true)
-	public void viewRenderEvent(ItemPickupEvent event)
+	public void onEvent(ItemPickupEvent event)
 	{				
 		if (!event.player.worldObj.isRemote && event.pickedUp.getEntityItem().getItem() instanceof IEventItem)
 		{

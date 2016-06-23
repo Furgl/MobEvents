@@ -4,13 +4,16 @@ import java.util.ArrayList;
 
 import furgl.mobEvents.common.MobEvents;
 import furgl.mobEvents.common.entity.ZombieApocalypse.EntityBardZombie;
+import furgl.mobEvents.common.entity.ZombieApocalypse.EntityBossZombieSpawner;
 import furgl.mobEvents.common.entity.ZombieApocalypse.EntityCloneZombie;
 import furgl.mobEvents.common.entity.ZombieApocalypse.EntityEventZombie;
+import furgl.mobEvents.common.entity.ZombieApocalypse.EntityJumperZombie;
 import furgl.mobEvents.common.entity.ZombieApocalypse.EntityMinionZombie;
 import furgl.mobEvents.common.entity.ZombieApocalypse.EntityPyromaniacZombie;
 import furgl.mobEvents.common.entity.ZombieApocalypse.EntityRiderZombie;
 import furgl.mobEvents.common.entity.ZombieApocalypse.EntityRuntZombie;
 import furgl.mobEvents.common.entity.ZombieApocalypse.EntitySummonerZombie;
+import furgl.mobEvents.common.entity.ZombieApocalypse.EntityThiefZombie;
 import furgl.mobEvents.common.entity.ZombieApocalypse.IEventMob;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EnumCreatureType;
@@ -34,7 +37,7 @@ public class ZombieApocalypse extends Event
 		this.setMobs();
 		this.setBookDescription();
 	}
-	
+
 	@Override
 	public void setBookDescription()
 	{
@@ -74,6 +77,9 @@ public class ZombieApocalypse extends Event
 		tmp.add(new EntityPyromaniacZombie(null));
 		tmp.add(new EntityRiderZombie(null));
 		tmp.add(new EntitySummonerZombie(null));
+		tmp.add(new EntityJumperZombie(null));
+		tmp.add(new EntityThiefZombie(null));
+		tmp.add(new EntityBossZombieSpawner(null));
 		for (int i=0; i<tmp.size(); i++)
 		{
 			int progressOnDeath = 1000;
@@ -90,6 +96,7 @@ public class ZombieApocalypse extends Event
 		}
 	}
 
+	@Override
 	public void onUpdate()
 	{
 		if (rand.nextInt(200) == 0)
@@ -97,78 +104,86 @@ public class ZombieApocalypse extends Event
 			this.updatePlayers();
 			this.playSound(sounds);
 		}
+		super.onUpdate();
 	}
 
+	@Override
 	public void removeCustomSpawns()
 	{
 		for (IEventMob zombie : this.mobs)
 			EntityRegistry.removeSpawn((Class<? extends EntityLiving>) zombie.getClass(), EnumCreatureType.MONSTER, Event.biomes);
 	}
+	
+	@Override
+	public void startWave(int wave) {
+		super.startWave(wave);
 
-	public void wave1() 
-	{
-		super.wave1();
-		this.updatePlayers();
-		for (EntityPlayer player : players)
-			Event.world.playSoundAtEntity(player, MobEvents.MODID+":mob.event_zombie.say", 0.4f, 1.5f);
-		EntityRegistry.addSpawn(EntityRuntZombie.class, 2000, 4, 4, EnumCreatureType.MONSTER, Event.biomes);
-		EntityRegistry.addSpawn(EntityPyromaniacZombie.class, 90, 1, 1, EnumCreatureType.MONSTER, Event.biomes);
-		EntityRegistry.addSpawn(EntityBardZombie.class, 90, 1, 1, EnumCreatureType.MONSTER, Event.biomes);
-		EntityRegistry.addSpawn(EntityRiderZombie.class, 30, 1, 1, EnumCreatureType.MONSTER, Event.biomes);
-		EntityRegistry.addSpawn(EntitySummonerZombie.class, 30, 1, 1, EnumCreatureType.MONSTER, Event.biomes);
-		EntityRegistry.addSpawn(EntityCloneZombie.class, 30, 1, 1, EnumCreatureType.MONSTER, Event.biomes);
+		switch (wave)
+		{
+		case 1:
+			this.updatePlayers();
+			for (EntityPlayer player : players)
+				Event.world.playSoundAtEntity(player, MobEvents.MODID+":mob.event_zombie.say", 0.4f, 1.5f);
+			EntityRegistry.addSpawn(EntityRuntZombie.class, 2000, 4, 4, EnumCreatureType.MONSTER, Event.biomes);
+			EntityRegistry.addSpawn(EntityJumperZombie.class, 150, 2, 2, EnumCreatureType.MONSTER, Event.biomes);
+			EntityRegistry.addSpawn(EntityPyromaniacZombie.class, 90, 1, 1, EnumCreatureType.MONSTER, Event.biomes);
+			EntityRegistry.addSpawn(EntityBardZombie.class, 90, 1, 1, EnumCreatureType.MONSTER, Event.biomes);
+			EntityRegistry.addSpawn(EntityThiefZombie.class, 30, 1, 1, EnumCreatureType.MONSTER, Event.biomes);
+			EntityRegistry.addSpawn(EntityRiderZombie.class, 30, 1, 1, EnumCreatureType.MONSTER, Event.biomes);
+			EntityRegistry.addSpawn(EntitySummonerZombie.class, 30, 1, 1, EnumCreatureType.MONSTER, Event.biomes);
+			EntityRegistry.addSpawn(EntityCloneZombie.class, 30, 1, 1, EnumCreatureType.MONSTER, Event.biomes);
+			break;
+		case 2:
+			EntityRegistry.addSpawn(EntityRuntZombie.class, 2000, 4, 4, EnumCreatureType.MONSTER, Event.biomes);
+			EntityRegistry.addSpawn(EntityJumperZombie.class, 190, 2, 2, EnumCreatureType.MONSTER, Event.biomes);
+			EntityRegistry.addSpawn(EntityPyromaniacZombie.class, 130, 1, 1, EnumCreatureType.MONSTER, Event.biomes);
+			EntityRegistry.addSpawn(EntityBardZombie.class, 130, 1, 1, EnumCreatureType.MONSTER, Event.biomes);
+			EntityRegistry.addSpawn(EntityThiefZombie.class, 70, 1, 1, EnumCreatureType.MONSTER, Event.biomes);
+			EntityRegistry.addSpawn(EntityRiderZombie.class, 70, 1, 1, EnumCreatureType.MONSTER, Event.biomes);
+			EntityRegistry.addSpawn(EntitySummonerZombie.class, 70, 1, 1, EnumCreatureType.MONSTER, Event.biomes);
+			EntityRegistry.addSpawn(EntityCloneZombie.class, 70, 1, 1, EnumCreatureType.MONSTER, Event.biomes);
+			break;
+		case 3:
+			EntityRegistry.addSpawn(EntityRuntZombie.class, 2000, 4, 4, EnumCreatureType.MONSTER, Event.biomes);
+			EntityRegistry.addSpawn(EntityJumperZombie.class, 230, 2, 2, EnumCreatureType.MONSTER, Event.biomes);
+			EntityRegistry.addSpawn(EntityPyromaniacZombie.class, 150, 1, 1, EnumCreatureType.MONSTER, Event.biomes);
+			EntityRegistry.addSpawn(EntityBardZombie.class, 150, 1, 1, EnumCreatureType.MONSTER, Event.biomes);
+			EntityRegistry.addSpawn(EntityThiefZombie.class, 90, 2, 2, EnumCreatureType.MONSTER, Event.biomes);
+			EntityRegistry.addSpawn(EntityRiderZombie.class, 90, 2, 2, EnumCreatureType.MONSTER, Event.biomes);
+			EntityRegistry.addSpawn(EntitySummonerZombie.class, 90, 1, 1, EnumCreatureType.MONSTER, Event.biomes);
+			EntityRegistry.addSpawn(EntityCloneZombie.class, 90, 1, 1, EnumCreatureType.MONSTER, Event.biomes);
+			break;
+		case 4:
+			EntityRegistry.addSpawn(EntityBossZombieSpawner.class, 10000, 1, 1, EnumCreatureType.MONSTER, Event.biomes);
+			break;
+		}
 	}
-
-	public void wave2() 
-	{
-		super.wave2();
-		this.removeCustomSpawns();
-		EntityRegistry.addSpawn(EntityRuntZombie.class, 2000, 4, 4, EnumCreatureType.MONSTER, Event.biomes);
-		EntityRegistry.addSpawn(EntityPyromaniacZombie.class, 130, 1, 1, EnumCreatureType.MONSTER, Event.biomes);
-		EntityRegistry.addSpawn(EntityBardZombie.class, 130, 1, 1, EnumCreatureType.MONSTER, Event.biomes);
-		EntityRegistry.addSpawn(EntityRiderZombie.class, 70, 1, 1, EnumCreatureType.MONSTER, Event.biomes);
-		EntityRegistry.addSpawn(EntitySummonerZombie.class, 70, 1, 1, EnumCreatureType.MONSTER, Event.biomes);
-		EntityRegistry.addSpawn(EntityCloneZombie.class, 70, 1, 1, EnumCreatureType.MONSTER, Event.biomes);
-	}
-
-	public void wave3() 
-	{
-		super.wave3();
-		this.removeCustomSpawns();
-		EntityRegistry.addSpawn(EntityRuntZombie.class, 2000, 4, 4, EnumCreatureType.MONSTER, Event.biomes);
-		EntityRegistry.addSpawn(EntityPyromaniacZombie.class, 150, 1, 1, EnumCreatureType.MONSTER, Event.biomes);
-		EntityRegistry.addSpawn(EntityBardZombie.class, 150, 1, 1, EnumCreatureType.MONSTER, Event.biomes);
-		EntityRegistry.addSpawn(EntityRiderZombie.class, 90, 2, 2, EnumCreatureType.MONSTER, Event.biomes);
-		EntityRegistry.addSpawn(EntitySummonerZombie.class, 90, 1, 1, EnumCreatureType.MONSTER, Event.biomes);
-		EntityRegistry.addSpawn(EntityCloneZombie.class, 90, 1, 1, EnumCreatureType.MONSTER, Event.biomes);
-	}
-
-	public void bossWave()
-	{
-		super.bossWave();
-		this.removeCustomSpawns();
-	}
-
+	
+	@Override
 	public void startEvent() 
 	{ 
 		Event.currentEvent = new ZombieApocalypse();
 		super.startEvent();
-		MinecraftServer.getServer().getConfigurationManager().sendChatMsg(new ChatComponentTranslation("Did I hear something?").setChatStyle(new ChatStyle().setBold(true).setColor(this.enumColor).setItalic(true)));
+		if (MinecraftServer.getServer().getConfigurationManager() != null)
+			MinecraftServer.getServer().getConfigurationManager().sendChatMsg(new ChatComponentTranslation("Did I hear something?").setChatStyle(new ChatStyle().setBold(true).setColor(this.enumColor).setItalic(true)));
 		this.updatePlayers();
 		for (EntityPlayer player : players)
 			Event.world.playSoundAtEntity(player, "mob.zombie.infect", 10f, 0f);
 	}
 
+	@Override
 	public void stopEvent() 
 	{
 		super.stopEvent();
-		MinecraftServer.getServer().getConfigurationManager().sendChatMsg(new ChatComponentTranslation(this.toString() + " has ended.").setChatStyle(new ChatStyle().setBold(true).setColor(this.enumColor)));
+		if (MinecraftServer.getServer().getConfigurationManager() != null)
+			MinecraftServer.getServer().getConfigurationManager().sendChatMsg(new ChatComponentTranslation(this.toString() + " has ended.").setChatStyle(new ChatStyle().setBold(true).setColor(this.enumColor)));
 		this.updatePlayers();
 		for (EntityPlayer player : players)
 			Event.world.playSoundAtEntity(player, "mob.zombie.remedy", 0.2f, 2f);
 		this.removeCustomSpawns();
 	}
 
+	@Override
 	public String toString()
 	{
 		return "Zombie Apocalypse";

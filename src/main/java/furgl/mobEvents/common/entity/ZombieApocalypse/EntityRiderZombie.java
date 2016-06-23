@@ -14,7 +14,7 @@ public class EntityRiderZombie extends EntityEventZombie
 	{
 		super(world);
 		this.setBookDescription();
-		this.progressOnDeath = 5;
+		this.progressOnDeath = 6;
 		this.maxSpawnedInChunk = 1;
 	}
 	
@@ -43,12 +43,6 @@ public class EntityRiderZombie extends EntityEventZombie
 	}
 
 	@Override
-	public void onLivingUpdate()
-	{
-		super.onLivingUpdate();
-	}
-
-	@Override
 	protected void setEquipmentBasedOnDifficulty(DifficultyInstance difficulty) 
 	{ 
 		ItemStack sword = new ItemStack(Items.stone_sword);
@@ -58,6 +52,9 @@ public class EntityRiderZombie extends EntityEventZombie
 		this.setCurrentItemOrArmor(2, new ItemStack(Items.chainmail_leggings));
 		this.setCurrentItemOrArmor(3, new ItemStack(Items.chainmail_chestplate));
 		this.setCurrentItemOrArmor(4, new ItemStack(Items.chainmail_helmet));
+		super.setEquipmentBasedOnDifficulty(difficulty);
+		for (int i=0; i<this.equipmentDropChances.length; i++)
+			this.setEquipmentDropChance(i, 0.08f);
 	}
 
 	@Override

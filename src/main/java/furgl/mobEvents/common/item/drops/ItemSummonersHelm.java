@@ -16,6 +16,8 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemArmor;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.BlockPos;
+import net.minecraft.util.ChatComponentTranslation;
+import net.minecraft.util.ChatStyle;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.world.World;
@@ -28,14 +30,10 @@ public class ItemSummonersHelm extends ItemArmor implements IEventItem
 	public boolean isLit;
 
 	public ItemSummonersHelm(ItemArmor.ArmorMaterial material, int renderIndex, int armorType) {
-		super(material, armorType, armorType);
+		super(material, renderIndex, armorType);
 		this.maxStackSize = 1;
 		this.setMaxDamage(400);
 		block = ModBlocks.summoners_helm;
-	}
-
-	public String getName() {
-		return this.getItemStackDisplayName(new ItemStack(this));
 	}
 
 	@SideOnly(Side.CLIENT)
@@ -43,8 +41,14 @@ public class ItemSummonersHelm extends ItemArmor implements IEventItem
 	{
 		tooltip.set(0, EnumChatFormatting.AQUA+tooltip.get(0));
 		Config.syncFromConfig(player);
-		if (Config.unlockedItems.contains(this.getUnlocalizedName()) || player.capabilities.isCreativeMode)
+		if (Config.unlockedItems.contains(this.getName()) || player.capabilities.isCreativeMode)
 			tooltip.add(EnumChatFormatting.ITALIC+""+EnumChatFormatting.GOLD+"Provides immunity to burning");
+		else if (!Config.unlockedItems.contains(this.getName()) && player.inventory.hasItemStack(stack))
+		{
+			Config.unlockedItems.add(this.getName());
+			player.addChatMessage(new ChatComponentTranslation("Unlocked information about the "+stack.getDisplayName()+" item in the Event Book").setChatStyle(new ChatStyle().setItalic(true).setColor(EnumChatFormatting.DARK_GRAY)));
+			Config.syncToConfig(player);
+		}
 		else 
 			tooltip.add(EnumChatFormatting.ITALIC+""+EnumChatFormatting.GOLD+"???");
 	}
@@ -53,9 +57,7 @@ public class ItemSummonersHelm extends ItemArmor implements IEventItem
 	@SideOnly(Side.CLIENT)
 	public void getSubItems(Item itemIn, CreativeTabs tab, List<ItemStack> subItems)
 	{
-		ItemStack stack = new ItemStack(this);
-		stack.addEnchantment(Enchantment.fireProtection, 5);
-		subItems.add(stack);
+		subItems.add(this.getItemStack());
 	}
 
 	@Override
@@ -95,12 +97,19 @@ public class ItemSummonersHelm extends ItemArmor implements IEventItem
 	}
 
 	@Override
+	public void onUpdate(ItemStack stack, World worldIn, Entity entityIn, int itemSlot, boolean isSelected)
+	{
+		if (!stack.isItemEnchanted())
+			stack.addEnchantment(Enchantment.fireProtection, 5);
+	}
+
+	@Override
 	public void onArmorTick(World world, EntityPlayer player, ItemStack itemStack){
 		if (!world.isRemote)
 			player.extinguish();
-		if (world.isRemote && this.isLit)
+		if (world.isRemote && this.isLit && !player.isWet())
 			player.setFire(1);
-		if (world.isRemote && player.ticksExisted % 30 == 0)
+		if (world.isRemote && world.getTotalWorldTime() % 30 == 0)
 			isLit = !isLit;
 	}
 
@@ -118,6 +127,18 @@ public class ItemSummonersHelm extends ItemArmor implements IEventItem
 			return MobEvents.MODID+":textures/models/armor/summoners_helm_on_layer_1.png";
 		else
 			return MobEvents.MODID+":textures/models/armor/summoners_helm_off_layer_1.png";
+	}
+
+	@Override
+	public ItemStack getItemStack() {
+		ItemStack stack = new ItemStack(this);
+		stack.addEnchantment(Enchantment.fireProtection, 5);
+		return stack;
+	}
+
+	@Override
+	public String getName() {
+		return this.getItemStackDisplayName(new ItemStack(this));
 	}
 
 	@Override
@@ -139,7 +160,7 @@ public class ItemSummonersHelm extends ItemArmor implements IEventItem
 	public float getBlue() {
 		return 0.2f;
 	}
-	
+
 	@Override
 	public ArrayList<String> droppedBy() {
 		ArrayList<String> list = new ArrayList<String>();

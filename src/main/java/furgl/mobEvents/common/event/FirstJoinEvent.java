@@ -15,7 +15,7 @@ import net.minecraftforge.fml.common.gameevent.PlayerEvent.PlayerLoggedInEvent;
 public class FirstJoinEvent 
 {
 	@SubscribeEvent(priority=EventPriority.NORMAL, receiveCanceled=true)
-	public void firstJoin(PlayerLoggedInEvent event) 
+	public void onEvent(PlayerLoggedInEvent event) 
 	{
 		//check if event should be unlocked
 		Config.syncFromConfig(event.player);
@@ -36,7 +36,7 @@ public class FirstJoinEvent
 		}
 		
 		NBTTagCompound entityData = event.player.getEntityData();
-		if(!entityData.getBoolean("MobEvents.firstJoin")) 
+		if(!entityData.getBoolean("MobEvents.firstJoin") && Config.giveBookOnFirstJoin) 
 		{
 			entityData.setBoolean("MobEvents.firstJoin", true);
 			event.player.inventory.addItemStackToInventory(new ItemStack(ModItems.eventBook));

@@ -12,20 +12,22 @@ import net.minecraftforge.fml.common.registry.GameRegistry;
 
 public class ModBlocks 
 {
-	//public static Block disappearingWeb;
 	public static Block disappearingFire;
 
 	public static Block summoners_helm;
 	public static Block lit_summoners_helm;
+	
+	public static Block boss_loot;
 
 	public static void init()
 	{
 		disappearingFire = registerBlockWithoutTab(new BlockDisappearingFire().setHardness(0.0F).setLightLevel(1.0F).setStepSound(new Block.SoundType("cloth", 1.0F, 1.0F)).setUnlocalizedName("fire")/*.disableStats()*/, "fire");
 		ModelLoader.setCustomStateMapper(disappearingFire, (new StateMap.Builder()).ignore(new IProperty[] {BlockDisappearingFire.AGE}).build());
-		//disappearingWeb = registerBlockWithoutTab(new BlockDisappearingWeb().setLightOpacity(1).setHardness(4.0F), "disappearingWeb");
 
 		summoners_helm = registerBlockWithTab(new BlockSummonersHelm(false).setHardness(1.0F).setStepSound(new Block.SoundType("wood", 1.0F, 1.0F)), "summoners_helm");
 		lit_summoners_helm = registerBlockWithoutTab(new BlockSummonersHelm(true).setHardness(1.0F).setStepSound(new Block.SoundType("wood", 1.0F, 1.0F)), "lit_summoners_helm");
+	
+		boss_loot = registerBlockWithTab(new BlockBossLoot().setHardness(2.5F).setStepSound(new Block.SoundType("wood", 1.0F, 1.0F)), "boss_loot");
 	}
 
 	public static void registerRenders() 
@@ -34,6 +36,8 @@ public class ModBlocks
 
 		registerRender(summoners_helm);
 		registerRender(lit_summoners_helm);
+		
+		registerRender(boss_loot);
 	}
 
 	public static Block registerBlockWithTab(final Block block, final String unlocalizedName) {
