@@ -4,23 +4,28 @@ import java.util.ArrayList;
 import java.util.List;
 
 import furgl.mobEvents.common.MobEvents;
+import furgl.mobEvents.common.Events.Event;
 import furgl.mobEvents.common.block.ModBlocks;
-import furgl.mobEvents.common.config.Config;
+import furgl.mobEvents.common.entity.EntityGuiPlayer;
 import net.minecraft.block.Block;
+import net.minecraft.block.SoundType;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.creativetab.CreativeTabs;
-import net.minecraft.enchantment.Enchantment;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.Enchantments;
+import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemArmor;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.BlockPos;
-import net.minecraft.util.ChatComponentTranslation;
-import net.minecraft.util.ChatStyle;
-import net.minecraft.util.EnumChatFormatting;
+import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.EnumHand;
+import net.minecraft.util.SoundCategory;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
+import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
@@ -29,28 +34,22 @@ public class ItemSummonersHelm extends ItemArmor implements IEventItem
 	public Block block;
 	public boolean isLit;
 
-	public ItemSummonersHelm(ItemArmor.ArmorMaterial material, int renderIndex, int armorType) {
-		super(material, renderIndex, armorType);
+	public ItemSummonersHelm(ItemArmor.ArmorMaterial material, int renderIndex, EntityEquipmentSlot equipmentSlotIn) {
+		super(material, renderIndex, equipmentSlotIn);
 		this.maxStackSize = 1;
 		this.setMaxDamage(400);
-		block = ModBlocks.summoners_helm;
+		block = ModBlocks.summonersHelm;
 	}
 
 	@SideOnly(Side.CLIENT)
 	public void addInformation(ItemStack stack, EntityPlayer player, List<String> tooltip, boolean advanced)
 	{
-		tooltip.set(0, EnumChatFormatting.AQUA+tooltip.get(0));
-		Config.syncFromConfig(player);
-		if (Config.unlockedItems.contains(this.getName()) || player.capabilities.isCreativeMode)
-			tooltip.add(EnumChatFormatting.ITALIC+""+EnumChatFormatting.GOLD+"Provides immunity to burning");
-		else if (!Config.unlockedItems.contains(this.getName()) && player.inventory.hasItemStack(stack))
-		{
-			Config.unlockedItems.add(this.getName());
-			player.addChatMessage(new ChatComponentTranslation("Unlocked information about the "+stack.getDisplayName()+" item in the Event Book").setChatStyle(new ChatStyle().setItalic(true).setColor(EnumChatFormatting.DARK_GRAY)));
-			Config.syncToConfig(player);
-		}
+		tooltip.set(0, TextFormatting.AQUA+tooltip.get(0));
+		int index = MobEvents.proxy.getWorldData().getPlayerIndex(player.getDisplayNameString());
+		if (MobEvents.proxy.getWorldData().unlockedItems.get(index).contains(this.getName()) || player.capabilities.isCreativeMode)
+			tooltip.add(TextFormatting.ITALIC+""+TextFormatting.GOLD+"Provides immunity to burning");
 		else 
-			tooltip.add(EnumChatFormatting.ITALIC+""+EnumChatFormatting.GOLD+"???");
+			tooltip.add(TextFormatting.ITALIC+""+TextFormatting.GOLD+"???");
 	}
 
 	@Override
@@ -61,33 +60,37 @@ public class ItemSummonersHelm extends ItemArmor implements IEventItem
 	}
 
 	@Override
-	public boolean onItemUse(ItemStack stack, EntityPlayer playerIn, World worldIn, BlockPos pos, EnumFacing side, float hitX, float hitY, float hitZ)
+	public EnumActionResult onItemUse(ItemStack stack, EntityPlayer playerIn, World worldIn, BlockPos pos, EnumHand hand, EnumFacing side, float hitX, float hitY, float hitZ)
 	{
+		if (this.block == null)
+			this.block = ModBlocks.summonersHelm;
 		IBlockState iblockstate = worldIn.getBlockState(pos);
 		Block block = iblockstate.getBlock();
 		if (!block.isReplaceable(worldIn, pos))
 			pos = pos.offset(side);
 		if (stack.stackSize == 0)
-			return false;
+			return EnumActionResult.FAIL;
 		else if (!playerIn.canPlayerEdit(pos, side, stack))
-			return false;
-		else if (worldIn.canBlockBePlaced(this.block, pos, false, side, (Entity)null, stack))
+			return EnumActionResult.FAIL;
+		else if (this.block != null && worldIn.canBlockBePlaced(this.block, pos, false, side, (Entity)null, stack))
 		{
 			int i = this.getMetadata(stack.getMetadata());
 			IBlockState iblockstate1 = this.block.onBlockPlaced(worldIn, pos, side, hitX, hitY, hitZ, i, playerIn);
 			if (placeBlockAt(stack, playerIn, worldIn, pos, side, hitX, hitY, hitZ, iblockstate1))
 			{
-				worldIn.playSoundEffect((double)((float)pos.getX() + 0.5F), (double)((float)pos.getY() + 0.5F), (double)((float)pos.getZ() + 0.5F), this.block.stepSound.getPlaceSound(), (this.block.stepSound.getVolume() + 1.0F) / 2.0F, this.block.stepSound.getFrequency() * 0.8F);
-				--stack.stackSize;
+				SoundType soundtype = this.block.getSoundType(iblockstate1, worldIn, pos, playerIn);
+				worldIn.playSound(playerIn, pos, soundtype.getPlaceSound(), SoundCategory.BLOCKS, (soundtype.getVolume() + 1.0F) / 2.0F, soundtype.getPitch() * 0.8F);				--stack.stackSize;
 			}
-			return true;
+			return EnumActionResult.SUCCESS;
 		}
 		else
-			return false;
+			return EnumActionResult.FAIL;
 	}
 
 	public boolean placeBlockAt(ItemStack stack, EntityPlayer player, World world, BlockPos pos, EnumFacing side, float hitX, float hitY, float hitZ, IBlockState newState)
 	{
+		if (this.block == null)
+			this.block = ModBlocks.summonersHelm;
 		if (!world.setBlockState(pos, newState, 3)) 
 			return false;
 		IBlockState state = world.getBlockState(pos);
@@ -97,31 +100,34 @@ public class ItemSummonersHelm extends ItemArmor implements IEventItem
 	}
 
 	@Override
-	public void onUpdate(ItemStack stack, World worldIn, Entity entityIn, int itemSlot, boolean isSelected)
-	{
-		if (!stack.isItemEnchanted())
-			stack.addEnchantment(Enchantment.fireProtection, 5);
-	}
-
-	@Override
 	public void onArmorTick(World world, EntityPlayer player, ItemStack itemStack){
 		if (!world.isRemote)
 			player.extinguish();
 		if (world.isRemote && this.isLit && !player.isWet())
 			player.setFire(1);
 		if (world.isRemote && world.getTotalWorldTime() % 30 == 0)
+		{
 			isLit = !isLit;
+			if (!isLit)
+				player.extinguish();
+		}
+		if (world.isRemote && player instanceof EntityGuiPlayer && ((EntityGuiPlayer)player).book.displayTicks % 90 == 0)
+		{
+			isLit = !isLit;
+			if (!isLit)
+				player.extinguish();
+		}
 	}
 
 	@Override
-	public boolean isValidArmor(ItemStack stack, int armorType, Entity entity){
-		if (armorType == 0)
+	public boolean isValidArmor(ItemStack stack, EntityEquipmentSlot slot, Entity entity){
+		if (slot == EntityEquipmentSlot.HEAD)
 			return true;
 		return false;
 	}
 
 	@Override
-	public String getArmorTexture(ItemStack stack, Entity entity, int slot, String type)
+	public String getArmorTexture(ItemStack stack, Entity entity, EntityEquipmentSlot slot, String type)
 	{
 		if (isLit)
 			return MobEvents.MODID+":textures/models/armor/summoners_helm_on_layer_1.png";
@@ -132,7 +138,7 @@ public class ItemSummonersHelm extends ItemArmor implements IEventItem
 	@Override
 	public ItemStack getItemStack() {
 		ItemStack stack = new ItemStack(this);
-		stack.addEnchantment(Enchantment.fireProtection, 5);
+		stack.addEnchantment(Enchantments.FIRE_PROTECTION, 5);
 		return stack;
 	}
 
@@ -166,5 +172,21 @@ public class ItemSummonersHelm extends ItemArmor implements IEventItem
 		ArrayList<String> list = new ArrayList<String>();
 		list.add("Zombie Summoner");
 		return list;
+	}
+
+	@Override
+	public void onUpdate(ItemStack stack, World worldIn, Entity entityIn, int itemSlot, boolean isSelected) {
+		if (!stack.isItemEnchanted())
+			stack.addEnchantment(Enchantments.FIRE_PROTECTION, 5);
+		
+		if (entityIn instanceof EntityPlayer && !(entityIn instanceof FakePlayer)) {
+			int index = MobEvents.proxy.getWorldData().getPlayerIndex(entityIn.getName());
+			if (!worldIn.isRemote && !MobEvents.proxy.getWorldData().unlockedItems.get(index).contains(this.getName()))
+			{
+				MobEvents.proxy.getWorldData().unlockedItems.get(index).add(this.getName());
+				Event.displayUnlockMessage((EntityPlayer) entityIn, "Unlocked information about the "+stack.getDisplayName()+" item in the Event Book");
+				MobEvents.proxy.getWorldData().markDirty();
+			}
+		}
 	}
 }

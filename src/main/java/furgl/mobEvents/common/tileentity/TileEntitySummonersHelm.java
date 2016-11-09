@@ -4,8 +4,8 @@ import furgl.mobEvents.common.block.BlockSummonersHelm;
 import furgl.mobEvents.common.block.ModBlocks;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.BlockPos;
 import net.minecraft.util.ITickable;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 public class TileEntitySummonersHelm extends TileEntity implements ITickable
@@ -34,11 +34,10 @@ public class TileEntitySummonersHelm extends TileEntity implements ITickable
 	public void update() {
 		if (this.ticksExisted % 30 == 0 && this.ticksExisted > 0 && block != null)
 		{
-			int meta = block.getMetaFromState(this.worldObj.getBlockState(pos));
 			if (block.isLit)
-				this.worldObj.setBlockState(pos, ModBlocks.summoners_helm.getStateFromMeta(meta));
+				this.worldObj.setBlockState(pos, ModBlocks.summonersHelm.getDefaultState());
 			else
-				this.worldObj.setBlockState(pos, ModBlocks.lit_summoners_helm.getStateFromMeta(meta));
+				this.worldObj.setBlockState(pos, ModBlocks.litSummonersHelm.getDefaultState());
 		}
 		this.ticksExisted++;
 	}

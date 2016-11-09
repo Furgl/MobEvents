@@ -31,10 +31,10 @@ public class GuiButtonItemPage extends GuiButton
 
 
 			GlStateManager.color(1F, 1F, 1F, 1.0F);
-			mc.getTextureManager().bindTexture(buttonTextures);
+			mc.getTextureManager().bindTexture(BUTTON_TEXTURES);
 
 			GlStateManager.pushMatrix();
-			scale = 1f;
+			scale = 0.85f;
 			float w = (book.width - this.width) / 2;
 			float h = (book.height - this.height) / 2;
 			GlStateManager.translate(w, h, 0);

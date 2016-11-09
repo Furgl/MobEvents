@@ -4,10 +4,12 @@ import net.minecraft.client.model.ModelBiped;
 import net.minecraft.client.model.ModelRenderer;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.entity.Entity;
-import net.minecraft.util.MathHelper;
+import net.minecraft.util.math.MathHelper;
 
 public class ModelDoubleJumpBoots extends ModelBiped
 {
+	ModelRenderer rightFoot; 
+	ModelRenderer leftFoot;
 	ModelRenderer rightWing1;
 	ModelRenderer rightWing2;
 	ModelRenderer rightWing3;
@@ -115,6 +117,7 @@ public class ModelDoubleJumpBoots extends ModelBiped
 		this.bipedLeftLeg.addChild(leftWing6);
 	}
 
+	@Override
 	public void render(Entity entity, float f, float f1, float f2, float f3, float f4, float scale)
 	{
 		this.setRotationAngles(f, f1, f2, f3, f4, scale, entity);
@@ -122,7 +125,7 @@ public class ModelDoubleJumpBoots extends ModelBiped
 
 		if (entity.isSneaking())
 		{
-			GlStateManager.translate(0.0F, 0.0F, 0.25F);
+			GlStateManager.translate(0.0F, 0.2F, 0.0F);
 		}
 
 		this.bipedHead.render(scale);

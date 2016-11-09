@@ -31,7 +31,7 @@ public class GuiButtonIntroPage extends GuiButton
 			
 			
 				GlStateManager.color(1F, 1F, 1F, 1.0F);
-			mc.getTextureManager().bindTexture(buttonTextures);
+			mc.getTextureManager().bindTexture(BUTTON_TEXTURES);
 			
 			GlStateManager.pushMatrix();
 			scale = 1f;

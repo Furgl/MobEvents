@@ -1,28 +1,53 @@
-entity.mobEvents.runtZombie.name=Zombie Runt
+entity.mobEvents.zombieRunt.name=Zombie Runt
 entity.mobEvents.pyromaniacZombie.name=Zombie Pyromaniac
-entity.mobEvents.bardZombie.name=Zombie Bard
-entity.mobEvents.riderZombie.name=Zombie Rider
-entity.mobEvents.summonerZombie.name=Zombie Summoner
-entity.mobEvents.minionZombie.name=Zombie Minion
-entity.mobEvents.cloneZombie.name=Zombie Clone
-entity.mobEvents.jumperZombie.name=Zombie Jumper
-entity.mobEvents.thiefZombie.name=Zombie Thief
+entity.mobEvents.zombieBard.name=Zombie Bard
+entity.mobEvents.zombieRider.name=Zombie Rider
+entity.mobEvents.zombieSummoner.name=Zombie Summoner
+entity.mobEvents.zombieMinion.name=Zombie Minion
+entity.mobEvents.zombieClone.name=Zombie Clone
+entity.mobEvents.zombieJumper.name=Zombie Jumper
+entity.mobEvents.zombieThief.name=Zombie Thief
+entity.mobEvents.zombieBoss.name=Zombie Boss
+
+entity.mobEvents.skeletonSoldier.name=Skeleton Soldier
+entity.mobEvents.skeletonBard.name=Skeleton Bard
+entity.mobEvents.skeletonClone.name=Skeleton Clone
+entity.mobEvents.skeletonPyromaniac.name=Skeleton Pyromaniac
+
+entity.mobEvents.zombieBossSpawner.name=Boss Zombie Spawner
+
+entity.mobEvents.fireArrow.name=Fire Arrow
+
+tile.boss_loot.name=Boss Loot
+block.disappearing_fire.name=Disappearing Fire
+tile.summoners_helm.name=Summoner's Helm
+tile.lit_summoners_helm.name=Summoner's Helm
+tile.bards_jukebox.name=Bard's Jukebox
+tile.upgraded_anvil.intact.name=Upgraded Anvil
+tile.upgraded_anvil.slightlyDamaged.name=Slightly Damaged Upgraded Anvil
+tile.upgraded_anvil.veryDamaged.name=Very Damaged Upgraded Anvil
+
+item.summoners_helm.name=Summoner's Helm
+item.double_jump_boots.name=Double Jump Boots
+item.thieves_mask.name=Thieve's Mask
+item.butchers_cleaver.name=Butcher's Cleaver
+item.book_of_healing.name=Book of Healing
+item.fire_arrow.name=Fire Arrow
+item.bards_jukebox.name=Bard's Jukebox
+item.anvil_upgrade_zombie.name=Anvil Upgrade (Zombie)
+item.anvil_upgrade_skeleton.name=Anvil Upgrade (Skeleton)
 
 item.event_book.name=Event Book
 item.creative_event_book.name=Creative Event Book
 
-item.record1.name=Music Disc
-item.record.record1.desc=Record 1
+item.record_zombie_apocalypse.name=Music Disc
+item.record.record_zombie_apocalypse.desc=Zombie Apocalypse
 item.record2.name=Music Disc
 item.record.record2.desc=Record 2
 item.record3.name=Music Disc
 item.record.record3.desc=Record 3
 item.record4.name=Music Disc
 item.record.record4.desc=Record 4
-
-item.summoners_helm.name=Summoner's Helm
-item.double_jump_boots.name=Double Jump Boots
-item.thieves_mask.name=Thieve's Mask
 
 item.zombie_bard.name=Spawn Zombie Bard
 item.zombie_clone.name=Spawn Zombie Clone
@@ -33,9 +58,16 @@ item.zombie_runt.name=Spawn Zombie Runt
 item.zombie_summoner.name=Spawn Zombie Summoner
 item.zombie_jumper.name=Spawn Zombie Jumper
 item.zombie_thief.name=Spawn Zombie Thief
+
+item.skeleton_soldier.name=Spawn Skeleton Soldier
+item.skeleton_bard.name=Spawn Skeleton Bard
+item.skeleton_clone.name=Spawn Skeleton Clone
+item.skeleton_pyromaniac.name=Spawn Skeleton Pyromaniac
+
 item.zombie_boss_spawner.name=Spawn Zombie Boss Spawner
 
-itemGroup.tabMobEvents=Mob Events
+itemGroup.tabMobEventItems=Mob Event Items
+itemGroup.tabMobEventMobs=Mob Event Mobs
 
 achievement.itsFinallyOver=It's Finally Over
 achievement.itsFinallyOver.desc=Make it through a Mob Event

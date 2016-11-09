@@ -1,14 +1,18 @@
 package furgl.mobEvents.packets;
 
+import furgl.mobEvents.common.MobEvents;
+import furgl.mobEvents.common.Events.ChaoticTurmoil;
 import furgl.mobEvents.common.Events.Event;
+import furgl.mobEvents.common.entity.IEventMob;
+import furgl.mobEvents.common.entity.bosses.spawner.EntityBossSpawner;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.util.ChatComponentTranslation;
-import net.minecraft.util.ChatStyle;
-import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.IThreadListener;
-import net.minecraft.util.MathHelper;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.text.Style;
+import net.minecraft.util.text.TextComponentTranslation;
+import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
@@ -69,24 +73,29 @@ public class PacketSummonMob implements IMessage
 						switch (d)
 						{
 						case 0:
-							z += 2;
+							z += 4;
 							break;
 						case 1:
-							x -= 2;
+							x -= 4;
 							break;
 						case 2:
-							z -= 2;
+							z -= 4;
 							break;
 						case 3:
-							x += 2;
+							x += 4;
 							break;
 						}
-						EntityLiving mob = (EntityLiving) Event.EVENTS[packet.event].mobs.get(packet.mob).getClass().getDeclaredConstructor(World.class).newInstance(player.worldObj);
-						mob.setLocationAndAngles(x, player.posY, z, 0, 0);
-						mob.onInitialSpawn(null, null);
-						player.worldObj.spawnEntityInWorld(mob);
-						player.addChatMessage(new ChatComponentTranslation("Summoned "+mob.getName()+".").setChatStyle(new ChatStyle().setItalic(true).setColor(EnumChatFormatting.DARK_PURPLE)));
-
+						EntityLiving mob = (EntityLiving) Event.allEvents.get(packet.event).mobs.get(packet.mob).getClass().getDeclaredConstructor(World.class).newInstance(player.worldObj);
+						if (mob instanceof EntityBossSpawner || ((IEventMob) mob).getEvent().getClass() == MobEvents.proxy.getWorldData().currentEvent.getClass() || MobEvents.proxy.getWorldData().currentEvent.getClass() == ChaoticTurmoil.class) {
+							mob.setLocationAndAngles(x, player.posY, z, 0, 0);//needs to be done before initial spawn for boss spawners
+							mob.onInitialSpawn(null, null);//needs to be done to get name
+						}
+						if (((IEventMob) mob).getEvent().getClass() == MobEvents.proxy.getWorldData().currentEvent.getClass() || MobEvents.proxy.getWorldData().currentEvent.getClass() == ChaoticTurmoil.class) {
+							player.worldObj.spawnEntityInWorld(mob);
+							player.addChatMessage(new TextComponentTranslation("Summoned "+mob.getName()+".").setStyle(new Style().setItalic(true).setColor(TextFormatting.DARK_PURPLE)));
+						}
+						else 
+							player.addChatMessage(new TextComponentTranslation(mob.getName()+" must be summoned during "+((IEventMob) mob).getEvent()+".").setStyle(new Style().setItalic(true).setColor(TextFormatting.DARK_PURPLE)));
 					} 
 					catch (Exception e) 
 					{

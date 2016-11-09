@@ -1,36 +1,50 @@
 package furgl.mobEvents.common.entity;
 
 import furgl.mobEvents.common.MobEvents;
-import furgl.mobEvents.common.entity.ZombieApocalypse.EntityBardZombie;
-import furgl.mobEvents.common.entity.ZombieApocalypse.EntityBossZombieSpawner;
-import furgl.mobEvents.common.entity.ZombieApocalypse.EntityCloneZombie;
-import furgl.mobEvents.common.entity.ZombieApocalypse.EntityJumperZombie;
-import furgl.mobEvents.common.entity.ZombieApocalypse.EntityMinionZombie;
-import furgl.mobEvents.common.entity.ZombieApocalypse.EntityPyromaniacZombie;
-import furgl.mobEvents.common.entity.ZombieApocalypse.EntityRiderZombie;
-import furgl.mobEvents.common.entity.ZombieApocalypse.EntityRuntZombie;
-import furgl.mobEvents.common.entity.ZombieApocalypse.EntitySummonerZombie;
-import furgl.mobEvents.common.entity.ZombieApocalypse.EntityThiefZombie;
+import furgl.mobEvents.common.entity.SkeletalUprising.EntitySkeletonBard;
+import furgl.mobEvents.common.entity.SkeletalUprising.EntitySkeletonClone;
+import furgl.mobEvents.common.entity.SkeletalUprising.EntitySkeletonPyromaniac;
+import furgl.mobEvents.common.entity.SkeletalUprising.EntitySkeletonSoldier;
+import furgl.mobEvents.common.entity.ZombieApocalypse.EntityZombieBard;
+import furgl.mobEvents.common.entity.ZombieApocalypse.EntityZombieClone;
 import furgl.mobEvents.common.entity.ZombieApocalypse.EntityZombieHorse;
+import furgl.mobEvents.common.entity.ZombieApocalypse.EntityZombieJumper;
+import furgl.mobEvents.common.entity.ZombieApocalypse.EntityZombieMinion;
+import furgl.mobEvents.common.entity.ZombieApocalypse.EntityZombiePyromaniac;
+import furgl.mobEvents.common.entity.ZombieApocalypse.EntityZombieRider;
+import furgl.mobEvents.common.entity.ZombieApocalypse.EntityZombieRunt;
+import furgl.mobEvents.common.entity.ZombieApocalypse.EntityZombieSummoner;
+import furgl.mobEvents.common.entity.ZombieApocalypse.EntityZombieThief;
+import furgl.mobEvents.common.entity.bosses.EntityBossZombie;
+import furgl.mobEvents.common.entity.bosses.spawner.EntityZombieBossSpawner;
 import net.minecraftforge.fml.common.registry.EntityRegistry;
 
 public class ModEntities 
 {
 	public static void registerEntities() 
-    {
-        int ID = 0;    
-               
-        EntityRegistry.registerModEntity(EntityRuntZombie.class, "runtZombie", ID++, MobEvents.instance, 64, 3, true);
-        EntityRegistry.registerModEntity(EntityPyromaniacZombie.class, "pyromaniacZombie", ID++, MobEvents.instance, 64, 3, true);
-        EntityRegistry.registerModEntity(EntityRiderZombie.class, "riderZombie", ID++, MobEvents.instance, 64, 3, true);
-        EntityRegistry.registerModEntity(EntityZombieHorse.class, "zombieHorse", ID++, MobEvents.instance, 64, 3, true);
-        EntityRegistry.registerModEntity(EntityBardZombie.class, "bardZombie", ID++, MobEvents.instance, 64, 3, true);
-        EntityRegistry.registerModEntity(EntityCloneZombie.class, "cloneZombie", ID++, MobEvents.instance, 64, 3, true);
-        EntityRegistry.registerModEntity(EntitySummonerZombie.class, "summonerZombie", ID++, MobEvents.instance, 64, 3, true);
-        EntityRegistry.registerModEntity(EntityMinionZombie.class, "minionZombie", ID++, MobEvents.instance, 64, 3, true);
-        EntityRegistry.registerModEntity(EntityJumperZombie.class, "jumperZombie", ID++, MobEvents.instance, 64, 3, true);
-        EntityRegistry.registerModEntity(EntityThiefZombie.class, "thiefZombie", ID++, MobEvents.instance, 64, 3, true);
-        
-        EntityRegistry.registerModEntity(EntityBossZombieSpawner.class, "bossZombieSpawner", ID++, MobEvents.instance, 64, 3, true);
-    }
+	{
+		int ID = 0;    
+
+		//Zombie Apocalypse
+		EntityRegistry.registerModEntity(EntityZombieRunt.class, "zombieRunt", ID++, MobEvents.instance, 64, 3, true);
+		EntityRegistry.registerModEntity(EntityZombiePyromaniac.class, "zombiePyromaniac", ID++, MobEvents.instance, 64, 3, true);
+		EntityRegistry.registerModEntity(EntityZombieRider.class, "zombieRider", ID++, MobEvents.instance, 64, 3, true);
+		EntityRegistry.registerModEntity(EntityZombieHorse.class, "zombieHorse", ID++, MobEvents.instance, 64, 3, true);
+		EntityRegistry.registerModEntity(EntityZombieBard.class, "zombieBard", ID++, MobEvents.instance, 64, 3, true);
+		EntityRegistry.registerModEntity(EntityZombieClone.class, "zombieClone", ID++, MobEvents.instance, 64, 3, true);
+		EntityRegistry.registerModEntity(EntityZombieSummoner.class, "zombieSummoner", ID++, MobEvents.instance, 64, 3, true);
+		EntityRegistry.registerModEntity(EntityZombieMinion.class, "zombieMinion", ID++, MobEvents.instance, 64, 3, true);
+		EntityRegistry.registerModEntity(EntityZombieJumper.class, "zombieJumper", ID++, MobEvents.instance, 64, 3, true);
+		EntityRegistry.registerModEntity(EntityZombieThief.class, "zombieThief", ID++, MobEvents.instance, 64, 3, true);
+		EntityRegistry.registerModEntity(EntityBossZombie.class, "zombieBoss", ID++, MobEvents.instance, 64, 3, true);
+		//Skeletal Uprising
+		EntityRegistry.registerModEntity(EntitySkeletonSoldier.class, "skeletonSoldier", ID++, MobEvents.instance, 64, 3, true);
+		EntityRegistry.registerModEntity(EntitySkeletonBard.class, "skeletonBard", ID++, MobEvents.instance, 64, 3, true);
+		EntityRegistry.registerModEntity(EntitySkeletonClone.class, "skeletonClone", ID++, MobEvents.instance, 64, 3, true);
+		EntityRegistry.registerModEntity(EntitySkeletonPyromaniac.class, "skeletonPyromaniac", ID++, MobEvents.instance, 64, 3, true);
+		//boss spawners
+		EntityRegistry.registerModEntity(EntityZombieBossSpawner.class, "zombieBossSpawner", ID++, MobEvents.instance, 64, 3, true);
+		//other
+		EntityRegistry.registerModEntity(EntityFireArrow.class, "fireArrow", ID++, MobEvents.instance, 64, 3, true);
+	}
 }

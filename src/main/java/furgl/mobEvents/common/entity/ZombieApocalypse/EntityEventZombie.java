@@ -3,61 +3,79 @@ package furgl.mobEvents.common.entity.ZombieApocalypse;
 import java.util.ArrayList;
 
 import furgl.mobEvents.common.MobEvents;
+import furgl.mobEvents.common.Events.ChaoticTurmoil;
 import furgl.mobEvents.common.Events.Event;
-import furgl.mobEvents.common.Events.ZombieApocalypse;
-import furgl.mobEvents.common.config.Config;
+import furgl.mobEvents.common.entity.IEventMob;
+import furgl.mobEvents.common.entity.bosses.EntityBossZombie;
 import furgl.mobEvents.common.item.ModItems;
+import furgl.mobEvents.common.sound.ModSoundEvents;
 import net.minecraft.block.Block;
-import net.minecraft.client.Minecraft;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.IEntityLivingData;
 import net.minecraft.entity.SharedMonsterAttributes;
+import net.minecraft.entity.ai.EntityAIHurtByTarget;
+import net.minecraft.entity.ai.EntityAIMoveThroughVillage;
+import net.minecraft.entity.ai.EntityAINearestAttackableTarget;
+import net.minecraft.entity.monster.EntityPigZombie;
 import net.minecraft.entity.monster.EntityZombie;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.MobEffects;
+import net.minecraft.init.SoundEvents;
+import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemArmor;
 import net.minecraft.item.ItemStack;
-import net.minecraft.potion.Potion;
+import net.minecraft.network.datasync.DataParameter;
+import net.minecraft.network.datasync.DataSerializers;
+import net.minecraft.network.datasync.EntityDataManager;
 import net.minecraft.potion.PotionEffect;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.BlockPos;
-import net.minecraft.util.ChatComponentTranslation;
-import net.minecraft.util.ChatStyle;
 import net.minecraft.util.DamageSource;
-import net.minecraft.util.EnumChatFormatting;
+import net.minecraft.util.EnumHand;
 import net.minecraft.util.EnumParticleTypes;
-import net.minecraft.util.MovingObjectPosition;
+import net.minecraft.util.SoundCategory;
+import net.minecraft.util.SoundEvent;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.FakePlayer;
 
 public class EntityEventZombie extends EntityZombie implements IEventMob
 {
-	public static final Event event = new ZombieApocalypse();
+	protected static final DataParameter<Byte> SUMMONED = EntityDataManager.<Byte>createKey(EntityEventZombie.class, DataSerializers.BYTE);
 	/**Bosses have 100 progressOnDeath*/
-	public int progressOnDeath;
+	protected int progressOnDeath;
 	public int armorColor = -1;
-	public int maxSpawnedInChunk = 4;
+	public int maxSpawnedInChunk = 1;
 	private int bardsBoost;
+	/**Is color increasing or decreasing*/
+	private boolean increasing; 
 	public boolean summoned;
-	public String bookDescription;
-	public ArrayList<ItemStack> bookDrops;
+	protected String bookDescription;
+	protected ArrayList<ItemStack> bookDrops;
 	/**Wave that mob thinks it is currently*/
 	public int currentWave;
 
 	public EntityEventZombie(World world) 
 	{
 		super(world);
-		if (world == null)
-			this.setEquipmentBasedOnDifficulty(null);
-		this.currentWave = Event.currentWave;
+		this.setEquipmentBasedOnDifficulty(null);
+		this.setBookDescription();
 	}
 
 	public void setBookDescription()
 	{
 		this.bookDescription = "";
 		this.bookDrops = new ArrayList<ItemStack>();
+	}
+
+	@Override
+	protected void applyEntityAI()
+	{
+		this.tasks.addTask(6, new EntityAIMoveThroughVillage(this, 1.0D, false));
+		this.targetTasks.addTask(1, new EntityAIHurtByTarget(this, true, new Class[] {EntityPigZombie.class}));
+		this.targetTasks.addTask(2, new EntityAINearestAttackableTarget(this, EntityPlayer.class, true));
 	}
 
 	@Override
@@ -70,14 +88,14 @@ public class EntityEventZombie extends EntityZombie implements IEventMob
 	protected void entityInit()
 	{
 		super.entityInit();
-		this.getDataWatcher().addObject(20, Byte.valueOf((byte)0)); //summoned
+		this.getDataManager().register(SUMMONED, Byte.valueOf((byte)0)); //summoned
 	}
-	
+
 	@Override
-	public boolean interact(EntityPlayer player)
-    {
+	public boolean processInteract(EntityPlayer player, EnumHand p_184645_2_, ItemStack stack)
+	{
 		return false;
-    }
+	}
 
 	@Override
 	public void setNoAI(boolean disable)
@@ -90,17 +108,17 @@ public class EntityEventZombie extends EntityZombie implements IEventMob
 	public void onUpdate()
 	{
 		//play living sound on wave change
-		if (this.currentWave != Event.currentWave)
+		if (this.currentWave != MobEvents.proxy.getWorldData().currentWave)
 		{
-			this.currentWave = Event.currentWave;
+			this.currentWave = MobEvents.proxy.getWorldData().currentWave;
 			this.playLivingSound();
 		}
 
 		//set summoned from datawatcher
-		if (this.ticksExisted == 1 && this.worldObj.isRemote && this.getDataWatcher().getWatchableObjectByte(20) == 1)
+		if (this.ticksExisted == 1 && this.worldObj.isRemote && this.getDataManager().get(SUMMONED) == 1)
 		{
 			this.summoned = true;
-			this.worldObj.playSound(this.posX, this.posY, this.posZ, "random.fizz", 1f, rand.nextFloat(), false);
+			this.worldObj.playSound(this.posX, this.posY, this.posZ, SoundEvents.BLOCK_FIRE_EXTINGUISH, SoundCategory.HOSTILE, 1f, rand.nextFloat(), false);
 		}
 
 		//summoned particles
@@ -115,22 +133,29 @@ public class EntityEventZombie extends EntityZombie implements IEventMob
 		}
 
 		//damage outside of event
-		if (this.ticksExisted % 20 == 0 && Event.currentEvent.getClass() != ZombieApocalypse.class)
+		if (MobEvents.proxy.getWorldData().currentEvent.getClass() != this.getEvent().getClass() && MobEvents.proxy.getWorldData().currentEvent.getClass() != ChaoticTurmoil.class)
 		{
 			if (this.worldObj.isRemote)
-				this.performHurtAnimation();
+				this.worldObj.spawnParticle(EnumParticleTypes.SMOKE_LARGE, this.posX+rand.nextDouble()-0.5D, this.posY+rand.nextDouble(), this.posZ+rand.nextDouble()-0.5D, 0, 0, 0, 0);
 			else
+				this.setFire(100);
+			if (this.ticksExisted % 20 == 0)
 			{
-				this.damageEntity(DamageSource.outOfWorld, this.getMaxHealth()/3);
-				if (this.getHealth() > 0)
-					this.playSound(this.getHurtSound(), this.getSoundVolume(), this.getSoundPitch());
+				if (this.worldObj.isRemote)
+					this.performHurtAnimation();
 				else
 				{
-					if (this instanceof EntityBardZombie)
-						Minecraft.getMinecraft().getSoundHandler().stopSounds();
-					else if (this instanceof EntityThiefZombie)
-						this.onDeath(DamageSource.outOfWorld);
-					this.playSound(this.getDeathSound(), this.getSoundVolume(), this.getSoundPitch());
+					this.damageEntity(DamageSource.outOfWorld, this.getMaxHealth()/3);
+					if (this.getHealth() > 0)
+						this.playSound(this.getHurtSound(), this.getSoundVolume(), this.getSoundPitch());
+					else
+					{
+						if (this instanceof EntityZombieBard)
+							MobEvents.proxy.stopSounds();
+						else if (this instanceof EntityZombieThief)
+							this.onDeath(DamageSource.outOfWorld);
+						this.playSound(this.getDeathSound(), this.getSoundVolume(), this.getSoundPitch());
+					}
 				}
 			}
 		}
@@ -138,13 +163,33 @@ public class EntityEventZombie extends EntityZombie implements IEventMob
 		//bardsBoost effects
 		if (this.bardsBoost > 0 && this.worldObj.isRemote)
 		{
-			for (int i=0; i<4; i++)
+			for (int i=0; i<EntityEquipmentSlot.values().length; i++)
 			{
-				if (this.getCurrentArmor(i) != null && this.getCurrentArmor(i).getItem() instanceof ItemArmor && ((ItemArmor)this.getCurrentArmor(i).getItem()).getColor(this.getCurrentArmor(i)) != -1)
+				if (this.getItemStackFromSlot(EntityEquipmentSlot.values()[i]) != null && this.getItemStackFromSlot(EntityEquipmentSlot.values()[i]).getItem() instanceof ItemArmor && 
+						((ItemArmor)this.getItemStackFromSlot(EntityEquipmentSlot.values()[i]).getItem()).getArmorMaterial() == ItemArmor.ArmorMaterial.LEATHER && 
+						((ItemArmor)this.getItemStackFromSlot(EntityEquipmentSlot.values()[i]).getItem()).getColor(this.getItemStackFromSlot(EntityEquipmentSlot.values()[i])) != -1)
 				{
-					int color = ((ItemArmor)this.getCurrentArmor(i).getItem()).getColor(this.getCurrentArmor(i));
-					color = color + 5 >= 16777215 ? 0 : color + 5;
-					((ItemArmor)this.getCurrentArmor(i).getItem()).setColor(this.getCurrentArmor(i), color);
+					int color = ((ItemArmor)this.getItemStackFromSlot(EntityEquipmentSlot.values()[i]).getItem()).getColor(this.getItemStackFromSlot(EntityEquipmentSlot.values()[i]));
+					int max = 16776960;
+					int min = 0;
+					int increment = 500;
+					if (increasing)
+						color += increment;
+					else
+						color -= increment;
+					if (color > max)
+					{
+						color = max;
+						increasing = false;
+					}
+					else if (color < min)
+					{
+						color = min;
+						increasing = true;
+					}
+					if (color == -1)
+						color += this.rand.nextBoolean() ? 1 : -1;
+					((ItemArmor)this.getItemStackFromSlot(EntityEquipmentSlot.values()[i]).getItem()).setColor(this.getItemStackFromSlot(EntityEquipmentSlot.values()[i]), color);
 				}
 			}
 			if (rand.nextInt(4) == 0)
@@ -154,16 +199,20 @@ public class EntityEventZombie extends EntityZombie implements IEventMob
 		//stop bardsBoost effects
 		if (this.bardsBoost == 1 && this.worldObj.isRemote)
 		{
-			for (int i=0; i<4; i++)
+			for (int i=0; i<EntityEquipmentSlot.values().length; i++)
 				if (this.armorColor == -1)
 				{
-					if (this.getCurrentArmor(i) != null && this.getCurrentArmor(i).getItem() instanceof ItemArmor && ((ItemArmor)this.getCurrentArmor(i).getItem()).getColor(this.getCurrentArmor(i)) != -1)
-						((ItemArmor)this.getCurrentArmor(i).getItem()).removeColor(this.getCurrentArmor(i));
+					if (this.getItemStackFromSlot(EntityEquipmentSlot.values()[i]) != null && this.getItemStackFromSlot(EntityEquipmentSlot.values()[i]).getItem() instanceof ItemArmor && 
+							((ItemArmor)this.getItemStackFromSlot(EntityEquipmentSlot.values()[i]).getItem()).getArmorMaterial() == ItemArmor.ArmorMaterial.LEATHER &&
+							((ItemArmor)this.getItemStackFromSlot(EntityEquipmentSlot.values()[i]).getItem()).getColor(this.getItemStackFromSlot(EntityEquipmentSlot.values()[i])) != -1)
+						((ItemArmor)this.getItemStackFromSlot(EntityEquipmentSlot.values()[i]).getItem()).removeColor(this.getItemStackFromSlot(EntityEquipmentSlot.values()[i]));
 				}
 				else
 				{
-					if (this.getCurrentArmor(i) != null && this.getCurrentArmor(i).getItem() instanceof ItemArmor && ((ItemArmor)this.getCurrentArmor(i).getItem()).getColor(this.getCurrentArmor(i)) != -1)
-						((ItemArmor)this.getCurrentArmor(i).getItem()).setColor(this.getCurrentArmor(i), this.armorColor);
+					if (this.getItemStackFromSlot(EntityEquipmentSlot.values()[i]) != null && this.getItemStackFromSlot(EntityEquipmentSlot.values()[i]).getItem() instanceof ItemArmor && 
+							((ItemArmor)this.getItemStackFromSlot(EntityEquipmentSlot.values()[i]).getItem()).getArmorMaterial() == ItemArmor.ArmorMaterial.LEATHER &&
+							((ItemArmor)this.getItemStackFromSlot(EntityEquipmentSlot.values()[i]).getItem()).getColor(this.getItemStackFromSlot(EntityEquipmentSlot.values()[i])) != -1)
+						((ItemArmor)this.getItemStackFromSlot(EntityEquipmentSlot.values()[i]).getItem()).setColor(this.getItemStackFromSlot(EntityEquipmentSlot.values()[i]), this.armorColor);
 				}
 		}
 
@@ -173,14 +222,22 @@ public class EntityEventZombie extends EntityZombie implements IEventMob
 		super.onUpdate();
 	}
 
+	@Override //prevents fire damage in sun
+	public float getBrightness(float partialTicks)
+	{
+		return super.getBrightness(partialTicks);//0.0f;
+	}
+
 	public void applyBardsBoost()
 	{
+		if (this instanceof EntityBossZombie)
+			return;
 		this.bardsBoost = 150;
-		this.addPotionEffect(new PotionEffect(Potion.damageBoost.id, 200));
-		this.addPotionEffect(new PotionEffect(Potion.moveSpeed.id, 200));
-		this.addPotionEffect(new PotionEffect(Potion.resistance.id, 200));
-		this.addPotionEffect(new PotionEffect(Potion.regeneration.id, 200));
-		this.addPotionEffect(new PotionEffect(Potion.jump.id, 200, 1));
+		this.addPotionEffect(new PotionEffect(MobEffects.STRENGTH, 200));
+		this.addPotionEffect(new PotionEffect(MobEffects.SPEED, 200));
+		this.addPotionEffect(new PotionEffect(MobEffects.RESISTANCE, 200));
+		this.addPotionEffect(new PotionEffect(MobEffects.REGENERATION, 200));
+		this.addPotionEffect(new PotionEffect(MobEffects.JUMP_BOOST, 200, 1));
 	}
 
 	@Override
@@ -190,41 +247,41 @@ public class EntityEventZombie extends EntityZombie implements IEventMob
 	}
 
 	@Override
-	protected String getLivingSound()
+	protected SoundEvent getAmbientSound()
 	{
-		return this.bardsBoost > 0 ? "note.snare" : MobEvents.MODID+":mob.event_zombie.say";
+		return (this.bardsBoost > 0 || this instanceof EntityZombieBard) ? SoundEvents.BLOCK_NOTE_SNARE : ModSoundEvents.mob_event_zombie_say;
 	}
 
 	@Override
-	protected String getHurtSound()
+	protected SoundEvent getHurtSound()
 	{
-		return this.bardsBoost > 0 ? "note.pling" : MobEvents.MODID+":mob.event_zombie.hurt";
+		return (this.bardsBoost > 0 || this instanceof EntityZombieBard) ? SoundEvents.BLOCK_NOTE_PLING : ModSoundEvents.mob_event_zombie_hurt;
 	}
 
 	@Override
-	protected String getDeathSound()
+	protected SoundEvent getDeathSound()
 	{
-		return this.bardsBoost > 0 ? "note.snare" : MobEvents.MODID+":mob.event_zombie.death";
+		return (this.bardsBoost > 0 || this instanceof EntityZombieBard) ? SoundEvents.BLOCK_NOTE_SNARE : ModSoundEvents.mob_event_zombie_death;
 	}
 
 	@Override
 	protected void playStepSound(BlockPos pos, Block blockIn)
 	{
-		if (this.bardsBoost > 0)
-			this.playSound("note.harp", 1.0F, rand.nextFloat()+1F);
+		if (this.bardsBoost > 0 || this instanceof EntityZombieBard)
+			this.playSound(SoundEvents.BLOCK_NOTE_HARP, 1.0F, rand.nextFloat()+1F);
 		else
-			this.playSound("mob.zombie.step", 0.15F, 1.0F);
+			this.playSound(SoundEvents.ENTITY_ZOMBIE_STEP, 0.15F, 1.0F);
 	}
 
 	@Override
 	protected void applyEntityAttributes()
 	{
 		super.applyEntityAttributes();
-		this.getEntityAttribute(SharedMonsterAttributes.followRange).setBaseValue(60.0D);
+		this.getEntityAttribute(SharedMonsterAttributes.FOLLOW_RANGE).setBaseValue(60.0D);
 	}
 
 	@Override
-	public ItemStack getPickedResult(MovingObjectPosition target)
+	public ItemStack getPickedResult(RayTraceResult target)
 	{
 		return ModItems.getSpawnEgg(this);
 	}
@@ -233,15 +290,14 @@ public class EntityEventZombie extends EntityZombie implements IEventMob
 	protected void setEquipmentBasedOnDifficulty(DifficultyInstance difficulty) 
 	{ 
 		for (int i=0; i<5; i++)
-			this.setEquipmentDropChance(i, 0.01f);
+			this.setDropChance(EntityEquipmentSlot.values()[i], 0.01f);
 		if (this.armorColor > -1)
-			for (int i=0; i<4; i++)
-				if (this.getCurrentArmor(i) != null && this.getCurrentArmor(i).getItem() instanceof ItemArmor && ((ItemArmor)this.getCurrentArmor(i).getItem()).getArmorMaterial() == ItemArmor.ArmorMaterial.LEATHER)
-					((ItemArmor)this.getCurrentArmor(i).getItem()).setColor(this.getCurrentArmor(i), this.armorColor);
+			for (int i=0; i<EntityEquipmentSlot.values().length; i++)
+				if (this.getItemStackFromSlot(EntityEquipmentSlot.values()[i]) != null && this.getItemStackFromSlot(EntityEquipmentSlot.values()[i]).getItem() instanceof ItemArmor && ((ItemArmor)this.getItemStackFromSlot(EntityEquipmentSlot.values()[i]).getItem()).getArmorMaterial() == ItemArmor.ArmorMaterial.LEATHER)
+					((ItemArmor)this.getItemStackFromSlot(EntityEquipmentSlot.values()[i]).getItem()).setColor(this.getItemStackFromSlot(EntityEquipmentSlot.values()[i]), this.armorColor);
 	}
 
-	@Override
-	protected void addRandomDrop()
+	private void addRandomDrop()
 	{
 		if (bookDrops != null && bookDrops.size() > 0)
 			this.entityDropItem(bookDrops.get(rand.nextInt(bookDrops.size())), 0);
@@ -250,8 +306,10 @@ public class EntityEventZombie extends EntityZombie implements IEventMob
 	@Override
 	public IEntityLivingData onInitialSpawn(DifficultyInstance difficulty, IEntityLivingData livingdata)
 	{
+		if (MobEvents.proxy.world != null)
+			this.currentWave = MobEvents.proxy.getWorldData().currentWave;
 		this.setChild(false);
-		this.setVillager(false);
+		this.setVillagerType(null);
 		this.setEquipmentBasedOnDifficulty(difficulty);
 		return livingdata;
 	}
@@ -261,17 +319,18 @@ public class EntityEventZombie extends EntityZombie implements IEventMob
 	{
 		if (!this.worldObj.isRemote && cause.getEntity() instanceof EntityPlayer)
 		{
+			MobEvents.proxy.getWorldData().currentEvent.increaseProgress(progressOnDeath);
+			//drop random drop
 			int i = EnchantmentHelper.getLootingModifier((EntityLivingBase)cause.getEntity());
-			if (this.recentlyHit > 0 && this.rand.nextInt(100) < (20 + i * 5))
+			if (this.recentlyHit > 0 && this.rand.nextInt(100) < (30 + i * 5))
 				this.addRandomDrop();
-		}
-
-		if (cause.getEntity() instanceof EntityPlayer && !(cause.getEntity() instanceof FakePlayer))
-		{
-			Event.currentEvent.increaseProgress(progressOnDeath);
-			this.unlockEntityInBook((EntityPlayer) cause.getEntity());
-			if (!(((EntityPlayer) cause.getEntity()).inventory.hasItem(ModItems.creativeEventBook) || ((EntityPlayer) cause.getEntity()).inventory.hasItem(ModItems.eventBook)))
-				this.dropItem(ModItems.eventBook, 1);
+			//drop event book and unlock entity
+			if (!(cause.getEntity() instanceof FakePlayer))
+			{
+				this.unlockEntityInBook((EntityPlayer) cause.getEntity());
+				if (!(((EntityPlayer) cause.getEntity()).inventory.hasItemStack(new ItemStack(ModItems.creativeEventBook)) || ((EntityPlayer) cause.getEntity()).inventory.hasItemStack(new ItemStack(ModItems.eventBook))))
+					this.dropItem(ModItems.eventBook, 1);
+			}
 		}
 
 		super.onDeath(cause);
@@ -279,20 +338,35 @@ public class EntityEventZombie extends EntityZombie implements IEventMob
 
 	private void unlockEntityInBook(EntityPlayer player)
 	{ 
-		Config.syncFromConfig(player);
-		for (String entity : Config.unlockedEntities)
-			if (entity.equals(this.getName()))
+		int index = MobEvents.proxy.getWorldData().getPlayerIndex(player.getDisplayNameString());
+		if (!this.isNonBoss())
+		{
+			if (!Event.bossDefeated)
 				return;
-		Config.unlockedEntities.add(this.getName());
-		Config.syncToConfig(player);
-		if (!player.worldObj.isRemote)
-			MinecraftServer.getServer().getConfigurationManager().sendChatMsg(new ChatComponentTranslation("Unlocked information about "+(this instanceof EntityThiefZombie ? "Zombie Thieve" : this.getName())+"s in the Event Book").setChatStyle(new ChatStyle().setItalic(true).setColor(EnumChatFormatting.DARK_GRAY)));
+			for (String entity : MobEvents.proxy.getWorldData().unlockedEntities.get(index))
+				if (entity.equals("Zombie Boss"))
+					return;
+			MobEvents.proxy.getWorldData().unlockedEntities.get(index).add("Zombie Boss");
+			MobEvents.proxy.getWorldData().markDirty();
+			if (player.worldObj.isRemote)
+				Event.displayUnlockMessage(player, "Unlocked information about the Zombie Boss in the Event Book");
+		}
+		else 
+		{
+			for (String entity : MobEvents.proxy.getWorldData().unlockedEntities.get(index))
+				if (entity.equals(this.getName()))
+					return;
+			MobEvents.proxy.getWorldData().unlockedEntities.get(index).add(this.getName());
+			MobEvents.proxy.getWorldData().markDirty();
+			if (player.worldObj.isRemote)
+				Event.displayUnlockMessage(player, "Unlocked information about the "+this.getName()+" in the Event Book");
+		}
 	}
 
 	@Override
 	protected boolean canDropLoot()
 	{
-		if (Event.currentEvent.getClass() != ZombieApocalypse.class)
+		if (MobEvents.proxy.getWorldData().currentEvent.getClass() != this.getEvent().getClass() && MobEvents.proxy.getWorldData().currentEvent.getClass() != ChaoticTurmoil.class)
 			return false;
 		else
 			return true;
@@ -331,7 +405,12 @@ public class EntityEventZombie extends EntityZombie implements IEventMob
 	{
 		return this.progressOnDeath;
 	}
-	
+
 	@Override
-	public void doSpecialRender() { }
+	public void doSpecialRender(int displayTicks) { }
+
+	@Override
+	public Event getEvent() {
+		return Event.ZOMBIE_APOCALYPSE;
+	}
 }

@@ -3,7 +3,7 @@ package furgl.mobEvents.client.model.entity;
 import net.minecraft.client.model.ModelZombie;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.entity.Entity;
-import net.minecraft.util.MathHelper;
+import net.minecraft.util.math.MathHelper;
 
 public class ModelZombieThief extends ModelZombie
 {

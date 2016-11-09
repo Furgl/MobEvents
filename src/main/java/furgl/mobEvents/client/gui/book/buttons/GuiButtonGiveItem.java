@@ -24,7 +24,7 @@ public class GuiButtonGiveItem extends GuiButton
 		if (this.visible)
 		{	
 			FontRenderer fontrenderer = mc.fontRendererObj;
-			mc.getTextureManager().bindTexture(buttonTextures);
+			mc.getTextureManager().bindTexture(BUTTON_TEXTURES);
 			GlStateManager.color(1F, 1F, 1F, 1.0F);
 
 			GlStateManager.pushMatrix();

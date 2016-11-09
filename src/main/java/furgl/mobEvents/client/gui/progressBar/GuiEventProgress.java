@@ -1,7 +1,10 @@
 package furgl.mobEvents.client.gui.progressBar;
 
+import furgl.mobEvents.common.MobEvents;
+import furgl.mobEvents.common.Events.ChaoticTurmoil;
 import furgl.mobEvents.common.Events.Event;
 import furgl.mobEvents.common.config.Config;
+import furgl.mobEvents.common.event.EventFogEvent;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.ScaledResolution;
@@ -18,6 +21,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 public class GuiEventProgress extends Gui
 {
 	private Minecraft mc;
+	private final ResourceLocation enchantTexture = new ResourceLocation("textures/misc/enchanted_item_glint.png");
 
 	private static final ResourceLocation texture = new ResourceLocation("mobEvents", "textures/gui/event_progress.png");
 
@@ -29,7 +33,7 @@ public class GuiEventProgress extends Gui
 	@SubscribeEvent(priority=EventPriority.NORMAL)
 	public void onRenderExperienceBar(RenderGameOverlayEvent.Post event) 
 	{
-		if (event.type != ElementType.EXPERIENCE || Event.currentEvent.getClass() == Event.class || Config.eventProgressGuiLocation.equals(Config.eventProgressGuiLocations[Config.NONE])) 
+		if (event.getType() != ElementType.EXPERIENCE || MobEvents.proxy.getWorldData().currentEvent.getClass() == Event.class || Config.eventProgressGuiLocation.equals(Config.eventProgressGuiLocations[Config.NONE])) 
 			return;
 
 		ScaledResolution sr = new ScaledResolution(this.mc);
@@ -55,28 +59,73 @@ public class GuiEventProgress extends Gui
 		GlStateManager.enableBlend();
 		drawTexturedModalRect(xPos, yPos, 0, 0, 123, 40);
 		// You can keep drawing without changing anything
-		int progressBarWidth = (int)(((double)Event.progress / (double)Event.progressNeededForBoss) * 104);
+		int progressBarWidth = (int)(((double)MobEvents.proxy.getWorldData().progress / (double)MobEvents.proxy.getWorldData().progressNeededForBoss) * 104);
 		drawTexturedModalRect(xPos + 9, yPos + 29, 0, 40, progressBarWidth, 3);
-		String s = Event.currentEvent.toString();
+		String s = MobEvents.proxy.getWorldData().currentEvent.getClass() == Event.CHAOTIC_TURMOIL.getClass() ? ((ChaoticTurmoil)MobEvents.proxy.getWorldData().currentEvent).changingName : MobEvents.proxy.getWorldData().currentEvent.toString();
 		yPos += 6;
 		xPos += 60 - this.mc.fontRendererObj.getStringWidth(s)/2;
 		this.mc.fontRendererObj.drawString(s, xPos + 1, yPos, 0);
 		this.mc.fontRendererObj.drawString(s, xPos - 1, yPos, 0);
 		this.mc.fontRendererObj.drawString(s, xPos, yPos + 1, 0);
 		this.mc.fontRendererObj.drawString(s, xPos, yPos - 1, 0);
-		this.mc.fontRendererObj.drawString(s, xPos, yPos, Event.currentEvent.color);
+		this.mc.fontRendererObj.drawString(s, xPos, yPos, MobEvents.proxy.getWorldData().currentEvent.color);
 		yPos += 11;
 		xPos += this.mc.fontRendererObj.getStringWidth(s)/2;
-		if (Event.currentWave == 0)
+		if (MobEvents.proxy.getWorldData().currentWave == 0)
 			s = "";
 		else
-			s = Event.currentWave < 4 ? "Wave " + Event.currentWave : "Boss Wave";
-		xPos -= this.mc.fontRendererObj.getStringWidth(s)/2;
-		this.mc.fontRendererObj.drawString(s, xPos + 1, yPos, 0);
-		this.mc.fontRendererObj.drawString(s, xPos - 1, yPos, 0);
-		this.mc.fontRendererObj.drawString(s, xPos, yPos + 1, 0);
-		this.mc.fontRendererObj.drawString(s, xPos, yPos - 1, 0);
-		this.mc.fontRendererObj.drawString(s, xPos, yPos, Event.currentWave == 4 ? 9961727 : 13036742);
-		GlStateManager.popAttrib();
+			s = MobEvents.proxy.getWorldData().currentWave < 4 ? "Wave " + MobEvents.proxy.getWorldData().currentWave : "Boss Wave";
+			xPos -= this.mc.fontRendererObj.getStringWidth(s)/2;
+			this.mc.fontRendererObj.drawString(s, xPos + 1, yPos, 0);
+			this.mc.fontRendererObj.drawString(s, xPos - 1, yPos, 0);
+			this.mc.fontRendererObj.drawString(s, xPos, yPos + 1, 0);
+			this.mc.fontRendererObj.drawString(s, xPos, yPos - 1, 0);
+			this.mc.fontRendererObj.drawString(s, xPos, yPos, MobEvents.proxy.getWorldData().currentWave == 4 ? 9961727 : 13036742);
+
+			//if left
+			if (Config.eventProgressGuiLocation.equalsIgnoreCase(Config.eventProgressGuiLocations[Config.TOP_LEFT]) || Config.eventProgressGuiLocation.equalsIgnoreCase(Config.eventProgressGuiLocations[Config.BOTTOM_LEFT]))
+				xPos = 2;
+			else//if right
+				xPos = sr.getScaledWidth() - 125;
+			//if top
+			if (Config.eventProgressGuiLocation.equalsIgnoreCase(Config.eventProgressGuiLocations[Config.TOP_LEFT]) || Config.eventProgressGuiLocation.equalsIgnoreCase(Config.eventProgressGuiLocations[Config.TOP_RIGHT]))
+				yPos = 2;
+			else//if bottom
+				yPos = sr.getScaledHeight() - 42;
+
+			//creative effect
+			GlStateManager.pushMatrix();
+			GlStateManager.enableBlend();
+			GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
+			GlStateManager.blendFunc(770, 771);
+
+			GlStateManager.color(EventFogEvent.currentRed, EventFogEvent.currentGreen, EventFogEvent.currentBlue, 0.2F);
+			GlStateManager.depthMask(false);
+			GlStateManager.depthFunc(514);
+			GlStateManager.disableLighting();
+			GlStateManager.blendFunc(768, 1);
+			mc.getTextureManager().bindTexture(enchantTexture);
+			GlStateManager.matrixMode(5890);
+			GlStateManager.pushMatrix();
+			GlStateManager.scale(1.0F, 1.0F, 1.0F);
+			float f = (float)(Minecraft.getSystemTime() % 3000L) / 3000.0F / 1.0F;
+			GlStateManager.translate(f, 0.0F, 0.0F);
+			GlStateManager.rotate(-50.0F, 0.0F, 0.0F, 1.0F);
+			drawTexturedModalRect(xPos, yPos, 0, 0, 123, 40);
+			GlStateManager.popMatrix();
+			GlStateManager.pushMatrix();
+			GlStateManager.scale(1.0F, 1.0F, 1.0F);
+			float f1 = (float)(Minecraft.getSystemTime() % 4873L) / 4873.0F / 1.0F;
+			GlStateManager.translate(-f1, 0.0F, 0.0F);
+			GlStateManager.rotate(10.0F, 0.0F, 0.0F, 1.0F);
+			drawTexturedModalRect(xPos, yPos, 0, 0, 123, 40);
+			GlStateManager.popMatrix();
+			GlStateManager.matrixMode(5888);
+			GlStateManager.blendFunc(770, 771);
+			GlStateManager.enableLighting();
+			GlStateManager.depthFunc(515);
+			GlStateManager.depthMask(true);
+			GlStateManager.popMatrix();
+			GlStateManager.popAttrib();
 	}
 }

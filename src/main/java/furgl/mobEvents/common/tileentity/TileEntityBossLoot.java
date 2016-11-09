@@ -1,11 +1,14 @@
 package furgl.mobEvents.common.tileentity;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
 import com.google.common.collect.Lists;
 
+import furgl.mobEvents.common.MobEvents;
 import furgl.mobEvents.common.Events.Event;
+import furgl.mobEvents.common.event.EventFogEvent;
 import furgl.mobEvents.common.inventory.ContainerBossLoot;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockChest;
@@ -16,6 +19,7 @@ import net.minecraft.entity.passive.EntitySheep;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.init.Blocks;
+import net.minecraft.init.SoundEvents;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.ContainerChest;
 import net.minecraft.inventory.IInventory;
@@ -25,14 +29,19 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.tileentity.TileEntityLockable;
-import net.minecraft.util.AxisAlignedBB;
-import net.minecraft.util.BlockPos;
 import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.ITickable;
+import net.minecraft.util.SoundCategory;
+import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.MinecraftException;
+import net.minecraft.world.World;
+import net.minecraft.world.chunk.Chunk;
+import net.minecraft.world.chunk.storage.IChunkLoader;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-public class TileEntityBossLoot extends TileEntityLockable implements ITickable, IInventory
+public class TileEntityBossLoot extends TileEntityLockable implements ITickable, IInventory, IChunkLoader
 {
 	private final List<TileEntityBossLoot.BeamSegment> beamSegments = Lists.<TileEntityBossLoot.BeamSegment>newArrayList();
 	@SideOnly(Side.CLIENT)
@@ -48,7 +57,7 @@ public class TileEntityBossLoot extends TileEntityLockable implements ITickable,
 	public int numPlayersUsing;
 	/** Server sync counter (once per 20 ticks) */
 	private int ticksSinceSync;
-	private int cachedChestType;
+	private BlockChest.Type cachedChestType;
 	private String customName;
 
 	public TileEntityBossLoot()
@@ -60,6 +69,22 @@ public class TileEntityBossLoot extends TileEntityLockable implements ITickable,
 	public Container createContainer(InventoryPlayer playerInventory, EntityPlayer playerIn)
 	{
 		return new ContainerBossLoot(playerInventory, this, playerIn);
+	}
+
+	@Override
+	public void onChunkUnload()
+	{
+		/*if (!this.worldObj.isRemote && this.worldObj.getClosestPlayerToEntity(this, -1) != null)
+		{
+			if (MobEvents.DEBUG)
+				System.out.println("Unloaded "+ pos);
+			EntityPlayer player = this.worldObj.getClosestPlayerToEntity(pos.getX(), pos.getY(), pos.getZ(), -1);
+			if (player != null && MobEvents.proxy.getWorldData().currentEvent.boss != null && this.getDistanceSq(player.posX, player.posY, player.posZ) > 60D && MobEvents.proxy.getWorldData().currentEvent.boss.getPosition().equals(this.getPos().down(2)))
+			{
+				if (MobEvents.proxy.getWorldData().currentEvent.boss != null && MobEvents.proxy.getWorldData().currentEvent.boss.stage == 2)
+					MobEvents.proxy.getWorldData().currentEvent.boss.tpPlayerAndBoss(this.worldObj.getClosestPlayerToEntity(pos.getX(), pos.getY(), pos.getZ(), -1));
+			}
+		}*/
 	}
 
 	@Override
@@ -193,7 +218,7 @@ public class TileEntityBossLoot extends TileEntityLockable implements ITickable,
 		}
 	}
 
-	public void writeToNBT(NBTTagCompound compound)
+	public NBTTagCompound writeToNBT(NBTTagCompound compound)
 	{
 		super.writeToNBT(compound);
 		NBTTagList nbttaglist = new NBTTagList();
@@ -215,6 +240,7 @@ public class TileEntityBossLoot extends TileEntityLockable implements ITickable,
 		{
 			compound.setString("CustomName", this.customName);
 		}
+		return compound;
 	}
 
 	/**
@@ -240,13 +266,17 @@ public class TileEntityBossLoot extends TileEntityLockable implements ITickable,
 	{
 		//beam
 		//if (this.worldObj.getTotalWorldTime() % 80L == 0L)
-			this.updateSegmentColors();
+		this.updateSegmentColors();
 
+		//added
+		if (this.numPlayersUsing < 0)
+			this.numPlayersUsing = 0;
+		
 		int i = this.pos.getX();
 		int j = this.pos.getY();
 		int k = this.pos.getZ();
 		++this.ticksSinceSync;
-
+		//delete if empty
 		if (this.prevLidAngle > 0 && this.lidAngle <= 0)
 		{
 			boolean empty = true;
@@ -259,7 +289,7 @@ public class TileEntityBossLoot extends TileEntityLockable implements ITickable,
 					for (int l=0; l<30; l++)
 						this.worldObj.spawnParticle(EnumParticleTypes.SMOKE_NORMAL, this.pos.getX()+0.5D+this.worldObj.rand.nextDouble()-0.5D, this.pos.getY()+1+this.worldObj.rand.nextDouble()-0.5D, this.pos.getZ()+0.5D+this.worldObj.rand.nextDouble()-0.5D, 0, 0, 0, 0);
 				else {
-					this.worldObj.playSoundEffect(i, j, k, "random.fizz", 1.0F, 1.5F);
+					this.worldObj.playSound(null, i, j, k, SoundEvents.BLOCK_FIRE_EXTINGUISH, SoundCategory.BLOCKS, 1.0F, 1.5F);
 					this.worldObj.setBlockToAir(this.pos);
 				}
 			}
@@ -292,7 +322,7 @@ public class TileEntityBossLoot extends TileEntityLockable implements ITickable,
 			double d1 = (double)i + 0.5D;
 			double d2 = (double)k + 0.5D;
 
-			this.worldObj.playSoundEffect(d1, (double)j + 0.5D, d2, "random.chestopen", 0.5F, this.worldObj.rand.nextFloat() * 0.1F + 0.9F);
+            this.worldObj.playSound((EntityPlayer)null, d1, (double)j + 0.5D, d2, SoundEvents.BLOCK_CHEST_OPEN, SoundCategory.BLOCKS, 0.5F, this.worldObj.rand.nextFloat() * 0.1F + 0.9F);
 		}
 
 		if (this.numPlayersUsing == 0 && this.lidAngle > 0.0F || this.numPlayersUsing > 0 && this.lidAngle < 1.0F)
@@ -300,18 +330,12 @@ public class TileEntityBossLoot extends TileEntityLockable implements ITickable,
 			float f2 = this.lidAngle;
 
 			if (this.numPlayersUsing > 0)
-			{
 				this.lidAngle += f1;
-			}
 			else
-			{
 				this.lidAngle -= f1;
-			}
 
 			if (this.lidAngle > 1.0F)
-			{
 				this.lidAngle = 1.0F;
-			}
 
 			float f3 = 0.5F;
 
@@ -319,19 +343,17 @@ public class TileEntityBossLoot extends TileEntityLockable implements ITickable,
 			{
 				double d3 = (double)i + 0.5D;
 				double d0 = (double)k + 0.5D;
-
+				//delete if empty
 				boolean empty = true;
 				for (i=0; i<this.getSizeInventory(); i++)
 					if (this.getStackInSlot(i) != null)
 						empty = false;
 				if (!empty)
-					this.worldObj.playSoundEffect(d3, (double)j + 0.5D, d0, "random.chestclosed", 0.5F, this.worldObj.rand.nextFloat() * 0.1F + 0.9F);
+	                this.worldObj.playSound((EntityPlayer)null, d3, (double)j + 0.5D, d0, SoundEvents.BLOCK_CHEST_CLOSE, SoundCategory.BLOCKS, 0.5F, this.worldObj.rand.nextFloat() * 0.1F + 0.9F);
 			}
 
 			if (this.lidAngle < 0.0F)
-			{
 				this.lidAngle = 0.0F;
-			}
 		}
 	}
 
@@ -353,9 +375,7 @@ public class TileEntityBossLoot extends TileEntityLockable implements ITickable,
 		if (!player.isSpectator())
 		{
 			if (this.numPlayersUsing < 0)
-			{
 				this.numPlayersUsing = 0;
-			}
 
 			++this.numPlayersUsing;
 			this.worldObj.addBlockEvent(this.pos, this.getBlockType(), 1, this.numPlayersUsing);
@@ -373,21 +393,6 @@ public class TileEntityBossLoot extends TileEntityLockable implements ITickable,
 			this.worldObj.notifyNeighborsOfStateChange(this.pos, this.getBlockType());
 			this.worldObj.notifyNeighborsOfStateChange(this.pos.down(), this.getBlockType());
 		}
-
-		/*boolean empty = true;
-		for (int i=0; i<this.getSizeInventory(); i++)
-			if (this.getStackInSlot(i) != null)
-				empty = false;
-		if (empty)
-		{
-			if (this.worldObj.isRemote)
-				for (int i=0; i<5; i++)
-					this.worldObj.spawnParticle(EnumParticleTypes.SMOKE_LARGE, this.pos.getX()+0.5D+this.worldObj.rand.nextDouble()-0.5D, this.pos.getY()+1+this.worldObj.rand.nextDouble()-0.5D, this.pos.getZ()+0.5D+this.worldObj.rand.nextDouble()-0.5D, 0, 0, 0, 0);
-			else {
-				this.worldObj.playSoundAtEntity(player, "liquid.lavapop", 1.0F, 1.5F);
-				this.worldObj.setBlockToAir(this.pos);
-			}
-		}*/
 	}
 
 
@@ -400,20 +405,20 @@ public class TileEntityBossLoot extends TileEntityLockable implements ITickable,
 		this.updateContainingBlockInfo();
 	}
 
-	public int getChestType()
-	{
-		if (this.cachedChestType == -1)
-		{
-			if (this.worldObj == null || !(this.getBlockType() instanceof BlockChest))
-			{
-				return 0;
-			}
+	public BlockChest.Type getChestType()
+    {
+        if (this.cachedChestType == null)
+        {
+            if (this.worldObj == null || !(this.getBlockType() instanceof BlockChest))
+            {
+                return BlockChest.Type.BASIC;
+            }
 
-			this.cachedChestType = ((BlockChest)this.getBlockType()).chestType;
-		}
+            this.cachedChestType = ((BlockChest)this.getBlockType()).chestType;
+        }
 
-		return this.cachedChestType;
-	}
+        return this.cachedChestType;
+    }
 
 	public String getGuiID()
 	{
@@ -437,12 +442,10 @@ public class TileEntityBossLoot extends TileEntityLockable implements ITickable,
 	public void clear()
 	{
 		for (int i = 0; i < this.chestContents.length; ++i)
-		{
 			this.chestContents[i] = null;
-		}
 	}
 
-	//TODO beamm
+	//TODO beam
 
 	private void updateSegmentColors()
 	{
@@ -451,25 +454,29 @@ public class TileEntityBossLoot extends TileEntityLockable implements ITickable,
 		int l = this.pos.getZ();
 		this.beamSegments.clear();
 		//this.isComplete = true;
-		TileEntityBossLoot.BeamSegment tileentitybeacon$beamsegment = new TileEntityBossLoot.BeamSegment(new float[]{Event.currentEvent.red, Event.currentEvent.green, Event.currentEvent.blue}/*EntitySheep.func_175513_a(EnumDyeColor.WHITE)*/);
+		TileEntityBossLoot.BeamSegment tileentitybeacon$beamsegment;
+		if (MobEvents.proxy.getWorldData().currentEvent.getClass() != Event.class)
+			tileentitybeacon$beamsegment = new TileEntityBossLoot.BeamSegment(new float[]{EventFogEvent.currentRed, EventFogEvent.currentGreen, EventFogEvent.currentBlue}/*EntitySheep.func_175513_a(EnumDyeColor.WHITE)*/);
+		else
+			tileentitybeacon$beamsegment = new TileEntityBossLoot.BeamSegment(new float[]{1, 1, 1});
 		this.beamSegments.add(tileentitybeacon$beamsegment);
 		boolean flag = true;
 		BlockPos.MutableBlockPos blockpos$mutableblockpos = new BlockPos.MutableBlockPos();
 
 		for (int i1 = k + 1; i1 < 256; ++i1)
 		{
-			IBlockState iblockstate = this.worldObj.getBlockState(blockpos$mutableblockpos.set(j, i1, l));
+			IBlockState iblockstate = this.worldObj.getBlockState(blockpos$mutableblockpos.setPos(j, i1, l));
 			float[] afloat;
 
-			if (iblockstate.getBlock() == Blocks.stained_glass)
+			if (iblockstate.getBlock() == Blocks.STAINED_GLASS)
 			{
-				afloat = EntitySheep.func_175513_a((EnumDyeColor)iblockstate.getValue(BlockStainedGlass.COLOR));
+				afloat = EntitySheep.getDyeRgb((EnumDyeColor)iblockstate.getValue(BlockStainedGlass.COLOR));
 			}
 			else
 			{
-				if (iblockstate.getBlock() != Blocks.stained_glass_pane)
+				if (iblockstate.getBlock() != Blocks.STAINED_GLASS)
 				{
-					if (iblockstate.getBlock().getLightOpacity() >= 15 && iblockstate.getBlock() != Blocks.bedrock)
+					if (iblockstate.getLightOpacity(this.worldObj, blockpos$mutableblockpos) >= 15 && iblockstate.getBlock() != Blocks.BEDROCK)
 					{
 						//this.isComplete = false;
 						this.beamSegments.clear();
@@ -480,7 +487,7 @@ public class TileEntityBossLoot extends TileEntityLockable implements ITickable,
 					continue;
 				}
 
-				afloat = EntitySheep.func_175513_a((EnumDyeColor)iblockstate.getValue(BlockStainedGlassPane.COLOR));
+				afloat = EntitySheep.getDyeRgb((EnumDyeColor)iblockstate.getValue(BlockStainedGlassPane.COLOR));
 			}
 
 			if (!flag)
@@ -596,7 +603,7 @@ public class TileEntityBossLoot extends TileEntityLockable implements ITickable,
 
 	@Override
 	@SideOnly(Side.CLIENT)
-	public net.minecraft.util.AxisAlignedBB getRenderBoundingBox()
+	public AxisAlignedBB getRenderBoundingBox()
 	{
 		return super.getRenderBoundingBox().expand(100, 100, 100);
 	}
@@ -631,5 +638,30 @@ public class TileEntityBossLoot extends TileEntityLockable implements ITickable,
 		{
 			return this.height;
 		}
+	}
+
+	@Override
+	public Chunk loadChunk(World worldIn, int x, int z) throws IOException {
+		return null;
+	}
+
+	@Override
+	public void saveChunk(World worldIn, Chunk chunkIn) throws MinecraftException, IOException {
+
+	}
+
+	@Override
+	public void saveExtraChunkData(World worldIn, Chunk chunkIn) throws IOException {
+
+	}
+
+	@Override
+	public void chunkTick() {
+
+	}
+
+	@Override
+	public void saveExtraData() {
+
 	}
 }

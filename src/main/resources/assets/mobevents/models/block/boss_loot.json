@@ -1,4 +1,6 @@
 {
-    "parent": "block/oak_planks"
+    "parent": "block/oak_planks",
+    "textures": {
+        "particle": "blocks/snow"
+    }
 }
-

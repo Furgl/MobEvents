@@ -1,5 +1,13 @@
 package furgl.mobEvents.common.item;
 
+import java.util.List;
+import java.util.UUID;
+
+import javax.annotation.Nullable;
+
+import furgl.mobEvents.common.MobEvents;
+import furgl.mobEvents.common.Events.Event;
+import furgl.mobEvents.common.entity.IEventMob;
 import net.minecraft.block.BlockFence;
 import net.minecraft.block.BlockLiquid;
 import net.minecraft.block.state.IBlockState;
@@ -12,46 +20,72 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.stats.StatList;
 import net.minecraft.tileentity.MobSpawnerBaseLogic;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.tileentity.TileEntityMobSpawner;
-import net.minecraft.util.BlockPos;
+import net.minecraft.util.ActionResult;
+import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumFacing;
-import net.minecraft.util.MathHelper;
-import net.minecraft.util.MovingObjectPosition;
+import net.minecraft.util.EnumHand;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 public class ItemEventMobSpawnEgg extends Item 
 {
 	public String entityName;
-	
+
 	public ItemEventMobSpawnEgg(String entityName)
 	{
 		this.entityName = entityName;
 	}
 
-	/**
-	 * Called when a Block is right-clicked with this Item
-	 *  
-	 * @param pos The block being right-clicked
-	 * @param side The side being right-clicked
-	 */
-	public boolean onItemUse(ItemStack stack, EntityPlayer playerIn, World worldIn, BlockPos pos, EnumFacing side, float hitX, float hitY, float hitZ)
+	public Event getEvent() {
+		return ((IEventMob)EntityList.createEntityByName(entityName, MobEvents.proxy.world)).getEvent();
+	}
+
+	@SideOnly(Side.CLIENT)
+	@Override
+	public boolean hasEffect(ItemStack stack)
+	{
+		return this.entityName.contains("Boss");
+	}
+
+	@Override
+	@SideOnly(Side.CLIENT)
+	public void addInformation(ItemStack stack, EntityPlayer player, List<String> tooltip, boolean advanced)
+	{
+		tooltip.add(TextFormatting.BLUE+"Only spawns during "+this.getEvent());
+		if (this.entityName.contains("Boss"))
+			tooltip.add(TextFormatting.GOLD+"Takes up 5x5x3 area");
+
+		super.addInformation(stack, player, tooltip, advanced);
+	}
+
+	@Override
+	//mostly copied from ItemMonsterPlacer
+	public EnumActionResult onItemUse(ItemStack stack, EntityPlayer playerIn, World worldIn, BlockPos pos, EnumHand hand, EnumFacing side, float hitX, float hitY, float hitZ)
 	{
 		if (worldIn.isRemote)
 		{
-			return true;
+            return EnumActionResult.SUCCESS;
 		}
-		else if (!playerIn.canPlayerEdit(pos.offset(side), side, stack))
+		else if (!playerIn.canPlayerEdit(pos.offset(side), side, stack) || MobEvents.proxy.getWorldData().currentEvent.getClass() != this.getEvent().getClass())
 		{
-			return false;
+            return EnumActionResult.FAIL;
 		}
 		else
 		{
 			IBlockState iblockstate = worldIn.getBlockState(pos);
 
-			if (iblockstate.getBlock() == Blocks.mob_spawner)
+			if (iblockstate.getBlock() == Blocks.MOB_SPAWNER)
 			{
 				TileEntity tileentity = worldIn.getTileEntity(pos);
 
@@ -60,14 +94,14 @@ public class ItemEventMobSpawnEgg extends Item
 					MobSpawnerBaseLogic mobspawnerbaselogic = ((TileEntityMobSpawner)tileentity).getSpawnerBaseLogic();
 					mobspawnerbaselogic.setEntityName(this.entityName);
 					tileentity.markDirty();
-					worldIn.markBlockForUpdate(pos);
+					worldIn.notifyBlockUpdate(pos, iblockstate, iblockstate, 3);
 
 					if (!playerIn.capabilities.isCreativeMode)
 					{
 						--stack.stackSize;
 					}
 
-					return true;
+                    return EnumActionResult.SUCCESS;
 				}
 			}
 
@@ -94,68 +128,112 @@ public class ItemEventMobSpawnEgg extends Item
 				}
 			}
 
-			return true;
+            return EnumActionResult.SUCCESS;
 		}
 	}
 
-	/**
-	 * Called whenever this item is equipped and the right mouse button is pressed. Args: itemStack, world, entityPlayer
-	 */
-	public ItemStack onItemRightClick(ItemStack itemStackIn, World worldIn, EntityPlayer playerIn)
-	{
-		if (worldIn.isRemote)
-		{
-			return itemStackIn;
-		}
-		else
-		{
-			MovingObjectPosition movingobjectposition = this.getMovingObjectPositionFromPlayer(worldIn, playerIn, true);
+	@Override
+	//100% copied from ItemMonsterPlacer
+	public ActionResult<ItemStack> onItemRightClick(ItemStack itemStackIn, World worldIn, EntityPlayer playerIn, EnumHand hand)
+    {
+        if (worldIn.isRemote)
+        {
+            return new ActionResult(EnumActionResult.PASS, itemStackIn);
+        }
+        else
+        {
+            RayTraceResult raytraceresult = this.rayTrace(worldIn, playerIn, true);
 
-			if (movingobjectposition == null)
-			{
-				return itemStackIn;
-			}
-			else
-			{
-				if (movingobjectposition.typeOfHit == MovingObjectPosition.MovingObjectType.BLOCK)
-				{
-					BlockPos blockpos = movingobjectposition.getBlockPos();
+            if (raytraceresult != null && raytraceresult.typeOfHit == RayTraceResult.Type.BLOCK)
+            {
+                BlockPos blockpos = raytraceresult.getBlockPos();
 
-					if (!worldIn.isBlockModifiable(playerIn, blockpos))
-					{
-						return itemStackIn;
-					}
+                if (!(worldIn.getBlockState(blockpos).getBlock() instanceof BlockLiquid))
+                {
+                    return new ActionResult(EnumActionResult.PASS, itemStackIn);
+                }
+                else if (worldIn.isBlockModifiable(playerIn, blockpos) && playerIn.canPlayerEdit(blockpos, raytraceresult.sideHit, itemStackIn))
+                {
+                    Entity entity = spawnCreature(worldIn, getEntityIdFromItem(itemStackIn), (double)blockpos.getX() + 0.5D, (double)blockpos.getY() + 0.5D, (double)blockpos.getZ() + 0.5D);
 
-					if (!playerIn.canPlayerEdit(blockpos, movingobjectposition.sideHit, itemStackIn))
-					{
-						return itemStackIn;
-					}
+                    if (entity == null)
+                    {
+                        return new ActionResult(EnumActionResult.PASS, itemStackIn);
+                    }
+                    else
+                    {
+                        if (entity instanceof EntityLivingBase && itemStackIn.hasDisplayName())
+                        {
+                            entity.setCustomNameTag(itemStackIn.getDisplayName());
+                        }
 
-					if (worldIn.getBlockState(blockpos).getBlock() instanceof BlockLiquid)
-					{
-						Entity entity = spawnCreature(worldIn, this.entityName, (double)blockpos.getX() + 0.5D, (double)blockpos.getY() + 0.5D, (double)blockpos.getZ() + 0.5D);
+                        applyItemEntityDataToEntity(worldIn, playerIn, itemStackIn, entity);
 
-						if (entity != null)
-						{
-							if (entity instanceof EntityLivingBase && itemStackIn.hasDisplayName())
-							{
-								((EntityLiving)entity).setCustomNameTag(itemStackIn.getDisplayName());
-							}
+                        if (!playerIn.capabilities.isCreativeMode)
+                        {
+                            --itemStackIn.stackSize;
+                        }
 
-							if (!playerIn.capabilities.isCreativeMode)
-							{
-								--itemStackIn.stackSize;
-							}
+                        playerIn.addStat(StatList.getObjectUseStats(this));
+                        return new ActionResult(EnumActionResult.SUCCESS, itemStackIn);
+                    }
+                }
+                else
+                {
+                    return new ActionResult(EnumActionResult.FAIL, itemStackIn);
+                }
+            }
+            else
+            {
+                return new ActionResult(EnumActionResult.PASS, itemStackIn);
+            }
+        }
+    }
+	
+	//100% copied from ItemMonsterPlacer
+	public static void applyItemEntityDataToEntity(World entityWorld, @Nullable EntityPlayer player, ItemStack stack, @Nullable Entity targetEntity)
+    {
+        MinecraftServer minecraftserver = entityWorld.getMinecraftServer();
 
-							playerIn.triggerAchievement(StatList.objectUseStats[Item.getIdFromItem(this)]);
-						}
-					}
-				}
+        if (minecraftserver != null && targetEntity != null)
+        {
+            NBTTagCompound nbttagcompound = stack.getTagCompound();
 
-				return itemStackIn;
-			}
-		}
-	}
+            if (nbttagcompound != null && nbttagcompound.hasKey("EntityTag", 10))
+            {
+                if (!entityWorld.isRemote && targetEntity.ignoreItemEntityData() && (player == null || !minecraftserver.getPlayerList().canSendCommands(player.getGameProfile())))
+                {
+                    return;
+                }
+
+                NBTTagCompound nbttagcompound1 = targetEntity.writeToNBT(new NBTTagCompound());
+                UUID uuid = targetEntity.getUniqueID();
+                nbttagcompound1.merge(nbttagcompound.getCompoundTag("EntityTag"));
+                targetEntity.setUniqueId(uuid);
+                targetEntity.readFromNBT(nbttagcompound1);
+            }
+        }
+    }
+	
+	//100% copied from ItemMonsterPlacer
+	public static String getEntityIdFromItem(ItemStack stack)
+    {
+        NBTTagCompound nbttagcompound = stack.getTagCompound();
+
+        if (nbttagcompound == null)
+        {
+            return null;
+        }
+        else if (!nbttagcompound.hasKey("EntityTag", 10))
+        {
+            return null;
+        }
+        else
+        {
+            NBTTagCompound nbttagcompound1 = nbttagcompound.getCompoundTag("EntityTag");
+            return !nbttagcompound1.hasKey("id", 8) ? null : nbttagcompound1.getString("id");
+        }
+    }
 
 	/**
 	 * Spawns the creature specified by the egg's type in the location specified by the last three parameters.
@@ -163,10 +241,8 @@ public class ItemEventMobSpawnEgg extends Item
 	 */
 	public static Entity spawnCreature(World worldIn, String name, double x, double y, double z)
 	{
-		if (!EntityList.stringToClassMapping.containsKey(name))
-		{
+		if (name != null && !EntityList.isStringValidEntityName(name))
 			return null;
-		}
 		else
 		{
 			Entity entity = null;
@@ -175,16 +251,16 @@ public class ItemEventMobSpawnEgg extends Item
 			{
 				entity = EntityList.createEntityByName(name, worldIn);
 
-				if (entity instanceof EntityLivingBase)
-				{
-					EntityLiving entityliving = (EntityLiving)entity;
-					entity.setLocationAndAngles(x, y, z, MathHelper.wrapAngleTo180_float(worldIn.rand.nextFloat() * 360.0F), 0.0F);
-					entityliving.rotationYawHead = entityliving.rotationYaw;
-					entityliving.renderYawOffset = entityliving.rotationYaw;
-					entityliving.onInitialSpawn(worldIn.getDifficultyForLocation(new BlockPos(entityliving)), (IEntityLivingData)null);
-					worldIn.spawnEntityInWorld(entity);
-					entityliving.playLivingSound();
-				}
+                if (entity instanceof EntityLivingBase)
+                {
+                    EntityLiving entityliving = (EntityLiving)entity;
+                    entity.setLocationAndAngles(x, y, z, MathHelper.wrapDegrees(worldIn.rand.nextFloat() * 360.0F), 0.0F);
+                    entityliving.rotationYawHead = entityliving.rotationYaw;
+                    entityliving.renderYawOffset = entityliving.rotationYaw;
+                    entityliving.onInitialSpawn(worldIn.getDifficultyForLocation(new BlockPos(entityliving)), (IEntityLivingData)null);
+                    worldIn.spawnEntityInWorld(entity);
+                    entityliving.playLivingSound();
+                }
 			}
 			return entity;
 		}

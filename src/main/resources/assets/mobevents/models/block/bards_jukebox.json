@@ -1,0 +1,7 @@
+{
+    "parent": "block/cube_top",
+    "textures": {
+        "top": "mobevents:blocks/bards_jukebox_top",
+        "side": "mobevents:blocks/bards_jukebox_side"
+    }
+}

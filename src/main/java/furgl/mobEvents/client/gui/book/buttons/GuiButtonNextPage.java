@@ -25,7 +25,7 @@ public class GuiButtonNextPage extends GuiButton
 	{
 		if (this.visible)
 		{
-			boolean flag = mouseX >= this.xPosition && mouseY >= this.yPosition && mouseX < this.xPosition + this.width && mouseY < this.yPosition + this.height;
+			this.hovered = mouseX >= this.xPosition && mouseY >= this.yPosition && mouseX < this.xPosition + this.width && mouseY < this.yPosition + this.height;
 			mc.getTextureManager().bindTexture(book.bookPageTexture);
 			GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
 			GlStateManager.disableLighting();
@@ -35,7 +35,7 @@ public class GuiButtonNextPage extends GuiButton
 			GlStateManager.blendFunc(770, 771);
 			int i = 3;
 			int j = 122;
-			if (flag)
+			if (hovered)
 				i += 23;
 			if (this.nextPage)
 				j -= 14;

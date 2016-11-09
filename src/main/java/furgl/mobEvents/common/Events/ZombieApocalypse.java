@@ -3,39 +3,41 @@ package furgl.mobEvents.common.Events;
 import java.util.ArrayList;
 
 import furgl.mobEvents.common.MobEvents;
-import furgl.mobEvents.common.entity.ZombieApocalypse.EntityBardZombie;
-import furgl.mobEvents.common.entity.ZombieApocalypse.EntityBossZombieSpawner;
-import furgl.mobEvents.common.entity.ZombieApocalypse.EntityCloneZombie;
-import furgl.mobEvents.common.entity.ZombieApocalypse.EntityEventZombie;
-import furgl.mobEvents.common.entity.ZombieApocalypse.EntityJumperZombie;
-import furgl.mobEvents.common.entity.ZombieApocalypse.EntityMinionZombie;
-import furgl.mobEvents.common.entity.ZombieApocalypse.EntityPyromaniacZombie;
-import furgl.mobEvents.common.entity.ZombieApocalypse.EntityRiderZombie;
-import furgl.mobEvents.common.entity.ZombieApocalypse.EntityRuntZombie;
-import furgl.mobEvents.common.entity.ZombieApocalypse.EntitySummonerZombie;
-import furgl.mobEvents.common.entity.ZombieApocalypse.EntityThiefZombie;
-import furgl.mobEvents.common.entity.ZombieApocalypse.IEventMob;
-import net.minecraft.entity.EntityLiving;
+import furgl.mobEvents.common.entity.IEventMob;
+import furgl.mobEvents.common.entity.ZombieApocalypse.EntityZombieBard;
+import furgl.mobEvents.common.entity.ZombieApocalypse.EntityZombieClone;
+import furgl.mobEvents.common.entity.ZombieApocalypse.EntityZombieJumper;
+import furgl.mobEvents.common.entity.ZombieApocalypse.EntityZombieMinion;
+import furgl.mobEvents.common.entity.ZombieApocalypse.EntityZombiePyromaniac;
+import furgl.mobEvents.common.entity.ZombieApocalypse.EntityZombieRider;
+import furgl.mobEvents.common.entity.ZombieApocalypse.EntityZombieRunt;
+import furgl.mobEvents.common.entity.ZombieApocalypse.EntityZombieSummoner;
+import furgl.mobEvents.common.entity.ZombieApocalypse.EntityZombieThief;
+import furgl.mobEvents.common.entity.bosses.spawner.EntityZombieBossSpawner;
+import furgl.mobEvents.common.sound.ModSoundEvents;
 import net.minecraft.entity.EnumCreatureType;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.ChatComponentTranslation;
-import net.minecraft.util.ChatStyle;
-import net.minecraft.util.EnumChatFormatting;
+import net.minecraft.init.SoundEvents;
+import net.minecraft.util.SoundEvent;
+import net.minecraft.util.text.Style;
+import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.TextComponentTranslation;
+import net.minecraft.util.text.TextFormatting;
+import net.minecraft.world.World;
+import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.registry.EntityRegistry;
+import net.minecraftforge.fml.relauncher.Side;
 
 public class ZombieApocalypse extends Event
 {
-	public ZombieApocalypse() 
+	public ZombieApocalypse(World world) 
 	{ 
+		super(world);
+		this.occurs = Occurs.NIGHT;
 		this.color = 1572663;
 		this.red = 0.23f;
 		this.green = 0.43f;
 		this.blue = 0.23f;
-		this.enumColor = EnumChatFormatting.DARK_GREEN;
-		this.setSounds();
-		this.setMobs();
-		this.setBookDescription();
+		this.enumColor = TextFormatting.DARK_GREEN;
 	}
 
 	@Override
@@ -50,45 +52,40 @@ public class ZombieApocalypse extends Event
 		this.bookJokes.add("What does it take to become a zombie? DEADication!");
 		this.bookJokes.add("What do you do if you see a zombie? Hope it's Halloween!");
 		this.bookJokes.add("What has a dog's head, a cat's tail & brains all over its face? A zombie leaving the pet store!");
-		this.bookOccurs = "Night";
 		this.bookWaves = "3 + Boss";
 	}
 
 	@Override
 	public void setSounds()
 	{
-		sounds = new ArrayList<String>();
-		sounds.add(MobEvents.MODID+":ambience.zombie_ambience");
-		/*sounds.add("mob.zombie.hurt");
-		sounds.add("mob.zombie.say");
-		sounds.add("mob.zombie.step");
-		sounds.add("mob.zombie.wood");*/
+		sounds = new ArrayList<SoundEvent>();
+		sounds.add(ModSoundEvents.ambience_zombie_ambience);
 	}
 
 	@Override
 	public void setMobs()
 	{
 		mobs = new ArrayList<IEventMob>();
-		ArrayList<EntityEventZombie> tmp = new ArrayList();
-		tmp.add(new EntityRuntZombie(null));
-		tmp.add(new EntityBardZombie(null));
-		tmp.add(new EntityCloneZombie(null));
-		tmp.add(new EntityMinionZombie(null));
-		tmp.add(new EntityPyromaniacZombie(null));
-		tmp.add(new EntityRiderZombie(null));
-		tmp.add(new EntitySummonerZombie(null));
-		tmp.add(new EntityJumperZombie(null));
-		tmp.add(new EntityThiefZombie(null));
-		tmp.add(new EntityBossZombieSpawner(null));
+		ArrayList<IEventMob> tmp = new ArrayList<IEventMob>();
+		tmp.add(new EntityZombieRunt(MobEvents.proxy.world));
+		tmp.add(new EntityZombieBard(MobEvents.proxy.world));
+		tmp.add(new EntityZombieClone(MobEvents.proxy.world));
+		tmp.add(new EntityZombieMinion(MobEvents.proxy.world));
+		tmp.add(new EntityZombiePyromaniac(MobEvents.proxy.world));
+		tmp.add(new EntityZombieRider(MobEvents.proxy.world));
+		tmp.add(new EntityZombieSummoner(MobEvents.proxy.world));
+		tmp.add(new EntityZombieJumper(MobEvents.proxy.world));
+		tmp.add(new EntityZombieThief(MobEvents.proxy.world));
+		tmp.add(new EntityZombieBossSpawner(MobEvents.proxy.world));
 		for (int i=0; i<tmp.size(); i++)
 		{
 			int progressOnDeath = 1000;
 			int indexToAdd = 0;
 			for (int j=0; j<tmp.size(); j++)
 			{
-				if (tmp.get(j).progressOnDeath < progressOnDeath && !mobs.contains(tmp.get(j)))
+				if (tmp.get(j).getProgressOnDeath() < progressOnDeath && !mobs.contains(tmp.get(j)))
 				{
-					progressOnDeath = tmp.get(j).progressOnDeath;
+					progressOnDeath = tmp.get(j).getProgressOnDeath();
 					indexToAdd = j;
 				}
 			}
@@ -100,87 +97,80 @@ public class ZombieApocalypse extends Event
 	public void onUpdate()
 	{
 		if (rand.nextInt(200) == 0)
-		{
-			this.updatePlayers();
 			this.playSound(sounds);
-		}
 		super.onUpdate();
 	}
 
 	@Override
-	public void removeCustomSpawns()
+	protected void playStartSound()
 	{
-		for (IEventMob zombie : this.mobs)
-			EntityRegistry.removeSpawn((Class<? extends EntityLiving>) zombie.getClass(), EnumCreatureType.MONSTER, Event.biomes);
+		Event.playServerSound(ModSoundEvents.mob_event_zombie_say, 0.4f, 1.5f);
 	}
-	
+
 	@Override
 	public void startWave(int wave) {
 		super.startWave(wave);
 
+		int weightedProb = 600 + wave*100;	
+		int progressDeduction = 80;
 		switch (wave)
 		{
 		case 1:
-			this.updatePlayers();
-			for (EntityPlayer player : players)
-				Event.world.playSoundAtEntity(player, MobEvents.MODID+":mob.event_zombie.say", 0.4f, 1.5f);
-			EntityRegistry.addSpawn(EntityRuntZombie.class, 2000, 4, 4, EnumCreatureType.MONSTER, Event.biomes);
-			EntityRegistry.addSpawn(EntityJumperZombie.class, 150, 2, 2, EnumCreatureType.MONSTER, Event.biomes);
-			EntityRegistry.addSpawn(EntityPyromaniacZombie.class, 90, 1, 1, EnumCreatureType.MONSTER, Event.biomes);
-			EntityRegistry.addSpawn(EntityBardZombie.class, 90, 1, 1, EnumCreatureType.MONSTER, Event.biomes);
-			EntityRegistry.addSpawn(EntityThiefZombie.class, 30, 1, 1, EnumCreatureType.MONSTER, Event.biomes);
-			EntityRegistry.addSpawn(EntityRiderZombie.class, 30, 1, 1, EnumCreatureType.MONSTER, Event.biomes);
-			EntityRegistry.addSpawn(EntitySummonerZombie.class, 30, 1, 1, EnumCreatureType.MONSTER, Event.biomes);
-			EntityRegistry.addSpawn(EntityCloneZombie.class, 30, 1, 1, EnumCreatureType.MONSTER, Event.biomes);
+			this.playStartSound();
+			EntityRegistry.addSpawn(EntityZombieRunt.class, 3000, 4, 4, EnumCreatureType.MONSTER, Event.biomes);
+			EntityRegistry.addSpawn(EntityZombieJumper.class, weightedProb -= progressDeduction, 4, 4, EnumCreatureType.MONSTER, Event.biomes);
+			EntityRegistry.addSpawn(EntityZombiePyromaniac.class, weightedProb -= progressDeduction, 4, 4, EnumCreatureType.MONSTER, Event.biomes);
+			EntityRegistry.addSpawn(EntityZombieBard.class, weightedProb -= progressDeduction, 4, 4, EnumCreatureType.MONSTER, Event.biomes);
+			EntityRegistry.addSpawn(EntityZombieThief.class, weightedProb -= progressDeduction, 4, 4, EnumCreatureType.MONSTER, Event.biomes);
+			EntityRegistry.addSpawn(EntityZombieRider.class, weightedProb -= progressDeduction, 4, 4, EnumCreatureType.MONSTER, Event.biomes);
+			EntityRegistry.addSpawn(EntityZombieSummoner.class, weightedProb -= progressDeduction, 4, 4, EnumCreatureType.MONSTER, Event.biomes);
+			EntityRegistry.addSpawn(EntityZombieClone.class, weightedProb -= progressDeduction, 4, 4, EnumCreatureType.MONSTER, Event.biomes);
 			break;
 		case 2:
-			EntityRegistry.addSpawn(EntityRuntZombie.class, 2000, 4, 4, EnumCreatureType.MONSTER, Event.biomes);
-			EntityRegistry.addSpawn(EntityJumperZombie.class, 190, 2, 2, EnumCreatureType.MONSTER, Event.biomes);
-			EntityRegistry.addSpawn(EntityPyromaniacZombie.class, 130, 1, 1, EnumCreatureType.MONSTER, Event.biomes);
-			EntityRegistry.addSpawn(EntityBardZombie.class, 130, 1, 1, EnumCreatureType.MONSTER, Event.biomes);
-			EntityRegistry.addSpawn(EntityThiefZombie.class, 70, 1, 1, EnumCreatureType.MONSTER, Event.biomes);
-			EntityRegistry.addSpawn(EntityRiderZombie.class, 70, 1, 1, EnumCreatureType.MONSTER, Event.biomes);
-			EntityRegistry.addSpawn(EntitySummonerZombie.class, 70, 1, 1, EnumCreatureType.MONSTER, Event.biomes);
-			EntityRegistry.addSpawn(EntityCloneZombie.class, 70, 1, 1, EnumCreatureType.MONSTER, Event.biomes);
+			EntityRegistry.addSpawn(EntityZombieRunt.class, 3000, 4, 4, EnumCreatureType.MONSTER, Event.biomes);
+			EntityRegistry.addSpawn(EntityZombieJumper.class, weightedProb -= progressDeduction, 4, 4, EnumCreatureType.MONSTER, Event.biomes);
+			EntityRegistry.addSpawn(EntityZombiePyromaniac.class, weightedProb -= progressDeduction, 4, 4, EnumCreatureType.MONSTER, Event.biomes);
+			EntityRegistry.addSpawn(EntityZombieBard.class, weightedProb -= progressDeduction, 4, 4, EnumCreatureType.MONSTER, Event.biomes);
+			EntityRegistry.addSpawn(EntityZombieThief.class, weightedProb -= progressDeduction, 4, 4, EnumCreatureType.MONSTER, Event.biomes);
+			EntityRegistry.addSpawn(EntityZombieRider.class, weightedProb -= progressDeduction, 4, 4, EnumCreatureType.MONSTER, Event.biomes);
+			EntityRegistry.addSpawn(EntityZombieSummoner.class, weightedProb -= progressDeduction, 4, 4, EnumCreatureType.MONSTER, Event.biomes);
+			EntityRegistry.addSpawn(EntityZombieClone.class, weightedProb -= progressDeduction, 4, 4, EnumCreatureType.MONSTER, Event.biomes);
 			break;
 		case 3:
-			EntityRegistry.addSpawn(EntityRuntZombie.class, 2000, 4, 4, EnumCreatureType.MONSTER, Event.biomes);
-			EntityRegistry.addSpawn(EntityJumperZombie.class, 230, 2, 2, EnumCreatureType.MONSTER, Event.biomes);
-			EntityRegistry.addSpawn(EntityPyromaniacZombie.class, 150, 1, 1, EnumCreatureType.MONSTER, Event.biomes);
-			EntityRegistry.addSpawn(EntityBardZombie.class, 150, 1, 1, EnumCreatureType.MONSTER, Event.biomes);
-			EntityRegistry.addSpawn(EntityThiefZombie.class, 90, 2, 2, EnumCreatureType.MONSTER, Event.biomes);
-			EntityRegistry.addSpawn(EntityRiderZombie.class, 90, 2, 2, EnumCreatureType.MONSTER, Event.biomes);
-			EntityRegistry.addSpawn(EntitySummonerZombie.class, 90, 1, 1, EnumCreatureType.MONSTER, Event.biomes);
-			EntityRegistry.addSpawn(EntityCloneZombie.class, 90, 1, 1, EnumCreatureType.MONSTER, Event.biomes);
+			EntityRegistry.addSpawn(EntityZombieRunt.class, 3000, 4, 4, EnumCreatureType.MONSTER, Event.biomes);
+			EntityRegistry.addSpawn(EntityZombieJumper.class, weightedProb -= progressDeduction, 4, 4, EnumCreatureType.MONSTER, Event.biomes);
+			EntityRegistry.addSpawn(EntityZombiePyromaniac.class, weightedProb -= progressDeduction, 4, 4, EnumCreatureType.MONSTER, Event.biomes);
+			EntityRegistry.addSpawn(EntityZombieBard.class, weightedProb -= progressDeduction, 4, 4, EnumCreatureType.MONSTER, Event.biomes);
+			EntityRegistry.addSpawn(EntityZombieThief.class, weightedProb -= progressDeduction, 4, 4, EnumCreatureType.MONSTER, Event.biomes);
+			EntityRegistry.addSpawn(EntityZombieRider.class, weightedProb -= progressDeduction, 4, 4, EnumCreatureType.MONSTER, Event.biomes);
+			EntityRegistry.addSpawn(EntityZombieSummoner.class, weightedProb -= progressDeduction, 4, 4, EnumCreatureType.MONSTER, Event.biomes);
+			EntityRegistry.addSpawn(EntityZombieClone.class, weightedProb -= progressDeduction, 4, 4, EnumCreatureType.MONSTER, Event.biomes);
 			break;
 		case 4:
-			EntityRegistry.addSpawn(EntityBossZombieSpawner.class, 10000, 1, 1, EnumCreatureType.MONSTER, Event.biomes);
+			EntityRegistry.addSpawn(EntityZombieBossSpawner.class, 10000, 1, 1, EnumCreatureType.MONSTER, Event.biomes);
 			break;
 		}
 	}
-	
+
 	@Override
 	public void startEvent() 
 	{ 
-		Event.currentEvent = new ZombieApocalypse();
+		MobEvents.proxy.getWorldData().currentEvent = Event.ZOMBIE_APOCALYPSE;
 		super.startEvent();
-		if (MinecraftServer.getServer().getConfigurationManager() != null)
-			MinecraftServer.getServer().getConfigurationManager().sendChatMsg(new ChatComponentTranslation("Did I hear something?").setChatStyle(new ChatStyle().setBold(true).setColor(this.enumColor).setItalic(true)));
-		this.updatePlayers();
-		for (EntityPlayer player : players)
-			Event.world.playSoundAtEntity(player, "mob.zombie.infect", 10f, 0f);
+		if (FMLCommonHandler.instance().getSide() == Side.SERVER) {
+			Event.sendServerMessage(new TextComponentString("Did I hear something?").setStyle(new Style().setBold(true).setColor(this.enumColor).setItalic(true)));
+			Event.playServerSound(SoundEvents.ENTITY_ZOMBIE_INFECT, 10f, 0f);	
+		}
 	}
 
 	@Override
 	public void stopEvent() 
 	{
 		super.stopEvent();
-		if (MinecraftServer.getServer().getConfigurationManager() != null)
-			MinecraftServer.getServer().getConfigurationManager().sendChatMsg(new ChatComponentTranslation(this.toString() + " has ended.").setChatStyle(new ChatStyle().setBold(true).setColor(this.enumColor)));
-		this.updatePlayers();
-		for (EntityPlayer player : players)
-			Event.world.playSoundAtEntity(player, "mob.zombie.remedy", 0.2f, 2f);
-		this.removeCustomSpawns();
+		if (FMLCommonHandler.instance().getSide() == Side.SERVER) {
+			Event.sendServerMessage(new TextComponentTranslation(this.toString() + " has ended.").setStyle(new Style().setBold(true).setColor(this.enumColor)));
+			Event.playServerSound(SoundEvents.ENTITY_ZOMBIE_VILLAGER_CURE, 0.2f, 2f);	
+		}
 	}
 
 	@Override

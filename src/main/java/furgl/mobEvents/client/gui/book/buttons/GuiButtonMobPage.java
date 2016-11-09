@@ -1,11 +1,12 @@
 package furgl.mobEvents.client.gui.book.buttons;
 
 import furgl.mobEvents.client.gui.book.GuiEventBook;
-import furgl.mobEvents.common.entity.ZombieApocalypse.IEventMob;
+import furgl.mobEvents.common.entity.IEventMob;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
@@ -31,7 +32,7 @@ public class GuiButtonMobPage extends GuiButton
 		if (this.visible)
 		{
 			FontRenderer fontrenderer = mc.fontRendererObj;
-			mc.getTextureManager().bindTexture(buttonTextures);
+			mc.getTextureManager().bindTexture(BUTTON_TEXTURES);
 
 			if (this.enabled)
 			{
@@ -90,7 +91,7 @@ public class GuiButtonMobPage extends GuiButton
 				{
 					j = 16777120;
 				}
-			this.drawCenteredString(fontrenderer, this.displayString, this.xPosition + this.width / 2, this.yPosition + (this.height - 7) / 2, j);
+			this.drawCenteredString(fontrenderer, TextFormatting.ITALIC+""+TextFormatting.BOLD+this.displayString, this.xPosition + this.width / 2, this.yPosition + (this.height - 7) / 2, j);
 
 			GlStateManager.popMatrix();
 		}

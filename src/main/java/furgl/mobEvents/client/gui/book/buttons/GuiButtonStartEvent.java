@@ -1,6 +1,7 @@
 package furgl.mobEvents.client.gui.book.buttons;
 
 import furgl.mobEvents.client.gui.book.GuiEventBook;
+import furgl.mobEvents.common.MobEvents;
 import furgl.mobEvents.common.Events.Event;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
@@ -27,13 +28,13 @@ public class GuiButtonStartEvent extends GuiButton
 	{
 		if (this.visible)
 		{
-			if (Event.EVENTS[book.currentTab-book.numNonEventTabs].getClass() == Event.currentEvent.getClass())
+			if (Event.allEvents.get(book.currentTab-book.numNonEventTabs).getClass() == MobEvents.proxy.getWorldData().currentEvent.getClass())
 				this.displayString = "Stop Event";
 			else
 				this.displayString = "Start Event";
 			
 			FontRenderer fontrenderer = mc.fontRendererObj;
-			mc.getTextureManager().bindTexture(buttonTextures);
+			mc.getTextureManager().bindTexture(BUTTON_TEXTURES);
 			GlStateManager.color(1F, 1F, 1F, 1.0F);
 
 			GlStateManager.pushMatrix();

@@ -1,0 +1,8 @@
+{
+    "parent": "mobevents:block/upgraded_anvil",
+    "textures": {
+        "particle": "mobevents:blocks/upgraded_anvil_base",
+        "body": "mobevents:blocks/upgraded_anvil_base",
+        "top": "mobevents:blocks/upgraded_anvil_top_damaged_0"
+    }
+}

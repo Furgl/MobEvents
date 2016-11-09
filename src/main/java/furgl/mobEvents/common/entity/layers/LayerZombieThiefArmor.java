@@ -4,10 +4,11 @@ import furgl.mobEvents.client.model.entity.ModelZombieThief;
 import furgl.mobEvents.common.item.ModItems;
 import net.minecraft.client.model.ModelBiped;
 import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.entity.RendererLivingEntity;
+import net.minecraft.client.renderer.entity.RenderLivingBase;
 import net.minecraft.client.renderer.entity.layers.LayerBipedArmor;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.init.Items;
+import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.ItemArmor;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.fml.relauncher.Side;
@@ -16,9 +17,9 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 @SideOnly(Side.CLIENT)
 public class LayerZombieThiefArmor extends LayerBipedArmor
 {
-	private RendererLivingEntity<?> renderer;
+	private RenderLivingBase<?> renderer;
 
-	public LayerZombieThiefArmor(RendererLivingEntity<?> rendererIn)
+	public LayerZombieThiefArmor(RenderLivingBase<?> rendererIn)
 	{
 		super(rendererIn);
 		this.renderer = rendererIn;
@@ -27,14 +28,16 @@ public class LayerZombieThiefArmor extends LayerBipedArmor
 	@Override
 	protected void initArmor()
 	{
-		this.field_177189_c = new ModelZombieThief(0.5F, 0.0F, true);
-		this.field_177186_d = new ModelZombieThief(1.0F, 0.0F, true);
+		this.modelArmor = new ModelZombieThief(0.5F, 0.0F, true);
+		this.modelLeggings = new ModelZombieThief(1.0F, 0.0F, true);
 	}
 
 	@Override
 	public void doRenderLayer(EntityLivingBase entitylivingbaseIn, float p_177141_2_, float p_177141_3_, float partialTicks, float p_177141_5_, float p_177141_6_, float p_177141_7_, float scale)
 	{
-		this.renderLayer(entitylivingbaseIn, p_177141_2_, p_177141_3_, partialTicks, p_177141_5_, p_177141_6_, p_177141_7_, scale, 4);
+		this.renderLayer(entitylivingbaseIn, p_177141_2_, p_177141_3_, partialTicks, p_177141_5_, p_177141_6_, p_177141_7_, scale, EntityEquipmentSlot.CHEST);
+		this.renderLayer(entitylivingbaseIn, p_177141_2_, p_177141_3_, partialTicks, p_177141_5_, p_177141_6_, p_177141_7_, scale, EntityEquipmentSlot.LEGS);
+		this.renderLayer(entitylivingbaseIn, p_177141_2_, p_177141_3_, partialTicks, p_177141_5_, p_177141_6_, p_177141_7_, scale, EntityEquipmentSlot.FEET);
 
 		if (entitylivingbaseIn.isSneaking())
 		{
@@ -45,9 +48,7 @@ public class LayerZombieThiefArmor extends LayerBipedArmor
 			GlStateManager.color(0.5F, 0.5F, 0.5F, 0.3F);
 		}
 
-		this.renderLayer(entitylivingbaseIn, p_177141_2_, p_177141_3_, partialTicks, p_177141_5_, p_177141_6_, p_177141_7_, scale, 3);
-		this.renderLayer(entitylivingbaseIn, p_177141_2_, p_177141_3_, partialTicks, p_177141_5_, p_177141_6_, p_177141_7_, scale, 2);
-		this.renderLayer(entitylivingbaseIn, p_177141_2_, p_177141_3_, partialTicks, p_177141_5_, p_177141_6_, p_177141_7_, scale, 1);
+		this.renderLayer(entitylivingbaseIn, p_177141_2_, p_177141_3_, partialTicks, p_177141_5_, p_177141_6_, p_177141_7_, scale, EntityEquipmentSlot.HEAD);
 
 		if (entitylivingbaseIn.isSneaking())
 		{
@@ -57,13 +58,13 @@ public class LayerZombieThiefArmor extends LayerBipedArmor
 		}
 	}
 
-	private void renderLayer(EntityLivingBase entitylivingbaseIn, float p_177182_2_, float p_177182_3_, float p_177182_4_, float p_177182_5_, float p_177182_6_, float p_177182_7_, float p_177182_8_, int armorSlot)
+	private void renderLayer(EntityLivingBase entitylivingbaseIn, float p_177182_2_, float p_177182_3_, float p_177182_4_, float p_177182_5_, float p_177182_6_, float p_177182_7_, float p_177182_8_, EntityEquipmentSlot armorSlot)
 	{
 		ItemStack itemstack;
-		if (armorSlot == 4)
+		if (armorSlot == EntityEquipmentSlot.HEAD)
 			itemstack = new ItemStack(ModItems.thievesMask);
 		else {
-			itemstack = new ItemStack(Items.leather_chestplate);
+			itemstack = new ItemStack(Items.LEATHER_CHESTPLATE);
 			((ItemArmor)itemstack.getItem()).setColor(itemstack, 0);
 		}
 		float alpha = 0.3F;
@@ -74,13 +75,12 @@ public class LayerZombieThiefArmor extends LayerBipedArmor
 		if (itemstack != null && itemstack.getItem() instanceof ItemArmor)
 		{
 			ItemArmor itemarmor = (ItemArmor)itemstack.getItem();
-			ModelBiped t = this.func_177175_a(armorSlot);
+			ModelBiped t = this.getModelFromSlot(armorSlot);
 			t.setModelAttributes(this.renderer.getMainModel());
 			t.setLivingAnimations(entitylivingbaseIn, p_177182_2_, p_177182_3_, p_177182_4_);
 			t = getArmorModelHook(entitylivingbaseIn, itemstack, armorSlot, t);
-			this.func_177179_a(t, armorSlot);
-			boolean flag = armorSlot == 2;
-			this.renderer.bindTexture(this.getArmorResource(entitylivingbaseIn, itemstack, flag ? 2 : 1, null));
+			this.setModelSlotVisible(t, armorSlot);
+			this.renderer.bindTexture(this.getArmorResource(entitylivingbaseIn, itemstack, armorSlot, null));
 
 			int i = itemarmor.getColor(itemstack);
 			{
@@ -91,7 +91,7 @@ public class LayerZombieThiefArmor extends LayerBipedArmor
 					float f2 = (float)(i & 255) / 255.0F;
 					GlStateManager.color(colorR * f, colorG * f1, colorB * f2, alpha);
 					t.render(entitylivingbaseIn, p_177182_2_, p_177182_3_, p_177182_5_, p_177182_6_, p_177182_7_, p_177182_8_);
-					this.renderer.bindTexture(this.getArmorResource(entitylivingbaseIn, itemstack, flag ? 2 : 1, "overlay"));
+					this.renderer.bindTexture(this.getArmorResource(entitylivingbaseIn, itemstack, armorSlot, "overlay"));
 				}
 				{ // Non-colored
 					GlStateManager.color(colorR, colorG, colorB, alpha);

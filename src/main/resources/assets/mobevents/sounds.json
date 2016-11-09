@@ -4,10 +4,10 @@
         "category": "hostile",
         "sounds":
         [
-            "mob/event_zombie/say1",
-            "mob/event_zombie/say2",
-            "mob/event_zombie/say3",
-            "mob/event_zombie/say4"
+            "mobevents:mob/event_zombie/say1",
+            "mobevents:mob/event_zombie/say2",
+            "mobevents:mob/event_zombie/say3",
+            "mobevents:mob/event_zombie/say4"
         ]
     },
     "mob.event_zombie.hurt":
@@ -15,7 +15,7 @@
         "category": "hostile",
         "sounds":
         [
-            "mob/event_zombie/hurt1"
+            "mobevents:mob/event_zombie/hurt1"
         ]
     },
     "mob.event_zombie.death":
@@ -23,7 +23,7 @@
         "category": "hostile",
         "sounds":
         [
-            "mob/event_zombie/death1" 
+            "mobevents:mob/event_zombie/death1" 
         ]
     },
     "ambience.zombie_ambience":
@@ -31,39 +31,51 @@
         "category": "ambient",
         "sounds":
         [
-            "ambience/zombie_ambience1" 
+            "mobevents:ambience/zombie_ambience1" 
         ]
     },
-    "records.record1":
+    "record_zombie_apocalypse":
+    {
+        "category": "record",
+        "sounds": 
+        [
+          {
+            "name": "mobevents:records/record_zombie_apocalypse",
+            "stream": true 
+          }
+        ]
+    },
+    "record2":
     {
         "category": "record",
         "sounds":
         [
-            "records/record1" 
+          {
+            "name": "mobevents:records/record2",
+            "stream": true 
+          }
         ]
     },
-    "records.record2":
+    "record3":
     {
         "category": "record",
         "sounds":
         [
-            "records/record2" 
+          {
+            "name": "mobevents:records/record3",
+            "stream": true 
+          }
         ]
     },
-    "records.record3":
+    "record4":
     {
         "category": "record",
         "sounds":
         [
-            "records/record3" 
-        ]
-    },
-    "records.record4":
-    {
-        "category": "record",
-        "sounds":
-        [
-            "records/record4" 
+          {
+            "name": "mobevents:records/record4",
+            "stream": true 
+          }
         ]
     }
 

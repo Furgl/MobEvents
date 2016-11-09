@@ -4,31 +4,31 @@ import java.util.ArrayList;
 import java.util.List;
 
 import furgl.mobEvents.client.model.item.ModelThievesMask;
-import furgl.mobEvents.common.config.Config;
-import furgl.mobEvents.common.entity.EntityGuiPlayer;
+import furgl.mobEvents.common.MobEvents;
+import furgl.mobEvents.common.Events.Event;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.MobEffects;
+import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemArmor;
 import net.minecraft.item.ItemStack;
-import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
-import net.minecraft.util.ChatComponentTranslation;
-import net.minecraft.util.ChatStyle;
-import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.EnumParticleTypes;
+import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
+import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 public class ItemThievesMask extends ItemArmor implements IEventItem
 {	
-	private boolean isSneaking;
-	
-	public ItemThievesMask(ItemArmor.ArmorMaterial material, int renderIndex, int armorType) {
-		super(material, renderIndex, armorType);
+	public boolean isSneaking;
+
+	public ItemThievesMask(ItemArmor.ArmorMaterial material, int renderIndex, EntityEquipmentSlot equipmentSlotIn) {
+		super(material, renderIndex, equipmentSlotIn);
 		this.maxStackSize = 1;
 		this.setMaxDamage(400);
 	}
@@ -37,21 +37,15 @@ public class ItemThievesMask extends ItemArmor implements IEventItem
 	@SideOnly(Side.CLIENT)
 	public void addInformation(ItemStack stack, EntityPlayer player, List<String> tooltip, boolean advanced)
 	{
-		tooltip.set(0, EnumChatFormatting.AQUA+tooltip.get(0));
-		Config.syncFromConfig(player);
-		if (Config.unlockedItems.contains(this.getName()) || player.capabilities.isCreativeMode) {
-			tooltip.add(EnumChatFormatting.ITALIC+""+EnumChatFormatting.GOLD+"Provides boosts when sneaking");
+		tooltip.set(0, TextFormatting.AQUA+tooltip.get(0));
+		int index = MobEvents.proxy.getWorldData().getPlayerIndex(player.getDisplayNameString());
+		if (MobEvents.proxy.getWorldData().unlockedItems.get(index).contains(this.getName()) || player.capabilities.isCreativeMode) {
+			tooltip.add(TextFormatting.ITALIC+""+TextFormatting.GOLD+"Provides boosts when sneaking");
 			tooltip.add("Invisibility");
 			tooltip.add("Speed");
 		}
-		else if (!Config.unlockedItems.contains(this.getName()) && player.inventory.hasItemStack(stack))
-		{
-			Config.unlockedItems.add(this.getName());
-			player.addChatMessage(new ChatComponentTranslation("Unlocked information about the "+stack.getDisplayName()+" item in the Event Book").setChatStyle(new ChatStyle().setItalic(true).setColor(EnumChatFormatting.DARK_GRAY)));
-			Config.syncToConfig(player);
-		}
 		else 
-			tooltip.add(EnumChatFormatting.ITALIC+""+EnumChatFormatting.GOLD+"???");
+			tooltip.add(TextFormatting.ITALIC+""+TextFormatting.GOLD+"???");
 	}
 
 	@Override
@@ -60,29 +54,27 @@ public class ItemThievesMask extends ItemArmor implements IEventItem
 	{
 		subItems.add(this.getItemStack());
 	}
-	
+
 	@Override
 	@SideOnly(Side.CLIENT)
-	public net.minecraft.client.model.ModelBiped getArmorModel(EntityLivingBase entityLiving, ItemStack itemStack, int armorSlot)
+	public net.minecraft.client.model.ModelBiped getArmorModel(EntityLivingBase entityLiving, ItemStack itemStack, EntityEquipmentSlot armorSlot, net.minecraft.client.model.ModelBiped _default)
 	{
 		return new ModelThievesMask();
 	}
 
 	@Override
 	public void onArmorTick(World world, EntityPlayer player, ItemStack itemStack) {
-		if (player instanceof EntityGuiPlayer && world.getTotalWorldTime() % 30 == 0)
-			this.isSneaking = !this.isSneaking;
-		if (isSneaking)
-			player.setSneaking(true);
-		if (player.isSneaking())
+		if (world.isRemote)
+			MobEvents.proxy.thievesMaskTick(player, this);
+		else if (player.isSneaking())
 		{
-			player.addPotionEffect(new PotionEffect(Potion.invisibility.id, 2, 0, false, false));
-			player.addPotionEffect(new PotionEffect(Potion.moveSpeed.id, 1, 15, false, false));
+			player.addPotionEffect(new PotionEffect(MobEffects.INVISIBILITY, 2, 0, false, false));
+			player.addPotionEffect(new PotionEffect(MobEffects.SPEED, 1, 15, false, false));
 			world.spawnParticle(EnumParticleTypes.TOWN_AURA, player.posX+world.rand.nextDouble()-0.5D, player.posY+world.rand.nextDouble()*1.5D, player.posZ+world.rand.nextDouble()-0.5D, 0, 0, 0, 0);
 			world.spawnParticle(EnumParticleTypes.TOWN_AURA, player.posX+world.rand.nextDouble()-0.5D, player.posY+world.rand.nextDouble()*1.5D, player.posZ+world.rand.nextDouble()-0.5D, 0, 0, 0, 0);
 		}
 	}
-	
+
 	@SideOnly(Side.CLIENT)
 	@Override
 	public boolean hasEffect(ItemStack stack)
@@ -91,8 +83,8 @@ public class ItemThievesMask extends ItemArmor implements IEventItem
 	}
 
 	@Override
-	public boolean isValidArmor(ItemStack stack, int armorType, Entity entity) {
-		if (armorType == 0)
+	public boolean isValidArmor(ItemStack stack, EntityEquipmentSlot equipmentSlotIn, Entity entity) {
+		if (equipmentSlotIn == EntityEquipmentSlot.HEAD)
 			return true;
 		return false;
 	}
@@ -133,5 +125,18 @@ public class ItemThievesMask extends ItemArmor implements IEventItem
 		ArrayList<String> list = new ArrayList<String>();
 		list.add("Zombie Thief");
 		return list;
+	}
+
+	@Override
+	public void onUpdate(ItemStack stack, World worldIn, Entity entityIn, int itemSlot, boolean isSelected) {
+		if (entityIn instanceof EntityPlayer && !(entityIn instanceof FakePlayer)) {
+			int index = MobEvents.proxy.getWorldData().getPlayerIndex(entityIn.getName());
+			if (!worldIn.isRemote && !MobEvents.proxy.getWorldData().unlockedItems.get(index).contains(this.getName()))
+			{
+				MobEvents.proxy.getWorldData().unlockedItems.get(index).add(this.getName());
+				Event.displayUnlockMessage((EntityPlayer) entityIn, "Unlocked information about the "+stack.getDisplayName()+" item in the Event Book");
+				MobEvents.proxy.getWorldData().markDirty();
+			}
+		}
 	}
 }
