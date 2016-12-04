@@ -1,22 +1,22 @@
-entity.mobEvents.zombieRunt.name=Zombie Runt
-entity.mobEvents.pyromaniacZombie.name=Zombie Pyromaniac
-entity.mobEvents.zombieBard.name=Zombie Bard
-entity.mobEvents.zombieRider.name=Zombie Rider
-entity.mobEvents.zombieSummoner.name=Zombie Summoner
-entity.mobEvents.zombieMinion.name=Zombie Minion
-entity.mobEvents.zombieClone.name=Zombie Clone
-entity.mobEvents.zombieJumper.name=Zombie Jumper
-entity.mobEvents.zombieThief.name=Zombie Thief
-entity.mobEvents.zombieBoss.name=Zombie Boss
+entity.mobevents.zombieRunt.name=Zombie Runt
+entity.mobevents.pyromaniacZombie.name=Zombie Pyromaniac
+entity.mobevents.zombieBard.name=Zombie Bard
+entity.mobevents.zombieRider.name=Zombie Rider
+entity.mobevents.zombieSummoner.name=Zombie Summoner
+entity.mobevents.zombieMinion.name=Zombie Minion
+entity.mobevents.zombieClone.name=Zombie Clone
+entity.mobevents.zombieJumper.name=Zombie Jumper
+entity.mobevents.zombieThief.name=Zombie Thief
+entity.mobevents.zombieBoss.name=Zombie Boss
 
-entity.mobEvents.skeletonSoldier.name=Skeleton Soldier
-entity.mobEvents.skeletonBard.name=Skeleton Bard
-entity.mobEvents.skeletonClone.name=Skeleton Clone
-entity.mobEvents.skeletonPyromaniac.name=Skeleton Pyromaniac
+entity.mobevents.skeletonSoldier.name=Skeleton Soldier
+entity.mobevents.skeletonBard.name=Skeleton Bard
+entity.mobevents.skeletonClone.name=Skeleton Clone
+entity.mobevents.skeletonPyromaniac.name=Skeleton Pyromaniac
 
-entity.mobEvents.zombieBossSpawner.name=Boss Zombie Spawner
+entity.mobevents.zombieBossSpawner.name=Boss Zombie Spawner
 
-entity.mobEvents.fireArrow.name=Fire Arrow
+entity.mobevents.fireArrow.name=Fire Arrow
 
 tile.boss_loot.name=Boss Loot
 block.disappearing_fire.name=Disappearing Fire
@@ -30,7 +30,10 @@ tile.upgraded_anvil.veryDamaged.name=Very Damaged Upgraded Anvil
 item.summoners_helm.name=Summoner's Helm
 item.double_jump_boots.name=Double Jump Boots
 item.thieves_mask.name=Thieve's Mask
-item.butchers_cleaver.name=Butcher's Cleaver
+item.butchers_cleaver_0.name=Butcher's Cleaver
+item.butchers_cleaver_1.name=Thirsty Butcher's Cleaver
+item.butchers_cleaver_2.name=Bloodied Butcher's Cleaver
+item.butchers_cleaver_3.name=Frenzied Butcher's Cleaver
 item.book_of_healing.name=Book of Healing
 item.fire_arrow.name=Fire Arrow
 item.bards_jukebox.name=Bard's Jukebox

@@ -17,6 +17,7 @@ import furgl.mobEvents.common.event.PlayerJoinedEvent;
 import furgl.mobEvents.common.event.PreventBossLootExplosionEvent;
 import furgl.mobEvents.common.event.PreventOtherMobsDuringEvent;
 import furgl.mobEvents.common.item.ModItems;
+import furgl.mobEvents.common.item.drops.ItemButchersCleaver0;
 import furgl.mobEvents.common.sound.ModSoundEvents;
 import furgl.mobEvents.common.tileentity.ModTileEntities;
 import furgl.mobEvents.packets.PacketGiveItem;
@@ -40,7 +41,7 @@ import net.minecraftforge.fml.relauncher.Side;
 @Mod(modid = MobEvents.MODID, name = MobEvents.MODNAME, version = MobEvents.VERSION, guiFactory = "furgl.mobEvents.client.gui.config.MobEventsGuiFactory")
 public class MobEvents
 {
-	public static final String MODID = "mobEvents";
+	public static final String MODID = "mobevents";
 	public static final String MODNAME = "Mob Events";
 	public static final String VERSION = "1.0";
 	public static final boolean DEBUG = true;
@@ -62,7 +63,7 @@ public class MobEvents
 		ModTileEntities.init();
 		ModBlocks.init();
 		ModItems.init();
-		proxy.registerBlockModels();
+		proxy.registerModelsAndVariants();
 		Achievements.init();
 		Config.init(event.getSuggestedConfigurationFile());		
 	}
@@ -97,6 +98,7 @@ public class MobEvents
 		MinecraftForge.EVENT_BUS.register(new CancelFireOverlayEvent());
 		MinecraftForge.EVENT_BUS.register(new PreventBossLootExplosionEvent());
 		MinecraftForge.EVENT_BUS.register(new KeepInvDuringBossEvent());
+		MinecraftForge.EVENT_BUS.register(new ItemButchersCleaver0(ModItems.butchersCleaverMaterial));
 	}
 
 	private void registerPackets()

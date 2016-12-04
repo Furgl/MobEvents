@@ -69,7 +69,7 @@ public class EntityEventZombie extends EntityZombie implements IEventMob
 		this.bookDescription = "";
 		this.bookDrops = new ArrayList<ItemStack>();
 	}
-
+//TODO REMOVE ATTACK VILLAGER AI
 	@Override
 	protected void applyEntityAI()
 	{

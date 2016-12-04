@@ -20,7 +20,7 @@ public class CommonProxy
 	
 	public void registerBlockRenders() { }
 	
-	public void registerBlockModels() { }
+	public void registerModelsAndVariants() { }
 
 	public void registerAchievements()
 	{

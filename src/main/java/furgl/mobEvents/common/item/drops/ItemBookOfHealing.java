@@ -47,9 +47,9 @@ public class ItemBookOfHealing extends Item implements IEventItem
 		tooltip.set(0, TextFormatting.AQUA+tooltip.get(0));
 		int index = MobEvents.proxy.getWorldData().getPlayerIndex(player.getDisplayNameString());
 		if (MobEvents.proxy.getWorldData().unlockedItems.get(index).contains(this.getName()) || player.capabilities.isCreativeMode) {
-			tooltip.add(TextFormatting.GOLD+"Uses experience to heal");
+			tooltip.add(TextFormatting.GOLD+"Uses experience to heal when held");
 			if (!GuiScreen.isShiftKeyDown())
-				tooltip.add(TextFormatting.DARK_GRAY+""+TextFormatting.UNDERLINE+""+TextFormatting.ITALIC+"Hold SHIFT for details");
+				tooltip.add(TextFormatting.GRAY+"Hold "+TextFormatting.AQUA+"SHIFT"+TextFormatting.GRAY+" for details");
 			else
 			{
 				tooltip.add(TextFormatting.BLUE+""+"Shift + Right Click: "+ (this.isActive(stack) ? "Deactivate" : "Activate"));
@@ -280,7 +280,7 @@ public class ItemBookOfHealing extends Item implements IEventItem
 			}
 		}
 		//regen when activated - not if currently in use (so it doesn't interrupt)
-		if (!entityIn.worldObj.isRemote && entityIn instanceof EntityLivingBase && ((EntityLivingBase) entityIn).getActiveItemStack() != stack)
+		if (!entityIn.worldObj.isRemote && entityIn instanceof EntityLivingBase && ((EntityLivingBase) entityIn).getActiveItemStack() != stack && (((EntityLivingBase) entityIn).getHeldItemMainhand() == stack || ((EntityLivingBase) entityIn).getHeldItemOffhand() == stack))
 			if (this.isActive(stack) && ((EntityLivingBase) entityIn).getHealth() < ((EntityLivingBase) entityIn).getMaxHealth() && entityIn.worldObj.getTotalWorldTime() % 80 == 0)
 				if (this.giveRegen((EntityLivingBase) entityIn, 1, 100))
 				{

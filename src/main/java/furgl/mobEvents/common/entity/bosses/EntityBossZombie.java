@@ -146,7 +146,6 @@ public class EntityBossZombie extends EntityEventZombie implements IEventBoss
 	@Override
 	public void onUpdate()
 	{	
-		this.setArmsRaised(false);
 		if (type == 6)
 			this.setActiveHand(EnumHand.MAIN_HAND);
 	    EntityPlayer player = this.worldObj.getClosestPlayerToEntity(this, -1);
@@ -580,7 +579,7 @@ public class EntityBossZombie extends EntityEventZombie implements IEventBoss
 			break;
 		case 2:
 			this.setCustomNameTag(this.getChatColor()+""+TextFormatting.BOLD+"Boss Zombie Butcher"+TextFormatting.RESET+""+this.getChatColor()+TextFormatting.ITALIC);
-			this.setItemStackToSlot(EntityEquipmentSlot.MAINHAND, new ItemStack(ModItems.butchersCleaver));
+			this.setItemStackToSlot(EntityEquipmentSlot.MAINHAND, new ItemStack(ModItems.butchersCleaver0));
 			break;
 		case 3:
 			this.setCustomNameTag(this.getChatColor()+""+TextFormatting.BOLD+"Boss Zombie Farmer"+TextFormatting.RESET+""+this.getChatColor()+TextFormatting.ITALIC);

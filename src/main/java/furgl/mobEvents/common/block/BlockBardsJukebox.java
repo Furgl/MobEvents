@@ -26,6 +26,9 @@ import net.minecraft.world.World;
 
 public class BlockBardsJukebox extends BlockJukebox
 {
+	/**Works for complete restarts, not exiting and rejoining world*/
+	private boolean playedRecord;
+	
 	public BlockBardsJukebox()
 	{
 		super();
@@ -44,6 +47,13 @@ public class BlockBardsJukebox extends BlockJukebox
 	{
 		if (((Boolean)state.getValue(HAS_RECORD)).booleanValue())
 		{
+			if (!worldIn.isRemote && !playedRecord) {
+                BlockJukebox.TileEntityJukebox blockjukebox$tileentityjukebox = (BlockJukebox.TileEntityJukebox)worldIn.getTileEntity(pos);
+                ItemStack stack = blockjukebox$tileentityjukebox.getRecord();
+				MobEvents.proxy.playSoundJukebox(((ItemRecord)stack.getItem()).getSound(), worldIn, pos, 3f);
+				playedRecord = true;
+			}
+			
 			List<EntityPlayer> players = new ArrayList<EntityPlayer>();
 			players = worldIn.getEntitiesWithinAABB(EntityPlayer.class, new AxisAlignedBB(pos.getX()-20, pos.getY()-20, pos.getZ()-20, pos.getX()+20, pos.getY()+20, pos.getZ()+20));
 			for (EntityPlayer player : players)
@@ -90,6 +100,7 @@ public class BlockBardsJukebox extends BlockJukebox
 				((BlockJukebox)Blocks.JUKEBOX).insertRecord(worldIn, pos, state, playerIn.getHeldItemMainhand());
 				MobEvents.proxy.playSoundJukebox(((ItemRecord)playerIn.getHeldItemMainhand().getItem()).getSound(), worldIn, pos, 3f);
 				//worldIn.playEventAtEntity((EntityPlayer)null, 1005, pos, Item.getIdFromItem(playerIn.getHeldItem().getItem()));
+				playedRecord = true;
 				if (!playerIn.capabilities.isCreativeMode)
 					--playerIn.getHeldItemMainhand().stackSize;
 				playerIn.addStat(StatList.RECORD_PLAYED);

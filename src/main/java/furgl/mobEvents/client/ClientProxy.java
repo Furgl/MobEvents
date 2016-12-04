@@ -106,7 +106,7 @@ public class ClientProxy extends CommonProxy
 	}
 
 	@Override
-	public void registerBlockModels() 
+	public void registerModelsAndVariants() 
 	{
 		ModelLoader.setCustomStateMapper(ModBlocks.bardsJukebox, (new StateMap.Builder()).ignore(new IProperty[] {BlockJukebox.HAS_RECORD}).build());
 		ModelBakery.registerItemVariants(Item.getItemFromBlock(ModBlocks.upgradedAnvil), new ResourceLocation(MobEvents.MODID+":upgraded_anvil"), new ResourceLocation(MobEvents.MODID+":upgraded_anvil_slightly_damaged"), new ResourceLocation(MobEvents.MODID+":upgraded_anvil_very_damaged"));

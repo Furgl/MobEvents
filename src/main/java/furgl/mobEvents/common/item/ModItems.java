@@ -11,7 +11,10 @@ import furgl.mobEvents.common.item.drops.ItemAnvilUpgradeSkeleton;
 import furgl.mobEvents.common.item.drops.ItemAnvilUpgradeZombie;
 import furgl.mobEvents.common.item.drops.ItemBardsJukebox;
 import furgl.mobEvents.common.item.drops.ItemBookOfHealing;
-import furgl.mobEvents.common.item.drops.ItemButchersCleaver;
+import furgl.mobEvents.common.item.drops.ItemButchersCleaver0;
+import furgl.mobEvents.common.item.drops.ItemButchersCleaver1;
+import furgl.mobEvents.common.item.drops.ItemButchersCleaver2;
+import furgl.mobEvents.common.item.drops.ItemButchersCleaver3;
 import furgl.mobEvents.common.item.drops.ItemDoubleJumpBoots;
 import furgl.mobEvents.common.item.drops.ItemFireArrow;
 import furgl.mobEvents.common.item.drops.ItemSummonersHelm;
@@ -49,7 +52,10 @@ public class ModItems
 	public static Item bardsJukebox;
 	public static Item doubleJumpBoots;
 	public static Item thievesMask;
-	public static Item butchersCleaver;
+	public static Item butchersCleaver0;
+	public static Item butchersCleaver1;
+	public static Item butchersCleaver2;
+	public static Item butchersCleaver3;
 	public static Item bookOfHealing;
 	public static Item fireArrow;
 	public static Item anvilUpgradeZombie;
@@ -102,7 +108,10 @@ public class ModItems
 		bardsJukebox = registerItem(new ItemBardsJukebox(ModBlocks.bardsJukebox), "bards_jukebox", true);
 		doubleJumpBoots = registerItem(new ItemDoubleJumpBoots(doubleJumpBootsMaterial, 0, EntityEquipmentSlot.FEET), "double_jump_boots", true);
 		thievesMask = registerItem(new ItemThievesMask(thievesMaskMaterial, 0, EntityEquipmentSlot.HEAD), "thieves_mask", true);
-		butchersCleaver = registerItem(new ItemButchersCleaver(butchersCleaverMaterial), "butchers_cleaver", true);
+		butchersCleaver0 = registerItem(new ItemButchersCleaver0(butchersCleaverMaterial), "butchers_cleaver_0", true);
+		butchersCleaver1 = registerItem(new ItemButchersCleaver1(butchersCleaverMaterial), "butchers_cleaver_1", true);
+		butchersCleaver2 = registerItem(new ItemButchersCleaver2(butchersCleaverMaterial), "butchers_cleaver_2", true);
+		butchersCleaver3 = registerItem(new ItemButchersCleaver3(butchersCleaverMaterial), "butchers_cleaver_3", true);
 		bookOfHealing = registerItem(new ItemBookOfHealing(), "book_of_healing", true);
 		fireArrow = registerItem(new ItemFireArrow(), "fire_arrow", true);
 		anvilUpgradeZombie = registerItem(new ItemAnvilUpgradeZombie(), "anvil_upgrade_zombie", true);
@@ -111,24 +120,22 @@ public class ModItems
 		upgradedAnvil = registerItem(new ItemUpgradedAnvil(ModBlocks.upgradedAnvil), "upgraded_anvil", true);
 		bossLoot = registerItem(new ItemBossLoot(ModBlocks.bossLoot), "boss_loot", true);
 		//Zombie Apocalypse
-		registerItem(new ItemEventMobSpawnEgg(null), "zombie_egg", false);
-		zombieBardEgg = registerItem(new ItemEventMobSpawnEgg("mobEvents.zombieBard"), "zombie_bard", true);
-		zombieCloneEgg = registerItem(new ItemEventMobSpawnEgg("mobEvents.zombieClone"), "zombie_clone", true);
-		zombieMinionEgg = registerItem(new ItemEventMobSpawnEgg("mobEvents.zombieMinion"), "zombie_minion", true);
-		zombiePyromaniacEgg = registerItem(new ItemEventMobSpawnEgg("mobEvents.zombiePyromaniac"), "zombie_pyromaniac", true);
-		zombieRiderEgg = registerItem(new ItemEventMobSpawnEgg("mobEvents.zombieRider"), "zombie_rider", true);
-		zombieRuntEgg = registerItem(new ItemEventMobSpawnEgg("mobEvents.zombieRunt"), "zombie_runt", true);
-		zombieSummonerEgg = registerItem(new ItemEventMobSpawnEgg("mobEvents.zombieSummoner"), "zombie_summoner", true);
-		zombieJumperEgg = registerItem(new ItemEventMobSpawnEgg("mobEvents.zombieJumper"), "zombie_jumper", true);
-		zombieThiefEgg = registerItem(new ItemEventMobSpawnEgg("mobEvents.zombieThief"), "zombie_thief", true);
+		zombieBardEgg = registerItem(new ItemEventMobSpawnEgg(MobEvents.MODID+".zombieBard"), "zombie_bard", true);
+		zombieCloneEgg = registerItem(new ItemEventMobSpawnEgg(MobEvents.MODID+".zombieClone"), "zombie_clone", true);
+		zombieMinionEgg = registerItem(new ItemEventMobSpawnEgg(MobEvents.MODID+".zombieMinion"), "zombie_minion", true);
+		zombiePyromaniacEgg = registerItem(new ItemEventMobSpawnEgg(MobEvents.MODID+".zombiePyromaniac"), "zombie_pyromaniac", true);
+		zombieRiderEgg = registerItem(new ItemEventMobSpawnEgg(MobEvents.MODID+".zombieRider"), "zombie_rider", true);
+		zombieRuntEgg = registerItem(new ItemEventMobSpawnEgg(MobEvents.MODID+".zombieRunt"), "zombie_runt", true);
+		zombieSummonerEgg = registerItem(new ItemEventMobSpawnEgg(MobEvents.MODID+".zombieSummoner"), "zombie_summoner", true);
+		zombieJumperEgg = registerItem(new ItemEventMobSpawnEgg(MobEvents.MODID+".zombieJumper"), "zombie_jumper", true);
+		zombieThiefEgg = registerItem(new ItemEventMobSpawnEgg(MobEvents.MODID+".zombieThief"), "zombie_thief", true);
 		//Skeletal Uprising
-		registerItem(new ItemEventMobSpawnEgg(null), "skeleton_egg", false);
-		skeletonSoldierEgg = registerItem(new ItemEventMobSpawnEgg("mobEvents.skeletonSoldier"), "skeleton_soldier", true);
-		skeletonBardEgg = registerItem(new ItemEventMobSpawnEgg("mobEvents.skeletonBard"), "skeleton_bard", true);
-		skeletonCloneEgg = registerItem(new ItemEventMobSpawnEgg("mobEvents.skeletonClone"), "skeleton_clone", true);
-		skeletonPyromaniacEgg = registerItem(new ItemEventMobSpawnEgg("mobEvents.skeletonPyromaniac"), "skeleton_pyromaniac", true);
+		skeletonSoldierEgg = registerItem(new ItemEventMobSpawnEgg(MobEvents.MODID+".skeletonSoldier"), "skeleton_soldier", true);
+		skeletonBardEgg = registerItem(new ItemEventMobSpawnEgg(MobEvents.MODID+".skeletonBard"), "skeleton_bard", true);
+		skeletonCloneEgg = registerItem(new ItemEventMobSpawnEgg(MobEvents.MODID+".skeletonClone"), "skeleton_clone", true);
+		skeletonPyromaniacEgg = registerItem(new ItemEventMobSpawnEgg(MobEvents.MODID+".skeletonPyromaniac"), "skeleton_pyromaniac", true);
 		//boss
-		zombieBossSpawnerEgg = registerItem(new ItemEventMobSpawnEgg("mobEvents.zombieBossSpawner"), "zombie_boss_spawner", true);
+		zombieBossSpawnerEgg = registerItem(new ItemEventMobSpawnEgg(MobEvents.MODID+".zombieBossSpawner"), "zombie_boss_spawner", true);
 	}
 
 	public static void registerRenders()
@@ -139,12 +146,12 @@ public class ModItems
 
 	public static Item registerItem(final Item item, final String unlocalizedName, boolean addToTab) {
 		item.setUnlocalizedName(unlocalizedName);
+		GameRegistry.register(item.setRegistryName(unlocalizedName));
 		if (addToTab && FMLCommonHandler.instance().getEffectiveSide()==Side.CLIENT)
 			addToTab(item);
-		GameRegistry.register(item.setRegistryName(unlocalizedName));
 		if (item instanceof ItemEventMobSpawnEgg)
 			eggs.add((ItemEventMobSpawnEgg) item);
-		else if (item instanceof IEventItem)
+		else if (item instanceof IEventItem && !(item instanceof ItemButchersCleaver1) && !(item instanceof ItemButchersCleaver2) && !(item instanceof ItemButchersCleaver3))
 			drops.add((IEventItem) item);
 		if (item instanceof ItemRecord)
 			records.add((ItemRecord) item);
@@ -182,10 +189,7 @@ public class ModItems
 
 	public static void registerRender(Item item)
 	{	
-		if (item instanceof ItemEventMobSpawnEgg)
-			Minecraft.getMinecraft().getRenderItem().getItemModelMesher().register(item, 0, new ModelResourceLocation(MobEvents.MODID + ":" + item.getUnlocalizedName().substring(5, item.getUnlocalizedName().indexOf("_"))+"_egg", "inventory"));
-		else
-			Minecraft.getMinecraft().getRenderItem().getItemModelMesher().register(item, 0, new ModelResourceLocation(MobEvents.MODID + ":" + item.getUnlocalizedName().substring(5), "inventory"));
+		Minecraft.getMinecraft().getRenderItem().getItemModelMesher().register(item, 0, new ModelResourceLocation(MobEvents.MODID + ":" + item.getUnlocalizedName().substring(5), "inventory"));
 	}
 }
 

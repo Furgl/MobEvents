@@ -30,10 +30,10 @@ public class PlayerJoinedEvent
 			event.player.inventory.addItemStackToInventory(new ItemStack(ModItems.eventBook));
 		}
 
-		if (MobEvents.DEBUG) {
+		/*if (MobEvents.DEBUG) {
 			System.out.println("First join debug:");
 			MobEvents.proxy.getWorldData().printDebug();
-		}
+		}*/
 		//sync server to client
 		MobEvents.proxy.getWorldData().markDirty();
 	}

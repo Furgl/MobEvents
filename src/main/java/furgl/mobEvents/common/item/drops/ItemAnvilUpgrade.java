@@ -60,6 +60,7 @@ public class ItemAnvilUpgrade extends Item implements IEventItem
 			tooltip.add(TextFormatting.ITALIC+""+TextFormatting.GOLD+"???");
 	}
 
+	@SuppressWarnings("deprecation")
 	@Override
 	public EnumActionResult onItemUseFirst(ItemStack stack, EntityPlayer playerIn, World worldIn, BlockPos pos, EnumFacing side, float hitX, float hitY, float hitZ, EnumHand hand)
 	{
@@ -68,7 +69,7 @@ public class ItemAnvilUpgrade extends Item implements IEventItem
 		else if (playerIn.capabilities.allowEdit)
 		{
 			if (worldIn.getBlockState(pos).getBlock() == Blocks.ANVIL)
-				worldIn.setBlockState(pos, ModBlocks.upgradedAnvil.getExtendedState(worldIn.getBlockState(pos), worldIn, pos));
+				worldIn.setBlockState(pos, ModBlocks.upgradedAnvil.getStateFromMeta(worldIn.getBlockState(pos).getBlock().getMetaFromState(worldIn.getBlockState(pos))));//ModBlocks.upgradedAnvil.getExtendedState(worldIn.getBlockState(pos), worldIn, pos)
 			else if (worldIn.getBlockState(pos).getBlock() == ModBlocks.upgradedAnvil)
 			{
 				if (((TileEntityUpgradedAnvil)worldIn.getTileEntity(pos)).upgrades.contains(this))

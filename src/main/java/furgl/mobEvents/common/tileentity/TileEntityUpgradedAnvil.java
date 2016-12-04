@@ -47,7 +47,7 @@ public class TileEntityUpgradedAnvil extends TileEntity
 		super.writeToNBT(compound);
 
 		int[] upgradeIds = new int[upgrades.size()];
-		for (int i=0; i<upgrades.size(); i++) 
+		for (int i=0; i<upgrades.size(); i++)
 			upgradeIds[i] = Item.getIdFromItem(upgrades.get(i));
 		compound.setIntArray("upgrades", upgradeIds);
 		return compound;

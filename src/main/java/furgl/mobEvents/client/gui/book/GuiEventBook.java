@@ -116,6 +116,8 @@ public class GuiEventBook extends GuiScreen
 	private int currentBoss;
 	/**Player index in MobEvents.proxy.getWorldData()*/
 	private int index;
+	/**Current item being rendered*/
+	public ItemStack stack;
 
 	public GuiEventBook(EntityPlayer player, boolean creative)
 	{
@@ -712,7 +714,7 @@ public class GuiEventBook extends GuiScreen
 				//beacon image
 				mc.getTextureManager().bindTexture(bookPageTexture);
 				if (MobEvents.proxy.getWorldData().currentEvent.getClass() != Event.class)
-					GlStateManager.color(EventFogEvent.currentRed, EventFogEvent.currentGreen, EventFogEvent.currentBlue);				
+					GlStateManager.color(EventFogEvent.currentColors[0], EventFogEvent.currentColors[1], EventFogEvent.currentColors[2]);				
 				else
 					GlStateManager.color(1f, 1f, 1f);
 				GlStateManager.pushMatrix();
@@ -751,7 +753,7 @@ public class GuiEventBook extends GuiScreen
 			else
 			{
 				IEventItem item = this.unlockedItems.get(this.currentPage-1);
-				ItemStack stack = item.getItemStack();
+				stack = item.getItemStack();
 				String title = item.getName();
 				float x = w+3-this.fontRendererObj.getStringWidth(title)/2;
 				float y = h-30;
@@ -760,36 +762,6 @@ public class GuiEventBook extends GuiScreen
 				this.mc.fontRendererObj.drawString(TextFormatting.BOLD+"Dropped by:", w-38, h+50, 0, false);
 				if (item.droppedBy().size() == 1)
 					this.mc.fontRendererObj.drawString(item.droppedBy().get(0), w-38, h+65, 0, false);
-				//render item
-				RenderHelper.enableStandardItemLighting();
-				GlStateManager.pushMatrix();
-				scale = 2f;
-				GlStateManager.translate(w - 100, h, 0);
-				GlStateManager.scale(scale, scale, scale);
-				this.itemRender.renderItemAndEffectIntoGUI(stack, 47, -10);
-				GlStateManager.popMatrix();
-				//render tooltip
-				GlStateManager.pushMatrix();
-				scale = 0.75f;
-				GlStateManager.translate(w - 100, h, 0);
-				GlStateManager.scale(scale, scale, scale);
-				int length = 0;
-				for (String string : stack.getTooltip(this.editingPlayer, false))
-					if (this.fontRendererObj.getStringWidth(string) > length)
-						length = this.fontRendererObj.getStringWidth(string);
-				this.drawHoveringText(stack.getTooltip(this.editingPlayer, false), 137-length/2, 32);
-				GlStateManager.popMatrix();
-				RenderHelper.disableStandardItemLighting();
-				//TODO render item/player
-				//portrait background
-				mc.getTextureManager().bindTexture(bookPageTexture);
-				GlStateManager.color(item.getRed(), item.getGreen(), item.getBlue(), 1.0F);				
-				GlStateManager.pushMatrix();
-				scale = 1.8f;
-				GlStateManager.translate(w - 100, h, 0);
-				GlStateManager.scale(scale, scale, scale);
-				this.drawTexturedModalRect(103, -17, 146, 6, 58, 77);
-				GlStateManager.popMatrix();
 				//player portrait
 				//if no player or player is geared for different page - reset guiPlayer
 				if (this.guiPlayer == null || this.guiPlayerPage != this.currentPage)
@@ -802,24 +774,6 @@ public class GuiEventBook extends GuiScreen
 							slot = EntityEquipmentSlot.values()[i];
 							break;
 						}
-					/*					switch(slot)
-					{
-					case 0:
-						slot = 4;
-						break;
-					case 1:
-						slot = 3;
-						break;
-					case 2: 
-						slot = 2;
-						break;
-					case 3:
-						slot = 1;
-						break;
-					case -1:
-						slot = 0;
-						break;
-					}*/
 					guiPlayer.setItemStackToSlot(slot, stack);
 				}
 				guiPlayer.doSpecialRender();
@@ -840,6 +794,35 @@ public class GuiEventBook extends GuiScreen
 				mc.getRenderManager().doRenderEntity(guiPlayer, -4D, -1.5D, 5.0D, 0.0F, this.partialTicks, true);
 				RenderHelper.disableStandardItemLighting();
 				this.mc.entityRenderer.disableLightmap();
+				GlStateManager.popMatrix();
+				//render tooltip (must be before render item bc cleaver.getTooltip)
+				GlStateManager.pushMatrix();
+				scale = 0.75f;
+				GlStateManager.translate(w - 100, h, 0);
+				GlStateManager.scale(scale, scale, scale);
+				int length = 0;
+				for (String string : stack.getTooltip(this.guiPlayer, false))
+					if (this.fontRendererObj.getStringWidth(string) > length)
+						length = this.fontRendererObj.getStringWidth(string);
+				this.drawHoveringText(stack.getTooltip(this.guiPlayer, false), 137-length/2, 32);
+				GlStateManager.popMatrix();
+				RenderHelper.disableStandardItemLighting();
+				//render item
+				RenderHelper.enableStandardItemLighting();
+				GlStateManager.pushMatrix();
+				scale = 2f;
+				GlStateManager.translate(w - 100, h, 0);
+				GlStateManager.scale(scale, scale, scale);
+				this.itemRender.renderItemAndEffectIntoGUI(stack, 47, -10);
+				GlStateManager.popMatrix();
+				//portrait background
+				mc.getTextureManager().bindTexture(bookPageTexture);
+				GlStateManager.color(item.getRed(), item.getGreen(), item.getBlue(), 1.0F);				
+				GlStateManager.pushMatrix();
+				scale = 1.8f;
+				GlStateManager.translate(w - 100, h, 0);
+				GlStateManager.scale(scale, scale, scale);
+				this.drawTexturedModalRect(103, -17, 146, 6, 58, 77);
 				GlStateManager.popMatrix();
 			}
 		}

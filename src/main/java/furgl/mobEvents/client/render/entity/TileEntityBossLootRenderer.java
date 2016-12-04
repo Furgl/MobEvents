@@ -23,7 +23,7 @@ import net.minecraft.util.math.MathHelper;
 public class TileEntityBossLootRenderer extends TileEntitySpecialRenderer<TileEntityBossLoot>
 {
 	private static final ResourceLocation beaconBeam = new ResourceLocation("textures/entity/beacon_beam.png");
-	private static final ResourceLocation textureNormal = new ResourceLocation(MobEvents.MODID+":textures/entity/boss_loot.png");
+	private static final ResourceLocation textureNormal = new ResourceLocation(MobEvents.MODID+":textures/blocks/boss_loot.png");
 	private ModelChest simpleChest = new ModelChest();
 
 	public TileEntityBossLootRenderer()
@@ -118,7 +118,7 @@ public class TileEntityBossLootRenderer extends TileEntitySpecialRenderer<TileEn
 
 			if (destroyStage < 0)//TODO set color
 				if (MobEvents.proxy.getWorldData().currentEvent.getClass() != Event.class)
-					GlStateManager.color(EventFogEvent.currentRed, EventFogEvent.currentGreen, EventFogEvent.currentBlue);
+					GlStateManager.color(EventFogEvent.currentColors[0], EventFogEvent.currentColors[1], EventFogEvent.currentColors[2]);				
 				else
 					GlStateManager.color(1, 1, 1);
 			//GlStateManager.color(MobEvents.proxy.getWorldData().currentEvent.red-0.0f, MobEvents.proxy.getWorldData().currentEvent.green-0.0f, MobEvents.proxy.getWorldData().currentEvent.blue-0.0f, 1.0F);

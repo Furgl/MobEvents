@@ -53,7 +53,6 @@ public class ItemUpgradedAnvil extends ItemAnvilBlock
 	@Override
 	public boolean updateItemStackNBT(NBTTagCompound nbt)
 	{
-
 		return true;
 	}
 }

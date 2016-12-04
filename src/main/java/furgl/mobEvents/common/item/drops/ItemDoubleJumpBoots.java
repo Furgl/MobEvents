@@ -55,7 +55,7 @@ public class ItemDoubleJumpBoots extends ItemArmor implements IEventItem
 
 	public void jumpEffects(Entity entity) 
 	{
-		entity.worldObj.playSound(null, entity.posX, entity.posY, entity.posZ, SoundEvents.ENTITY_BAT_TAKEOFF, SoundCategory.PLAYERS, 0.3F, 1.2F);
+		entity.worldObj.playSound(entity.posX, entity.posY, entity.posZ, SoundEvents.ENTITY_BAT_TAKEOFF, SoundCategory.HOSTILE, 0.3F, 1.2F, false);
 		for (int i=0; i<10; i++)
 			entity.worldObj.spawnParticle(EnumParticleTypes.CLOUD, entity.posX+Item.itemRand.nextDouble()-0.5D, entity.posY, entity.posZ+Item.itemRand.nextDouble()-0.5D, 0, -0.05D, 0, 0);
 	}
@@ -83,7 +83,7 @@ public class ItemDoubleJumpBoots extends ItemArmor implements IEventItem
 
 	@Override
 	@SideOnly(Side.CLIENT)
-    public net.minecraft.client.model.ModelBiped getArmorModel(EntityLivingBase entityLiving, ItemStack itemStack, EntityEquipmentSlot armorSlot, net.minecraft.client.model.ModelBiped _default)
+	public net.minecraft.client.model.ModelBiped getArmorModel(EntityLivingBase entityLiving, ItemStack itemStack, EntityEquipmentSlot armorSlot, net.minecraft.client.model.ModelBiped _default)
 	{
 		return new ModelDoubleJumpBoots();
 	}
@@ -137,7 +137,7 @@ public class ItemDoubleJumpBoots extends ItemArmor implements IEventItem
 	public void onUpdate(ItemStack stack, World worldIn, Entity entityIn, int itemSlot, boolean isSelected) {
 		if (!stack.isItemEnchanted())
 			stack.addEnchantment(Enchantments.FEATHER_FALLING, 1);
-		
+
 		if (!worldIn.isRemote && entityIn instanceof EntityPlayer && !(entityIn instanceof FakePlayer)) {
 			int index = MobEvents.proxy.getWorldData().getPlayerIndex(entityIn.getName());
 			if (!MobEvents.proxy.getWorldData().unlockedItems.get(index).contains(this.getName()))

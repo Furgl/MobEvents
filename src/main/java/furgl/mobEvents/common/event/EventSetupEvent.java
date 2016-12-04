@@ -37,19 +37,6 @@ public class EventSetupEvent
 	{
 		if (event.getWorld().provider.getDimensionType() == DimensionType.OVERWORLD)
 		{
-			//reset fog color and density
-			if (event.getWorld().isRemote) {
-				EventFogEvent.resetFogDensity = false;
-				EventFogEvent.resetFogColor = false;
-				EventFogEvent.densityToChangeTo = 1;
-				EventFogEvent.currentDensity = 1;
-				EventFogEvent.redToChangeTo = 1;
-				EventFogEvent.greenToChangeTo = 1;
-				EventFogEvent.blueToChangeTo = 1;
-				EventFogEvent.currentRed = 1;
-				EventFogEvent.currentBlue = 1;
-				EventFogEvent.currentGreen = 1;
-			}		
 			//initialize events
 			if (Event.EVENT == null) { //SP: only runs server and shares, MP: runs both
 				Event.EVENT = new Event(event.getWorld());
@@ -68,11 +55,11 @@ public class EventSetupEvent
 			else if (MobEvents.proxy.world == null) {
 				MobEvents.proxy.world = event.getWorld();
 			}
-			//start event wave if needed
-			if (MobEvents.DEBUG && !event.getWorld().isRemote) {
+
+/*			if (MobEvents.DEBUG && !event.getWorld().isRemote) {
 				System.out.println("World load:");
 				MobEvents.proxy.getWorldData().printDebug();
-			}
+			}*/
 		}
 	}
 
