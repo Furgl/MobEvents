@@ -8,16 +8,14 @@ import furgl.mobEvents.common.MobEvents;
 import furgl.mobEvents.common.item.ModItems;
 import furgl.mobEvents.common.item.drops.ItemThievesMask;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.IEntityLivingData;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.ai.EntityAIAvoidEntity;
 import net.minecraft.entity.ai.EntityAIHurtByTarget;
 import net.minecraft.entity.ai.EntityAIMoveThroughVillage;
 import net.minecraft.entity.ai.EntityAINearestAttackableTarget;
-import net.minecraft.entity.monster.EntityIronGolem;
+import net.minecraft.entity.ai.EntityAITasks.EntityAITaskEntry;
 import net.minecraft.entity.monster.EntityPigZombie;
-import net.minecraft.entity.passive.EntityVillager;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
@@ -25,7 +23,6 @@ import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.Item;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.DamageSource;
-import net.minecraft.util.EnumHand;
 import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.text.Style;
 import net.minecraft.util.text.TextComponentTranslation;
@@ -37,6 +34,8 @@ import net.minecraftforge.common.util.FakePlayer;
 public class EntityZombieThief extends EntityEventZombie
 {
 	private EntityAINearestAttackableTarget attackAI;
+	private EntityAIHurtByTarget hurtByTargetAI;
+
 	private EntityPlayer playerStolenFrom;
 	private NBTTagCompound tagToRead;
 
@@ -50,16 +49,11 @@ public class EntityZombieThief extends EntityEventZombie
 	@Override
 	protected void applyEntityAI()
 	{
-		//this.tasks.addTask(4, new EntityAIAttackOnCollide(this, EntityVillager.class, 1.0D, true));
-		//this.tasks.addTask(4, new EntityAIAttackOnCollide(this, EntityIronGolem.class, 1.0D, true));
+		attackAI = new EntityAINearestAttackableTarget(this, EntityPlayer.class, true);
+		hurtByTargetAI = new EntityAIHurtByTarget(this, true, new Class[] {EntityPigZombie.class});
 		this.tasks.addTask(6, new EntityAIMoveThroughVillage(this, 1.0D, false));
-		this.targetTasks.addTask(1, new EntityAIHurtByTarget(this, true, new Class[] {EntityPigZombie.class}));
-		if (this.getHeldItem(EnumHand.MAIN_HAND) == null)
-			this.targetTasks.addTask(2, attackAI = new EntityAINearestAttackableTarget(this, EntityPlayer.class, true));
-		else
-			this.targetTasks.addTask(1, new EntityAIAvoidEntity(this, EntityPlayer.class, 20.0F, 1.1D, 1.5D));
-		this.targetTasks.addTask(2, new EntityAINearestAttackableTarget(this, EntityVillager.class, false));
-		this.targetTasks.addTask(2, new EntityAINearestAttackableTarget(this, EntityIronGolem.class, true));
+		this.targetTasks.addTask(2, attackAI);
+		this.targetTasks.addTask(1, hurtByTargetAI);
 	}
 
 	@Override
@@ -99,14 +93,6 @@ public class EntityZombieThief extends EntityEventZombie
 		}
 		super.onDeath(cause);
 	}
-	
-	@Override
-	public boolean attackEntityFrom(DamageSource source, float amount)
-    {
-		if (!this.worldObj.isRemote && !source.isCreativePlayer() && source.getEntity() instanceof EntityPlayer && !(source.getEntity() instanceof FakePlayer))
-			this.setAttackTarget((EntityLivingBase) source.getEntity());
-		return super.attackEntityFrom(source, amount);
-    }
 
 	@Override
 	public boolean attackEntityAsMob(Entity entityIn)
@@ -125,9 +111,6 @@ public class EntityZombieThief extends EntityEventZombie
 				Random random = new Random();
 				this.setItemStackToSlot(EntityEquipmentSlot.MAINHAND, player.inventory.removeStackFromSlot(itemSlots.get(random.nextInt(itemSlots.size()))));
 				this.playerStolenFrom = player;
-				this.targetTasks.addTask(1, new EntityAIAvoidEntity(this, EntityPlayer.class, 20.0F, 1.1D, 1.5D));
-				this.targetTasks.removeTask(attackAI);
-				attackAI = null;
 				player.addChatMessage(new TextComponentTranslation("A Zombie Thief has stolen your "+this.getHeldItemMainhand().getDisplayName()+"!").setStyle(new Style().setItalic(true).setColor(TextFormatting.DARK_RED)));
 			}
 		}
@@ -154,11 +137,17 @@ public class EntityZombieThief extends EntityEventZombie
 	@Override
 	public void onUpdate() 
 	{
-		//change AI if loaded in with item
-		if (this.getHeldItemMainhand() != null && this.attackAI != null) {
-			this.targetTasks.addTask(1, new EntityAIAvoidEntity(this, EntityPlayer.class, 20.0F, 1.1D, 1.5D));
-			this.targetTasks.removeTask(attackAI);
-			attackAI = null;
+		//remove attack ai when stolen item
+		if (this.getHeldItemMainhand() != null && !this.worldObj.isRemote) {
+			boolean hasAttackAI = false;
+			for (EntityAITaskEntry entry : this.targetTasks.taskEntries)
+				if (entry.action.equals(attackAI)) 
+					hasAttackAI = true;
+			if (hasAttackAI) {
+				this.targetTasks.addTask(1, new EntityAIAvoidEntity(this, EntityPlayer.class, 20.0F, 1.1D, 1.5D));
+				this.targetTasks.removeTask(attackAI);
+				this.targetTasks.removeTask(hurtByTargetAI);
+			}
 		}
 		//load playerStolenFrom
 		if (!this.worldObj.isRemote && this.getHeldItemMainhand() != null && this.playerStolenFrom == null && this.tagToRead != null) {
@@ -167,9 +156,6 @@ public class EntityZombieThief extends EntityEventZombie
 			if (this.playerStolenFrom != null)
 				this.tagToRead = null;
 		}
-		//no target when stealing
-		if (!this.worldObj.isRemote && this.getHeldItemMainhand() != null && this.getAttackTarget() != null)
-			this.setAttackTarget(null);
 		//sneaking
 		if (!this.worldObj.isRemote && this.getAttackTarget() instanceof EntityPlayer && !this.isSneaking())
 			this.setSneaking(true);

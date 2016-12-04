@@ -16,9 +16,7 @@ import net.minecraft.util.text.Style;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
-import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.registry.EntityRegistry;
-import net.minecraftforge.fml.relauncher.Side;
 
 public class SkeletalUprising extends Event
 {
@@ -122,7 +120,7 @@ public class SkeletalUprising extends Event
 	{ 
 		MobEvents.proxy.getWorldData().currentEvent = Event.SKELETAL_UPRISING;
 		super.startEvent();
-		if (FMLCommonHandler.instance().getSide() == Side.SERVER) {
+		if (!MobEvents.proxy.world.isRemote) {
 			Event.sendServerMessage(new TextComponentTranslation("My bones are rattling.").setStyle(new Style().setBold(true).setColor(this.enumColor).setItalic(true)));
 			Event.playServerSound(SoundEvents.ENTITY_ZOMBIE_INFECT, 10f, 0f);	
 		}
@@ -131,7 +129,7 @@ public class SkeletalUprising extends Event
 	public void stopEvent() 
 	{
 		super.stopEvent();
-		if (FMLCommonHandler.instance().getSide() == Side.SERVER) {
+		if (!MobEvents.proxy.world.isRemote) {
 			Event.sendServerMessage(new TextComponentTranslation(this.toString() + " has ended.").setStyle(new Style().setBold(true).setColor(this.enumColor)));
 			Event.playServerSound(SoundEvents.ENTITY_ZOMBIE_VILLAGER_CURE, 0.2f, 2f);	
 		}

@@ -22,6 +22,8 @@ public class EntityGuiPlayer extends AbstractClientPlayer
 {
 	private AbstractClientPlayer player;
 	public GuiEventBook book;
+	/**Incremented each time doSpecialRender is called (bc ticksExisted affects stuff)*/
+	public int renderTicks;
 
 	public EntityGuiPlayer(World worldIn, GameProfile playerProfile, AbstractClientPlayer thePlayer, GuiEventBook book) 
 	{
@@ -43,8 +45,9 @@ public class EntityGuiPlayer extends AbstractClientPlayer
 	
 	public void doSpecialRender()
 	{
+		this.renderTicks++;
 		ArrayList<ItemStack> armor = Lists.newArrayList(this.getArmorInventoryList());
-		for (int i=0; i<4; i++)
+		for (int i=0; i<armor.size(); i++)
 			if (armor.get(i) != null && armor.get(i).getItem() instanceof IEventItem)
 				((ItemArmor) armor.get(i).getItem()).onArmorTick(worldObj, this, ((IEventItem) armor.get(i).getItem()).getItemStack());
 		if (this.getHeldItemMainhand() != null)

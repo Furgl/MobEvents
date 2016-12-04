@@ -8,7 +8,6 @@ import furgl.mobEvents.common.MobEvents;
 import furgl.mobEvents.common.achievements.Achievements;
 import furgl.mobEvents.common.entity.IEventMob;
 import furgl.mobEvents.common.entity.bosses.spawner.EntityBossSpawner;
-import furgl.mobEvents.common.event.EventFogEvent;
 import furgl.mobEvents.common.event.EventSetupEvent;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EnumCreatureType;
@@ -298,8 +297,6 @@ public class Event
 			return;
 		this.boss = null;
 		EventSetupEvent.timeTillWave1 = 0;
-		EventFogEvent.resetFogDensity = true;
-		EventFogEvent.resetFogColor = true;
 		Event.updatePlayers();
 		if (bossDefeated)
 		{

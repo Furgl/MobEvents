@@ -23,9 +23,7 @@ import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
-import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.registry.EntityRegistry;
-import net.minecraftforge.fml.relauncher.Side;
 
 public class ZombieApocalypse extends Event
 {
@@ -157,7 +155,7 @@ public class ZombieApocalypse extends Event
 	{ 
 		MobEvents.proxy.getWorldData().currentEvent = Event.ZOMBIE_APOCALYPSE;
 		super.startEvent();
-		if (FMLCommonHandler.instance().getSide() == Side.SERVER) {
+		if (!MobEvents.proxy.world.isRemote) {
 			Event.sendServerMessage(new TextComponentString("Did I hear something?").setStyle(new Style().setBold(true).setColor(this.enumColor).setItalic(true)));
 			Event.playServerSound(SoundEvents.ENTITY_ZOMBIE_INFECT, 10f, 0f);	
 		}
@@ -167,7 +165,7 @@ public class ZombieApocalypse extends Event
 	public void stopEvent() 
 	{
 		super.stopEvent();
-		if (FMLCommonHandler.instance().getSide() == Side.SERVER) {
+		if (!MobEvents.proxy.world.isRemote) {
 			Event.sendServerMessage(new TextComponentTranslation(this.toString() + " has ended.").setStyle(new Style().setBold(true).setColor(this.enumColor)));
 			Event.playServerSound(SoundEvents.ENTITY_ZOMBIE_VILLAGER_CURE, 0.2f, 2f);	
 		}

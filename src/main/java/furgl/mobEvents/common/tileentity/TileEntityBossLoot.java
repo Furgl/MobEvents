@@ -456,7 +456,7 @@ public class TileEntityBossLoot extends TileEntityLockable implements ITickable,
 		//this.isComplete = true;
 		TileEntityBossLoot.BeamSegment tileentitybeacon$beamsegment;
 		if (MobEvents.proxy.getWorldData().currentEvent.getClass() != Event.class)
-			tileentitybeacon$beamsegment = new TileEntityBossLoot.BeamSegment(new float[]{EventFogEvent.currentRed, EventFogEvent.currentGreen, EventFogEvent.currentBlue}/*EntitySheep.func_175513_a(EnumDyeColor.WHITE)*/);
+			tileentitybeacon$beamsegment = new TileEntityBossLoot.BeamSegment(EventFogEvent.currentColors/*EntitySheep.func_175513_a(EnumDyeColor.WHITE)*/);
 		else
 			tileentitybeacon$beamsegment = new TileEntityBossLoot.BeamSegment(new float[]{1, 1, 1});
 		this.beamSegments.add(tileentitybeacon$beamsegment);

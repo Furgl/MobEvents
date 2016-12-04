@@ -99,7 +99,7 @@ public class GuiEventProgress extends Gui
 			GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
 			GlStateManager.blendFunc(770, 771);
 
-			GlStateManager.color(EventFogEvent.currentRed, EventFogEvent.currentGreen, EventFogEvent.currentBlue, 0.2F);
+			GlStateManager.color(EventFogEvent.currentColors[0], EventFogEvent.currentColors[1], EventFogEvent.currentColors[2]);				
 			GlStateManager.depthMask(false);
 			GlStateManager.depthFunc(514);
 			GlStateManager.disableLighting();
