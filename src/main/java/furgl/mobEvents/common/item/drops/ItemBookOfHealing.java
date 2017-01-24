@@ -3,9 +3,9 @@ package furgl.mobEvents.common.item.drops;
 import java.util.ArrayList;
 import java.util.List;
 
-import furgl.mobEvents.common.MobEvents;
 import furgl.mobEvents.common.Events.Event;
 import furgl.mobEvents.common.entity.EntityGuiPlayer;
+import furgl.mobEvents.common.world.WorldData;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.Entity;
@@ -45,8 +45,8 @@ public class ItemBookOfHealing extends Item implements IEventItem
 	public void addInformation(ItemStack stack, EntityPlayer player, List<String> tooltip, boolean advanced)
 	{
 		tooltip.set(0, TextFormatting.AQUA+tooltip.get(0));
-		int index = MobEvents.proxy.getWorldData().getPlayerIndex(player.getDisplayNameString());
-		if (MobEvents.proxy.getWorldData().unlockedItems.get(index).contains(this.getName()) || player.capabilities.isCreativeMode) {
+		int index = WorldData.get(player.worldObj).getPlayerIndex(player.getDisplayNameString());
+		if (WorldData.get(player.worldObj).unlockedItems.get(index).contains(this.getName()) || player.capabilities.isCreativeMode) {
 			tooltip.add(TextFormatting.GOLD+"Uses experience to heal when held");
 			if (!GuiScreen.isShiftKeyDown())
 				tooltip.add(TextFormatting.GRAY+"Hold "+TextFormatting.AQUA+"SHIFT"+TextFormatting.GRAY+" for details");
@@ -295,12 +295,12 @@ public class ItemBookOfHealing extends Item implements IEventItem
 				}
 		
 		if (!worldIn.isRemote && entityIn instanceof EntityPlayer && !(entityIn instanceof FakePlayer)) {
-			int index = MobEvents.proxy.getWorldData().getPlayerIndex(entityIn.getName());
-			if (!MobEvents.proxy.getWorldData().unlockedItems.get(index).contains(this.getName()))
+			int index = WorldData.get(worldIn).getPlayerIndex(entityIn.getName());
+			if (!WorldData.get(worldIn).unlockedItems.get(index).contains(this.getName()))
 			{
-				MobEvents.proxy.getWorldData().unlockedItems.get(index).add(this.getName());
+				WorldData.get(worldIn).unlockedItems.get(index).add(this.getName());
 				Event.displayUnlockMessage((EntityPlayer) entityIn, "Unlocked information about the "+stack.getDisplayName()+" item in the Event Book");
-				MobEvents.proxy.getWorldData().markDirty();
+				WorldData.get(worldIn).markDirty();
 			}
 		}
 	}

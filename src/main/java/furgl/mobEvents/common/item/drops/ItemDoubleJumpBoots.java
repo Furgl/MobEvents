@@ -3,9 +3,10 @@ package furgl.mobEvents.common.item.drops;
 import java.util.ArrayList;
 import java.util.List;
 
-import furgl.mobEvents.client.model.item.ModelDoubleJumpBoots;
+import furgl.mobEvents.client.model.armor.ModelDoubleJumpBoots;
 import furgl.mobEvents.common.MobEvents;
 import furgl.mobEvents.common.Events.Event;
+import furgl.mobEvents.common.world.WorldData;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
@@ -40,9 +41,7 @@ public class ItemDoubleJumpBoots extends ItemArmor implements IEventItem
 	@SideOnly(Side.CLIENT)
 	public void getSubItems(Item itemIn, CreativeTabs tab, List<ItemStack> subItems)
 	{
-		ItemStack stack = new ItemStack(this);
-		stack.addEnchantment(Enchantments.FEATHER_FALLING, 1);
-		subItems.add(stack);
+		subItems.add(this.getItemStack());
 	}
 
 	@Override
@@ -65,8 +64,8 @@ public class ItemDoubleJumpBoots extends ItemArmor implements IEventItem
 	public void addInformation(ItemStack stack, EntityPlayer player, List<String> tooltip, boolean advanced)
 	{
 		tooltip.set(0, TextFormatting.AQUA+tooltip.get(0));
-		int index = MobEvents.proxy.getWorldData().getPlayerIndex(player.getDisplayNameString());
-		if (MobEvents.proxy.getWorldData().unlockedItems.get(index).contains(this.getName()) || player.capabilities.isCreativeMode) {
+		int index = WorldData.get(player.worldObj).getPlayerIndex(player.getDisplayNameString());
+		if (WorldData.get(player.worldObj).unlockedItems.get(index).contains(this.getName()) || player.capabilities.isCreativeMode) {
 			tooltip.add(TextFormatting.ITALIC+""+TextFormatting.GOLD+"Allows double jumping");
 			tooltip.add("Jump Boost II");
 		}
@@ -139,12 +138,12 @@ public class ItemDoubleJumpBoots extends ItemArmor implements IEventItem
 			stack.addEnchantment(Enchantments.FEATHER_FALLING, 1);
 
 		if (!worldIn.isRemote && entityIn instanceof EntityPlayer && !(entityIn instanceof FakePlayer)) {
-			int index = MobEvents.proxy.getWorldData().getPlayerIndex(entityIn.getName());
-			if (!MobEvents.proxy.getWorldData().unlockedItems.get(index).contains(this.getName()))
+			int index = WorldData.get(worldIn).getPlayerIndex(entityIn.getName());
+			if (!WorldData.get(worldIn).unlockedItems.get(index).contains(this.getName()))
 			{
-				MobEvents.proxy.getWorldData().unlockedItems.get(index).add(this.getName());
+				WorldData.get(worldIn).unlockedItems.get(index).add(this.getName());
 				Event.displayUnlockMessage((EntityPlayer) entityIn, "Unlocked information about the "+stack.getDisplayName()+" item in the Event Book");
-				MobEvents.proxy.getWorldData().markDirty();
+				WorldData.get(worldIn).markDirty();
 			}
 		}
 	}

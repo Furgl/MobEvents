@@ -1,8 +1,8 @@
 package furgl.mobEvents.client.gui.book.buttons;
 
 import furgl.mobEvents.client.gui.book.GuiEventBook;
-import furgl.mobEvents.common.MobEvents;
 import furgl.mobEvents.common.Events.Event;
+import furgl.mobEvents.common.world.WorldData;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.renderer.GlStateManager;
@@ -48,13 +48,13 @@ public class GuiButtonTab extends GuiButton
 			int y = this.yPosition+(hovered ? 3 : 4);
 			int borderColor = 0xb3b3b3;	
 			int mainColor = 0xe6e6e6; //faded color
-			int index = MobEvents.proxy.getWorldData().getPlayerIndex(mc.thePlayer.getDisplayNameString());
+			int index = WorldData.get(Minecraft.getMinecraft().theWorld).getPlayerIndex(mc.thePlayer.getDisplayNameString());
 			GlStateManager.pushMatrix();
 			if (id < book.numNonEventTabs) //introduction and items
 			{
 				mainColor = 0x0;
 			}
-			else if (MobEvents.proxy.getWorldData().unlockedTabs.get(index).contains(Event.allEvents.get(id-book.numNonEventTabs).toString()) || book.creative)
+			else if (WorldData.get(Minecraft.getMinecraft().theWorld).unlockedTabs.get(index).contains(Event.allEvents.get(id-book.numNonEventTabs).toString()) || book.creative)
 			{
 				borderColor = 0x0;
 				mainColor = Event.allEvents.get(id-book.numNonEventTabs).color;
@@ -68,7 +68,7 @@ public class GuiButtonTab extends GuiButton
 			}
 			mc.fontRendererObj.drawString(this.displayString, x, y, mainColor);
 			GlStateManager.popMatrix();
-			if (this.displayString.equals(MobEvents.proxy.getWorldData().currentEvent.toString()))
+			if (this.displayString.equals(WorldData.get(Minecraft.getMinecraft().theWorld).currentEvent.toString()))
 			{
 				GlStateManager.color(0.7F, 0.7F, 0.7F, 0.2F);
 				GlStateManager.depthMask(false);

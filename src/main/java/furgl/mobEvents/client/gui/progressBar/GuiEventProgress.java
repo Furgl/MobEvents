@@ -1,10 +1,10 @@
 package furgl.mobEvents.client.gui.progressBar;
 
-import furgl.mobEvents.common.MobEvents;
 import furgl.mobEvents.common.Events.ChaoticTurmoil;
 import furgl.mobEvents.common.Events.Event;
 import furgl.mobEvents.common.config.Config;
 import furgl.mobEvents.common.event.EventFogEvent;
+import furgl.mobEvents.common.world.WorldData;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.ScaledResolution;
@@ -33,7 +33,7 @@ public class GuiEventProgress extends Gui
 	@SubscribeEvent(priority=EventPriority.NORMAL)
 	public void onRenderExperienceBar(RenderGameOverlayEvent.Post event) 
 	{
-		if (event.getType() != ElementType.EXPERIENCE || MobEvents.proxy.getWorldData().currentEvent.getClass() == Event.class || Config.eventProgressGuiLocation.equals(Config.eventProgressGuiLocations[Config.NONE])) 
+		if (event.getType() != ElementType.EXPERIENCE || WorldData.get(Minecraft.getMinecraft().theWorld).currentEvent.getClass() == Event.class || Config.eventProgressGuiLocation.equals(Config.eventProgressGuiLocations[Config.NONE])) 
 			return;
 
 		ScaledResolution sr = new ScaledResolution(this.mc);
@@ -59,28 +59,28 @@ public class GuiEventProgress extends Gui
 		GlStateManager.enableBlend();
 		drawTexturedModalRect(xPos, yPos, 0, 0, 123, 40);
 		// You can keep drawing without changing anything
-		int progressBarWidth = (int)(((double)MobEvents.proxy.getWorldData().progress / (double)MobEvents.proxy.getWorldData().progressNeededForBoss) * 104);
+		int progressBarWidth = (int)(((double)WorldData.get(Minecraft.getMinecraft().theWorld).progress / (double)WorldData.get(Minecraft.getMinecraft().theWorld).progressNeededForBoss) * 104);
 		drawTexturedModalRect(xPos + 9, yPos + 29, 0, 40, progressBarWidth, 3);
-		String s = MobEvents.proxy.getWorldData().currentEvent.getClass() == Event.CHAOTIC_TURMOIL.getClass() ? ((ChaoticTurmoil)MobEvents.proxy.getWorldData().currentEvent).changingName : MobEvents.proxy.getWorldData().currentEvent.toString();
+		String s = WorldData.get(Minecraft.getMinecraft().theWorld).currentEvent.getClass() == Event.CHAOTIC_TURMOIL.getClass() ? ((ChaoticTurmoil)WorldData.get(Minecraft.getMinecraft().theWorld).currentEvent).changingName : WorldData.get(Minecraft.getMinecraft().theWorld).currentEvent.toString();
 		yPos += 6;
 		xPos += 60 - this.mc.fontRendererObj.getStringWidth(s)/2;
 		this.mc.fontRendererObj.drawString(s, xPos + 1, yPos, 0);
 		this.mc.fontRendererObj.drawString(s, xPos - 1, yPos, 0);
 		this.mc.fontRendererObj.drawString(s, xPos, yPos + 1, 0);
 		this.mc.fontRendererObj.drawString(s, xPos, yPos - 1, 0);
-		this.mc.fontRendererObj.drawString(s, xPos, yPos, MobEvents.proxy.getWorldData().currentEvent.color);
+		this.mc.fontRendererObj.drawString(s, xPos, yPos, WorldData.get(Minecraft.getMinecraft().theWorld).currentEvent.color);
 		yPos += 11;
 		xPos += this.mc.fontRendererObj.getStringWidth(s)/2;
-		if (MobEvents.proxy.getWorldData().currentWave == 0)
+		if (WorldData.get(Minecraft.getMinecraft().theWorld).currentWave == 0)
 			s = "";
 		else
-			s = MobEvents.proxy.getWorldData().currentWave < 4 ? "Wave " + MobEvents.proxy.getWorldData().currentWave : "Boss Wave";
+			s = WorldData.get(Minecraft.getMinecraft().theWorld).currentWave < 4 ? "Wave " + WorldData.get(Minecraft.getMinecraft().theWorld).currentWave : "Boss Wave";
 			xPos -= this.mc.fontRendererObj.getStringWidth(s)/2;
 			this.mc.fontRendererObj.drawString(s, xPos + 1, yPos, 0);
 			this.mc.fontRendererObj.drawString(s, xPos - 1, yPos, 0);
 			this.mc.fontRendererObj.drawString(s, xPos, yPos + 1, 0);
 			this.mc.fontRendererObj.drawString(s, xPos, yPos - 1, 0);
-			this.mc.fontRendererObj.drawString(s, xPos, yPos, MobEvents.proxy.getWorldData().currentWave == 4 ? 9961727 : 13036742);
+			this.mc.fontRendererObj.drawString(s, xPos, yPos, WorldData.get(Minecraft.getMinecraft().theWorld).currentWave == 4 ? 9961727 : 13036742);
 
 			//if left
 			if (Config.eventProgressGuiLocation.equalsIgnoreCase(Config.eventProgressGuiLocations[Config.TOP_LEFT]) || Config.eventProgressGuiLocation.equalsIgnoreCase(Config.eventProgressGuiLocations[Config.BOTTOM_LEFT]))

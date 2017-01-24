@@ -21,6 +21,7 @@ public class EntityZombiePyromaniac extends EntityEventZombie
 		this.progressOnDeath = 2;
 		this.armorColor = 10027008;
 		this.maxSpawnedInChunk = 2;
+		this.isImmuneToFire = true;
 	}
 	
 	@Override
@@ -72,7 +73,6 @@ public class EntityZombiePyromaniac extends EntityEventZombie
 	{
 		super.onInitialSpawn(difficulty, livingdata);
 		this.setChild(true);
-		this.isImmuneToFire = true;
 		this.setCustomNameTag("Zombie Pyromaniac");
 		return livingdata;
 	}

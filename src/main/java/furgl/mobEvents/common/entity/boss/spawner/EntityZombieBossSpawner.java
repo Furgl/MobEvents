@@ -1,7 +1,7 @@
-package furgl.mobEvents.common.entity.bosses.spawner;
+package furgl.mobEvents.common.entity.boss.spawner;
 
 import furgl.mobEvents.common.Events.Event;
-import furgl.mobEvents.common.entity.bosses.EntityBossZombie;
+import furgl.mobEvents.common.entity.boss.EntityBossZombie;
 import furgl.mobEvents.common.item.ModItems;
 import furgl.mobEvents.common.item.drops.IEventItem;
 import net.minecraft.entity.player.EntityPlayer;

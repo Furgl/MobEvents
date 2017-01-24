@@ -1,6 +1,6 @@
 package furgl.mobEvents.packets;
 
-import furgl.mobEvents.common.MobEvents;
+import furgl.mobEvents.common.world.WorldData;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.util.IThreadListener;
 import net.minecraft.world.WorldServer;
@@ -57,12 +57,13 @@ public class PacketSetCurrentPagesAndTabs implements IMessage
 				@Override
 				public void run() 
 				{
-					int index = MobEvents.proxy.getWorldData().getPlayerIndex(ctx.getServerHandler().playerEntity.getName());
-					MobEvents.proxy.getWorldData().currentPages.set(index, packet.currentPage);
-					MobEvents.proxy.getWorldData().currentTabs.set(index, packet.currentTab);
-					MobEvents.proxy.getWorldData().currentCreativePages.set(index, packet.currentCreativePage);
-					MobEvents.proxy.getWorldData().currentCreativeTabs.set(index, packet.currentCreativeTab);
-					MobEvents.proxy.getWorldData().markDirty();
+					WorldData data = WorldData.get(ctx.getServerHandler().playerEntity.worldObj);
+					int index = data.getPlayerIndex(ctx.getServerHandler().playerEntity.getName());
+					data.currentPages.set(index, packet.currentPage);
+					data.currentTabs.set(index, packet.currentTab);
+					data.currentCreativePages.set(index, packet.currentCreativePage);
+					data.currentCreativeTabs.set(index, packet.currentCreativeTab);
+					data.markDirty();
 				}
 			});
 			return null;

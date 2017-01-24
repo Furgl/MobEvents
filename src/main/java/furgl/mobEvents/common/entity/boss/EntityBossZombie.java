@@ -1,17 +1,17 @@
-package furgl.mobEvents.common.entity.bosses;
+package furgl.mobEvents.common.entity.boss;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import furgl.mobEvents.common.MobEvents;
 import furgl.mobEvents.common.Events.Event;
 import furgl.mobEvents.common.entity.IEventMob;
 import furgl.mobEvents.common.entity.ZombieApocalypse.EntityEventZombie;
 import furgl.mobEvents.common.entity.ZombieApocalypse.EntityZombiePyromaniac;
 import furgl.mobEvents.common.entity.ZombieApocalypse.EntityZombieThief;
-import furgl.mobEvents.common.entity.bosses.spawner.EntityBossSpawner;
+import furgl.mobEvents.common.entity.boss.spawner.EntityBossSpawner;
 import furgl.mobEvents.common.item.ModItems;
 import furgl.mobEvents.common.item.drops.ItemBookOfHealing;
+import furgl.mobEvents.common.world.WorldData;
 import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.IEntityLivingData;
@@ -199,7 +199,7 @@ public class EntityBossZombie extends EntityEventZombie implements IEventBoss
 			this.motionY += 0.5F;
 		}
 		//tp if too far away
-		if (MobEvents.proxy.getWorldData().currentEvent.boss != null && this.getDistanceToEntity(MobEvents.proxy.getWorldData().currentEvent.boss) > 60D)
+		if (WorldData.get(worldObj).currentEvent.boss != null && this.getDistanceToEntity(WorldData.get(worldObj).currentEvent.boss) > 60D)
 			this.setBeaconPosition();
 		//typeOnUpdate
 		this.typeOnUpdate(player);
@@ -297,13 +297,13 @@ public class EntityBossZombie extends EntityEventZombie implements IEventBoss
 					switch(summonType)
 					{
 					case 0:
-						Event.sendServerMessage(new TextComponentTranslation(this.getName()+": Aid us in the fight, younglings!").setStyle(new Style().setColor(this.getChatColor()).setItalic(true)));
+						WorldData.get(worldObj).currentEvent.sendServerMessage(new TextComponentTranslation(this.getName()+": Aid us in the fight, younglings!").setStyle(new Style().setColor(this.getChatColor()).setItalic(true)));
 						break;
 					case 1:
-						Event.sendServerMessage(new TextComponentTranslation(this.getName()+": Rob them blind!").setStyle(new Style().setColor(this.getChatColor()).setItalic(true)));
+						WorldData.get(worldObj).currentEvent.sendServerMessage(new TextComponentTranslation(this.getName()+": Rob them blind!").setStyle(new Style().setColor(this.getChatColor()).setItalic(true)));
 						break;
 					case 2:
-						Event.sendServerMessage(new TextComponentTranslation(this.getName()+": Make them burn!").setStyle(new Style().setColor(this.getChatColor()).setItalic(true)));
+						WorldData.get(worldObj).currentEvent.sendServerMessage(new TextComponentTranslation(this.getName()+": Make them burn!").setStyle(new Style().setColor(this.getChatColor()).setItalic(true)));
 						break;
 					}
 				for (int i=0; i < 4; i++)
@@ -375,8 +375,8 @@ public class EntityBossZombie extends EntityEventZombie implements IEventBoss
 					this.heal((saturation+heal)*2);
 					this.setItemStackToSlot(EntityEquipmentSlot.OFFHAND, null);
 					this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.2D);
-					if (rand.nextBoolean() && MobEvents.proxy.getWorldData().currentEvent == this.getEvent())
-						Event.sendServerMessage(new TextComponentTranslation(this.getName()+": "+this.farmerTaunts.get(rand.nextInt(farmerTaunts.size()))).setStyle(new Style().setColor(this.getChatColor()).setItalic(true)));
+					if (rand.nextBoolean() && WorldData.get(worldObj).currentEvent == this.getEvent())
+						WorldData.get(worldObj).currentEvent.sendServerMessage(new TextComponentTranslation(this.getName()+": "+this.farmerTaunts.get(rand.nextInt(farmerTaunts.size()))).setStyle(new Style().setColor(this.getChatColor()).setItalic(true)));
 				}
 				else
 					this.farmerEat(16);
@@ -422,17 +422,17 @@ public class EntityBossZombie extends EntityEventZombie implements IEventBoss
 					case 0:
 						potionEffect = new PotionEffect(MobEffects.RESISTANCE, 300, 2);
 						this.priestTarget.addPotionEffect(potionEffect);
-						Event.sendServerMessage(new TextComponentTranslation(this.getName()+": Let my blessings protect you, brother " + this.priestTarget.getName().replace("Boss Zombie ", "")+".").setStyle(new Style().setColor(this.getChatColor()).setItalic(true)));
+						WorldData.get(worldObj).currentEvent.sendServerMessage(new TextComponentTranslation(this.getName()+": Let my blessings protect you, brother " + this.priestTarget.getName().replace("Boss Zombie ", "")+".").setStyle(new Style().setColor(this.getChatColor()).setItalic(true)));
 						break;
 					case 1:
 						potionEffect = new PotionEffect(MobEffects.STRENGTH, 300, 0);
 						this.priestTarget.addPotionEffect(potionEffect);
-						Event.sendServerMessage(new TextComponentTranslation(this.getName()+": I give you my strength, brother " + this.priestTarget.getName().replace("Boss Zombie ", "")+".").setStyle(new Style().setColor(this.getChatColor()).setItalic(true)));
+						WorldData.get(worldObj).currentEvent.sendServerMessage(new TextComponentTranslation(this.getName()+": I give you my strength, brother " + this.priestTarget.getName().replace("Boss Zombie ", "")+".").setStyle(new Style().setColor(this.getChatColor()).setItalic(true)));
 						break;
 					case 2:
 						potionEffect = new PotionEffect(MobEffects.REGENERATION, 300, 2);
 						this.priestTarget.addPotionEffect(potionEffect);
-						Event.sendServerMessage(new TextComponentTranslation(this.getName()+": Allow me to heal your wounds, brother " + this.priestTarget.getName().replace("Boss Zombie ", "")+".").setStyle(new Style().setColor(this.getChatColor()).setItalic(true)));
+						WorldData.get(worldObj).currentEvent.sendServerMessage(new TextComponentTranslation(this.getName()+": Allow me to heal your wounds, brother " + this.priestTarget.getName().replace("Boss Zombie ", "")+".").setStyle(new Style().setColor(this.getChatColor()).setItalic(true)));
 						break;
 					}
 					//used to time particles/sounds for effect
@@ -504,9 +504,9 @@ public class EntityBossZombie extends EntityEventZombie implements IEventBoss
 	@Override
 	public void setBeaconPosition()
 	{
-		if (MobEvents.proxy.getWorldData().currentEvent.boss != null)
+		if (WorldData.get(worldObj).currentEvent.boss != null)
 		{
-			Vec3d spawner = MobEvents.proxy.getWorldData().currentEvent.boss.getPositionVector();
+			Vec3d spawner = WorldData.get(worldObj).currentEvent.boss.getPositionVector();
 			switch (this.type)
 			{
 			case 1:

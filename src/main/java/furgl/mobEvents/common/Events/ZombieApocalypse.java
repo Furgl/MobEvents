@@ -2,7 +2,6 @@ package furgl.mobEvents.common.Events;
 
 import java.util.ArrayList;
 
-import furgl.mobEvents.common.MobEvents;
 import furgl.mobEvents.common.entity.IEventMob;
 import furgl.mobEvents.common.entity.ZombieApocalypse.EntityZombieBard;
 import furgl.mobEvents.common.entity.ZombieApocalypse.EntityZombieClone;
@@ -13,7 +12,7 @@ import furgl.mobEvents.common.entity.ZombieApocalypse.EntityZombieRider;
 import furgl.mobEvents.common.entity.ZombieApocalypse.EntityZombieRunt;
 import furgl.mobEvents.common.entity.ZombieApocalypse.EntityZombieSummoner;
 import furgl.mobEvents.common.entity.ZombieApocalypse.EntityZombieThief;
-import furgl.mobEvents.common.entity.bosses.spawner.EntityZombieBossSpawner;
+import furgl.mobEvents.common.entity.boss.spawner.EntityZombieBossSpawner;
 import furgl.mobEvents.common.sound.ModSoundEvents;
 import net.minecraft.entity.EnumCreatureType;
 import net.minecraft.init.SoundEvents;
@@ -65,16 +64,16 @@ public class ZombieApocalypse extends Event
 	{
 		mobs = new ArrayList<IEventMob>();
 		ArrayList<IEventMob> tmp = new ArrayList<IEventMob>();
-		tmp.add(new EntityZombieRunt(MobEvents.proxy.world));
-		tmp.add(new EntityZombieBard(MobEvents.proxy.world));
-		tmp.add(new EntityZombieClone(MobEvents.proxy.world));
-		tmp.add(new EntityZombieMinion(MobEvents.proxy.world));
-		tmp.add(new EntityZombiePyromaniac(MobEvents.proxy.world));
-		tmp.add(new EntityZombieRider(MobEvents.proxy.world));
-		tmp.add(new EntityZombieSummoner(MobEvents.proxy.world));
-		tmp.add(new EntityZombieJumper(MobEvents.proxy.world));
-		tmp.add(new EntityZombieThief(MobEvents.proxy.world));
-		tmp.add(new EntityZombieBossSpawner(MobEvents.proxy.world));
+		tmp.add(new EntityZombieRunt(world));
+		tmp.add(new EntityZombieBard(world));
+		tmp.add(new EntityZombieClone(world));
+		tmp.add(new EntityZombieMinion(world));
+		tmp.add(new EntityZombiePyromaniac(world));
+		tmp.add(new EntityZombieRider(world));
+		tmp.add(new EntityZombieSummoner(world));
+		tmp.add(new EntityZombieJumper(world));
+		tmp.add(new EntityZombieThief(world));
+		tmp.add(new EntityZombieBossSpawner(world));
 		for (int i=0; i<tmp.size(); i++)
 		{
 			int progressOnDeath = 1000;
@@ -102,7 +101,7 @@ public class ZombieApocalypse extends Event
 	@Override
 	protected void playStartSound()
 	{
-		Event.playServerSound(ModSoundEvents.mob_event_zombie_say, 0.4f, 1.5f);
+		playServerSound(ModSoundEvents.mob_event_zombie_say, 0.4f, 1.5f);
 	}
 
 	@Override
@@ -111,8 +110,7 @@ public class ZombieApocalypse extends Event
 
 		int weightedProb = 600 + wave*100;	
 		int progressDeduction = 80;
-		switch (wave)
-		{
+		switch (wave) {
 		case 1:
 			this.playStartSound();
 			EntityRegistry.addSpawn(EntityZombieRunt.class, 3000, 4, 4, EnumCreatureType.MONSTER, Event.biomes);
@@ -153,11 +151,10 @@ public class ZombieApocalypse extends Event
 	@Override
 	public void startEvent() 
 	{ 
-		MobEvents.proxy.getWorldData().currentEvent = Event.ZOMBIE_APOCALYPSE;
 		super.startEvent();
-		if (!MobEvents.proxy.world.isRemote) {
-			Event.sendServerMessage(new TextComponentString("Did I hear something?").setStyle(new Style().setBold(true).setColor(this.enumColor).setItalic(true)));
-			Event.playServerSound(SoundEvents.ENTITY_ZOMBIE_INFECT, 10f, 0f);	
+		if (!world.isRemote) {
+			sendServerMessage(new TextComponentString("Did I hear something?").setStyle(new Style().setBold(true).setColor(this.enumColor).setItalic(true)));
+			playServerSound(SoundEvents.ENTITY_ZOMBIE_INFECT, 10f, 0f);	
 		}
 	}
 
@@ -165,9 +162,9 @@ public class ZombieApocalypse extends Event
 	public void stopEvent() 
 	{
 		super.stopEvent();
-		if (!MobEvents.proxy.world.isRemote) {
-			Event.sendServerMessage(new TextComponentTranslation(this.toString() + " has ended.").setStyle(new Style().setBold(true).setColor(this.enumColor)));
-			Event.playServerSound(SoundEvents.ENTITY_ZOMBIE_VILLAGER_CURE, 0.2f, 2f);	
+		if (!world.isRemote) {
+			sendServerMessage(new TextComponentTranslation(this.toString() + " has ended.").setStyle(new Style().setBold(true).setColor(this.enumColor)));
+			playServerSound(SoundEvents.ENTITY_ZOMBIE_VILLAGER_CURE, 0.2f, 2f);	
 		}
 	}
 

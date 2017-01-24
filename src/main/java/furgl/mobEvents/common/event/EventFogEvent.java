@@ -1,9 +1,9 @@
 package furgl.mobEvents.common.event;
 
-import furgl.mobEvents.common.MobEvents;
 import furgl.mobEvents.common.Events.ChaoticTurmoil;
 import furgl.mobEvents.common.Events.Event;
 import furgl.mobEvents.common.item.drops.ItemButchersCleaver0;
+import furgl.mobEvents.common.world.WorldData;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.GlStateManager.FogMode;
@@ -42,8 +42,8 @@ public class EventFogEvent
 			currentDensity = event.getDensity()/20;
 		float densityToChangeTo = event.getDensity()/20;
 		//apply event density
-		if (MobEvents.proxy.getWorldData().currentEvent.getClass() != Event.class)
-			densityToChangeTo = 0.01f * (MobEvents.proxy.getWorldData().currentWave > 0 ? MobEvents.proxy.getWorldData().currentWave : 0.5f);
+		if (WorldData.get(event.getEntity().worldObj).currentEvent.getClass() != Event.class)
+			densityToChangeTo = 0.01f * (WorldData.get(event.getEntity().worldObj).currentWave > 0 ? WorldData.get(event.getEntity().worldObj).currentWave : 0.5f);
 		//apply cleaver density
 		boolean hasCleaver = event.getEntity() instanceof EntityPlayer && 
 				((EntityPlayer)event.getEntity()).getHeldItemMainhand() != null && 
@@ -89,9 +89,9 @@ public class EventFogEvent
 			currentColors = new float[] {event.getRed(), event.getGreen(), event.getBlue()};
 		float[] colorsToChangeTo = new float[] {event.getRed(), event.getGreen(), event.getBlue()};
 		//apply event colors
-		if (MobEvents.proxy.getWorldData().currentEvent.getClass() != Event.class)
+		if (WorldData.get(Minecraft.getMinecraft().theWorld).currentEvent.getClass() != Event.class)
 		{
-			Event currentEvent = MobEvents.proxy.getWorldData().currentEvent;
+			Event currentEvent = WorldData.get(Minecraft.getMinecraft().theWorld).currentEvent;
 			colorsToChangeTo[0] += currentEvent.red;
 			colorsToChangeTo[1] += currentEvent.green;
 			colorsToChangeTo[2] += currentEvent.blue;
@@ -130,7 +130,6 @@ public class EventFogEvent
 
 		//set colors
 		if (event.getRed() != currentColors[0] || event.getGreen() != currentColors[1] || event.getBlue() != currentColors[2]) {
-			//System.out.println(currentColors[0]+", "+currentColors[1]+", "+currentColors[2]);
 			event.setRed(currentColors[0]);
 			event.setGreen(currentColors[1]);
 			event.setBlue(currentColors[2]);

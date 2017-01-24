@@ -1,7 +1,8 @@
 entity.mobevents.zombieRunt.name=Zombie Runt
-entity.mobevents.pyromaniacZombie.name=Zombie Pyromaniac
+entity.mobevents.zombiePyromaniac.name=Zombie Pyromaniac
 entity.mobevents.zombieBard.name=Zombie Bard
 entity.mobevents.zombieRider.name=Zombie Rider
+entity.mobevents.zombieHorse.name=Zombie Horse
 entity.mobevents.zombieSummoner.name=Zombie Summoner
 entity.mobevents.zombieMinion.name=Zombie Minion
 entity.mobevents.zombieClone.name=Zombie Clone
@@ -13,13 +14,15 @@ entity.mobevents.skeletonSoldier.name=Skeleton Soldier
 entity.mobevents.skeletonBard.name=Skeleton Bard
 entity.mobevents.skeletonClone.name=Skeleton Clone
 entity.mobevents.skeletonPyromaniac.name=Skeleton Pyromaniac
+entity.mobevents.skeletonRider.name=Skeleton Rider
+entity.mobevents.skeletonHorse.name=Skeleton Horse
+entity.mobevents.skeletonThief.name=Skeleton Thief
 
 entity.mobevents.zombieBossSpawner.name=Boss Zombie Spawner
 
-entity.mobevents.fireArrow.name=Fire Arrow
+entity.mobevents.pyromaniacsArrow.name=Pyromaniac's Arrow
 
 tile.boss_loot.name=Boss Loot
-block.disappearing_fire.name=Disappearing Fire
 tile.summoners_helm.name=Summoner's Helm
 tile.lit_summoners_helm.name=Summoner's Helm
 tile.bards_jukebox.name=Bard's Jukebox
@@ -35,7 +38,7 @@ item.butchers_cleaver_1.name=Thirsty Butcher's Cleaver
 item.butchers_cleaver_2.name=Bloodied Butcher's Cleaver
 item.butchers_cleaver_3.name=Frenzied Butcher's Cleaver
 item.book_of_healing.name=Book of Healing
-item.fire_arrow.name=Fire Arrow
+item.pyromaniacs_bow.name=Pyromaniac's Bow
 item.bards_jukebox.name=Bard's Jukebox
 item.anvil_upgrade_zombie.name=Anvil Upgrade (Zombie)
 item.anvil_upgrade_skeleton.name=Anvil Upgrade (Skeleton)
@@ -51,23 +54,6 @@ item.record3.name=Music Disc
 item.record.record3.desc=Record 3
 item.record4.name=Music Disc
 item.record.record4.desc=Record 4
-
-item.zombie_bard.name=Spawn Zombie Bard
-item.zombie_clone.name=Spawn Zombie Clone
-item.zombie_minion.name=Spawn Zombie Minion
-item.zombie_pyromaniac.name=Spawn Zombie Pyromaniac
-item.zombie_rider.name=Spawn Zombie Rider
-item.zombie_runt.name=Spawn Zombie Runt
-item.zombie_summoner.name=Spawn Zombie Summoner
-item.zombie_jumper.name=Spawn Zombie Jumper
-item.zombie_thief.name=Spawn Zombie Thief
-
-item.skeleton_soldier.name=Spawn Skeleton Soldier
-item.skeleton_bard.name=Spawn Skeleton Bard
-item.skeleton_clone.name=Spawn Skeleton Clone
-item.skeleton_pyromaniac.name=Spawn Skeleton Pyromaniac
-
-item.zombie_boss_spawner.name=Spawn Zombie Boss Spawner
 
 itemGroup.tabMobEventItems=Mob Event Items
 itemGroup.tabMobEventMobs=Mob Event Mobs

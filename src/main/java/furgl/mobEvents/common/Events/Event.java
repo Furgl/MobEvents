@@ -7,8 +7,9 @@ import java.util.Random;
 import furgl.mobEvents.common.MobEvents;
 import furgl.mobEvents.common.achievements.Achievements;
 import furgl.mobEvents.common.entity.IEventMob;
-import furgl.mobEvents.common.entity.bosses.spawner.EntityBossSpawner;
+import furgl.mobEvents.common.entity.boss.spawner.EntityBossSpawner;
 import furgl.mobEvents.common.event.EventSetupEvent;
+import furgl.mobEvents.common.world.WorldData;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EnumCreatureType;
 import net.minecraft.entity.player.EntityPlayer;
@@ -45,6 +46,7 @@ public class Event
 	/**Color for chat messages*/
 	public TextFormatting enumColor;
 	public EntityBossSpawner boss;
+	public World world;
 
 	public static boolean bossDefeated;
 	public static ArrayList<String> playerDeaths = new ArrayList<String>();
@@ -83,6 +85,7 @@ public class Event
 
 	public Event(World world)
 	{
+		this.world = world;
 		this.setSounds();
 		this.setMobs();
 		this.setBookDescription();
@@ -101,39 +104,39 @@ public class Event
 
 	public void onUpdate() {
 		if (newEvent != null) {
-			if (MobEvents.proxy.getWorldData().currentEvent != newEvent) {
-				if (MobEvents.proxy.getWorldData().currentEvent != Event.EVENT)
-					MobEvents.proxy.getWorldData().currentEvent.stopEvent();
+			if (WorldData.get(world).currentEvent != newEvent) {
+				if (WorldData.get(world).currentEvent != Event.EVENT)
+					WorldData.get(world).currentEvent.stopEvent();
 				if (newEvent != Event.EVENT)
 					newEvent.startEvent();
 			}
-			if (MobEvents.proxy.getWorldData().currentWave != newWave)
-				MobEvents.proxy.getWorldData().currentEvent.startWave(newWave);
-			MobEvents.proxy.getWorldData().progress = newProgress;
+			if (WorldData.get(world).currentWave != newWave)
+				WorldData.get(world).currentEvent.startWave(newWave);
+			WorldData.get(world).progress = newProgress;
 			newEvent = null;
 		}
-		if (MobEvents.proxy.world.getGameRules().getBoolean("doDaylightCycle")) {
+		if (world.getGameRules().getBoolean("doDaylightCycle")) {
 			//Short event 
-			if (MobEvents.proxy.getWorldData().currentEvent.getClass() != Event.class && MobEvents.proxy.getWorldData().eventLength == 0 && MobEvents.proxy.world.getTotalWorldTime() % 3 == 0)
-				MobEvents.proxy.world.setWorldTime(MobEvents.proxy.world.getWorldTime() + 1);
+			if (WorldData.get(world).currentEvent.getClass() != Event.class && WorldData.get(world).eventLength == 0 && world.getTotalWorldTime() % 3 == 0)
+				world.setWorldTime(world.getWorldTime() + 1);
 			//Long event
-			else if (MobEvents.proxy.getWorldData().currentEvent.getClass() != Event.class && MobEvents.proxy.getWorldData().eventLength == 2 && MobEvents.proxy.world.getTotalWorldTime() % 3 == 0)
-				MobEvents.proxy.world.setWorldTime(MobEvents.proxy.world.getWorldTime() - 1);
+			else if (WorldData.get(world).currentEvent.getClass() != Event.class && WorldData.get(world).eventLength == 2 && world.getTotalWorldTime() % 3 == 0)
+				world.setWorldTime(world.getWorldTime() - 1);
 		}
-		if (!MobEvents.proxy.world.isRemote && MobEvents.proxy.getWorldData().currentEvent.boss != null && MobEvents.proxy.getWorldData().currentEvent.boss.isDead) {
+		if (!world.isRemote && WorldData.get(world).currentEvent.boss != null && WorldData.get(world).currentEvent.boss.isDead) {
 			if (MobEvents.DEBUG)
 				System.out.println("Event detected boss is dead and cleared boss variable");
-			MobEvents.proxy.getWorldData().currentEvent.boss = null;
+			WorldData.get(world).currentEvent.boss = null;
 		}
-		if (!MobEvents.proxy.world.isRemote && MobEvents.proxy.getWorldData().currentEvent.getClass() != Event.class && MobEvents.proxy.getWorldData().progressNeededForBoss == 0)
+		if (!world.isRemote && WorldData.get(world).currentEvent.getClass() != Event.class && WorldData.get(world).progressNeededForBoss == 0)
 		{
-			Event.updatePlayers();
+			this.updatePlayers();
 			if (players.size() > 0)
 			{
 				if (MobEvents.DEBUG)
 					System.out.println("Event detected progressNeededForBoss is 0 and recalculated it");
-				MobEvents.proxy.getWorldData().progressNeededForBoss = 100 * players.size();
-				this.startWave(MobEvents.proxy.getWorldData().currentWave); //prints current wave when server restarted
+				WorldData.get(world).progressNeededForBoss = 100 * players.size();
+				this.startWave(WorldData.get(world).currentWave); //prints current wave when server restarted
 			}
 		}
 	}
@@ -141,37 +144,37 @@ public class Event
 	public void startWave(int wave)
 	{
 		if (MobEvents.DEBUG)
-			System.out.println("current wave: "+MobEvents.proxy.getWorldData().currentWave+", starting wave: "+wave);
-		if (MobEvents.proxy.getWorldData().currentEvent.getClass() == Event.class)
+			System.out.println("current wave: "+WorldData.get(world).currentWave+", starting wave: "+wave);
+		if (WorldData.get(world).currentEvent.getClass() == Event.class)
 			return;
 		EventSetupEvent.timeTillWave1 = wave == 0 ? TIME_TILL_WAVE_1 : 0;
-		if (MobEvents.proxy.getWorldData().currentEvent == this)
+		if (WorldData.get(world).currentEvent == this)
 		{
 			this.removeCustomSpawns();
 			if (wave < 4 && wave > 0)
-				Event.sendServerMessage(new TextComponentTranslation("Wave "+wave).setStyle(new Style().setBold(true).setColor(this.enumColor).setItalic(true)));
+				this.sendServerMessage(new TextComponentTranslation("Wave "+wave).setStyle(new Style().setBold(true).setColor(this.enumColor).setItalic(true)));
 			else if (wave == 4)
-				Event.sendServerMessage(new TextComponentTranslation("Boss Wave").setStyle(new Style().setBold(true).setColor(TextFormatting.DARK_PURPLE).setItalic(true)));
+				this.sendServerMessage(new TextComponentTranslation("Boss Wave").setStyle(new Style().setBold(true).setColor(TextFormatting.DARK_PURPLE).setItalic(true)));
 		}
 		switch (wave) {
 		case 0:
-			MobEvents.proxy.getWorldData().progress = 0;
+			WorldData.get(world).progress = 0;
 			break;
 		case 1:
-			MobEvents.proxy.getWorldData().progress = 0;
+			WorldData.get(world).progress = 0;
 			break;
 		case 2:
-			MobEvents.proxy.getWorldData().progress = MobEvents.proxy.getWorldData().progressNeededForBoss/3;
+			WorldData.get(world).progress = WorldData.get(world).progressNeededForBoss/3;
 			break;
 		case 3:
-			MobEvents.proxy.getWorldData().progress = MobEvents.proxy.getWorldData().progressNeededForBoss/3*2;
+			WorldData.get(world).progress = WorldData.get(world).progressNeededForBoss/3*2;
 			break;
 		case 4:
-			MobEvents.proxy.getWorldData().progress = MobEvents.proxy.getWorldData().progressNeededForBoss;
+			WorldData.get(world).progress = WorldData.get(world).progressNeededForBoss;
 			break;
 		}
-		MobEvents.proxy.getWorldData().currentWave = wave;
-		MobEvents.proxy.getWorldData().markDirty();
+		WorldData.get(world).currentWave = wave;
+		WorldData.get(world).markDirty();
 	}
 
 	public static Event stringToEvent(String string) 
@@ -184,58 +187,47 @@ public class Event
 
 	public void increaseProgress(int amount)
 	{
-		if (MobEvents.proxy.getWorldData().currentWave == 1 && MobEvents.proxy.getWorldData().progress + amount >= MobEvents.proxy.getWorldData().progressNeededForBoss/3)
+		if (WorldData.get(world).currentWave == 1 && WorldData.get(world).progress + amount >= WorldData.get(world).progressNeededForBoss/3)
 			this.startWave(2);
-		else if (MobEvents.proxy.getWorldData().currentWave == 2 && MobEvents.proxy.getWorldData().progress + amount >= (MobEvents.proxy.getWorldData().progressNeededForBoss/3*2))
+		else if (WorldData.get(world).currentWave == 2 && WorldData.get(world).progress + amount >= (WorldData.get(world).progressNeededForBoss/3*2))
 			this.startWave(3);
-		else if (MobEvents.proxy.getWorldData().currentWave == 3 && MobEvents.proxy.getWorldData().progress + amount >= MobEvents.proxy.getWorldData().progressNeededForBoss)
+		else if (WorldData.get(world).currentWave == 3 && WorldData.get(world).progress + amount >= WorldData.get(world).progressNeededForBoss)
 		{
 			this.startWave(4);
-			MobEvents.proxy.getWorldData().progress = MobEvents.proxy.getWorldData().progressNeededForBoss;
+			WorldData.get(world).progress = WorldData.get(world).progressNeededForBoss;
 		}
-		else if (MobEvents.proxy.getWorldData().currentWave != 4)
-			MobEvents.proxy.getWorldData().progress += amount;
+		else if (WorldData.get(world).currentWave != 4)
+			WorldData.get(world).progress += amount;
 	}
 
-	/**
-	 * Updates list of online players
-	 */
-	public static void updatePlayers()
-	{
+	/**Updates list of online players*/
+	public void updatePlayers()	{
 		players = new ArrayList<EntityPlayer>();
-		if (MobEvents.proxy.world.isRemote)
-			return;
-		for(int i = 0; i<MobEvents.proxy.world.playerEntities.size(); i++) 
-			players.addAll(MobEvents.proxy.world.playerEntities);
+		for(int i = 0; i<world.playerEntities.size(); i++) 
+			players.addAll(world.playerEntities);
 	}
 
-	/**
-	 * Plays random sound near random player
-	 * @param sounds 
-	 */
-	protected void playSound(ArrayList<SoundEvent> sounds)
-	{
-		Event.updatePlayers();
-		if (players.size() > 0 && MobEvents.proxy.getWorldData().currentWave != 4) {
+	/**Plays random sound near random player*/
+	protected void playSound(ArrayList<SoundEvent> sounds) {
+		updatePlayers();
+		if (players.size() > 0 && WorldData.get(world).currentWave != 4) {
 			EntityPlayer targetPlayer = players.get(rand.nextInt(players.size()));
 			int distance = 10;
 			if (sounds.size() > 0)
-				MobEvents.proxy.world.playSound(targetPlayer.posX+rand.nextDouble()*distance, targetPlayer.posY+rand.nextDouble()*distance, targetPlayer.posZ+rand.nextDouble()*distance, sounds.get(rand.nextInt(sounds.size())), SoundCategory.AMBIENT, Event.rand.nextFloat(), Event.rand.nextFloat()+0.5F, true);
+				world.playSound(targetPlayer.posX+rand.nextDouble()*distance, targetPlayer.posY+rand.nextDouble()*distance, targetPlayer.posZ+rand.nextDouble()*distance, sounds.get(rand.nextInt(sounds.size())), SoundCategory.AMBIENT, Event.rand.nextFloat(), Event.rand.nextFloat()+0.5F, true);
 		}
 	}
 
-	/**
-	 * Plays sound at start of event
-	 */
-	protected void playStartSound() { }
+	/**Plays sound at start of event*/
+	protected void playStartSound() {}
 
-	public static void sendServerMessage(ITextComponent component) {
+	public void sendServerMessage(ITextComponent component) {
 		updatePlayers();
 		for (EntityPlayer player : players) 
 			player.addChatMessage(component);
 	}
 
-	public static void playServerSound(SoundEvent sound, float volume, float pitch) {
+	public void playServerSound(SoundEvent sound, float volume, float pitch) {
 		updatePlayers();
 		for (EntityPlayer player : players) 
 			player.playSound(sound, volume, pitch);
@@ -249,55 +241,56 @@ public class Event
 	/**Set conditions for event; i.e. day/night or weather*/
 	public void setEventConditions()
 	{
-		if (MobEvents.proxy.world == null)
+		if (world == null)
 			return;
 		for (Event event : Event.allEvents)
-			if (event.occurs == Occurs.DAY && MobEvents.proxy.getWorldData().currentEvent.getClass() == event.getClass()/* && !MobEvents.proxy.world.isDaytime()*/)
-				MobEvents.proxy.world.setWorldTime(23460);
+			if (event.occurs == Occurs.DAY && WorldData.get(world).currentEvent.getClass() == event.getClass()/* && !world.isDaytime()*/)
+				world.setWorldTime(23460);
 		for (Event event : Event.allEvents)
-			if (event.occurs == Occurs.NIGHT && MobEvents.proxy.getWorldData().currentEvent.getClass() == event.getClass()/* && MobEvents.proxy.world.isDaytime()*/)
-				MobEvents.proxy.world.setWorldTime(12542);
+			if (event.occurs == Occurs.NIGHT && WorldData.get(world).currentEvent.getClass() == event.getClass()/* && world.isDaytime()*/)
+				world.setWorldTime(12542);
 	}
 
 	public void startEvent() 
 	{ 
-		System.out.println("current event: "+MobEvents.proxy.getWorldData().currentEvent+", starting event: "+this);
+		System.out.println("current event: "+WorldData.get(world).currentEvent+", starting event: "+this);
+		WorldData.get(world).currentEvent = this;
 		this.setEventConditions();
 		Event.bossDefeated = false;
-		Event.updatePlayers();
+		this.updatePlayers();
 		//check if event should be unlocked
 		for (EntityPlayer player : Event.players)
 		{
-			int index = MobEvents.proxy.getWorldData().getPlayerIndex(player.getDisplayNameString());
-			if (MobEvents.proxy.getWorldData().currentEvent.getClass() != Event.class && !MobEvents.proxy.getWorldData().unlockedTabs.get(index).contains(MobEvents.proxy.getWorldData().currentEvent.toString()))
+			int index = WorldData.get(world).getPlayerIndex(player.getDisplayNameString());
+			if (WorldData.get(world).currentEvent.getClass() != Event.class && !WorldData.get(world).unlockedTabs.get(index).contains(WorldData.get(world).currentEvent.toString()))
 			{
-				MobEvents.proxy.getWorldData().unlockedTabs.get(index).add(MobEvents.proxy.getWorldData().currentEvent.toString());
-				MobEvents.proxy.getWorldData().currentPages.set(index, 0);
+				WorldData.get(world).unlockedTabs.get(index).add(WorldData.get(world).currentEvent.toString());
+				WorldData.get(world).currentPages.set(index, 0);
 				for (int i=0; i<Event.allEvents.size(); i++) //iterate through events
 				{ 
-					if (Event.allEvents.get(i).toString().equals(MobEvents.proxy.getWorldData().currentEvent.toString()))
+					if (Event.allEvents.get(i).toString().equals(WorldData.get(world).currentEvent.toString()))
 					{
-						MobEvents.proxy.getWorldData().currentTabs.set(index, i+1);
+						WorldData.get(world).currentTabs.set(index, i+1);
 						break;
 					}
 				}
-				Event.displayUnlockMessage(player, "Unlocked information about the "+MobEvents.proxy.getWorldData().currentEvent.toString()+" event in the Event Book");
+				Event.displayUnlockMessage(player, "Unlocked information about the "+WorldData.get(world).currentEvent.toString()+" event in the Event Book");
 			}
 		}
-		MobEvents.proxy.getWorldData().markDirty();
-		MobEvents.proxy.getWorldData().progressNeededForBoss = 90 * players.size();
+		WorldData.get(world).markDirty();
+		WorldData.get(world).progressNeededForBoss = 90 * players.size();
 		playerDeaths = new ArrayList<String>();
 		this.startWave(0);
 	}
 
 	public void stopEvent() 
 	{ 
-		System.out.println("current event: "+MobEvents.proxy.getWorldData().currentEvent+", stopping event: "+this);
-		if (MobEvents.proxy.getWorldData().currentEvent.getClass() == Event.class)
+		System.out.println("current event: "+WorldData.get(world).currentEvent+", stopping event: "+this);
+		if (WorldData.get(world).currentEvent.getClass() == Event.class)
 			return;
 		this.boss = null;
 		EventSetupEvent.timeTillWave1 = 0;
-		Event.updatePlayers();
+		this.updatePlayers();
 		if (bossDefeated)
 		{
 			for (EntityPlayer player : players)
@@ -316,10 +309,10 @@ public class Event
 				player.addStat(Achievements.achievementItsFinallyOver);
 			}
 		}
-		MobEvents.proxy.getWorldData().currentEvent = Event.EVENT;
-		MobEvents.proxy.getWorldData().currentWave = 0;
+		WorldData.get(world).currentEvent = Event.EVENT;
+		WorldData.get(world).currentWave = 0;
 		this.removeCustomSpawns();
-		MobEvents.proxy.getWorldData().markDirty();
+		WorldData.get(world).markDirty();
 	}
 
 	public static void displayUnlockMessage(EntityPlayer player, String message) {

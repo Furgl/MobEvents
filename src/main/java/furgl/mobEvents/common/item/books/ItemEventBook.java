@@ -2,6 +2,8 @@ package furgl.mobEvents.common.item.books;
 
 import furgl.mobEvents.common.MobEvents;
 import furgl.mobEvents.common.Events.Event;
+import furgl.mobEvents.common.world.WorldData;
+import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -26,7 +28,7 @@ public class ItemEventBook extends Item
 	@Override
     public boolean hasEffect(ItemStack stack)
     {
-        return MobEvents.proxy.getWorldData().currentEvent.getClass() != Event.class;
+        return WorldData.get(Minecraft.getMinecraft().theWorld).currentEvent.getClass() != Event.class;
     }
 
 	@Override

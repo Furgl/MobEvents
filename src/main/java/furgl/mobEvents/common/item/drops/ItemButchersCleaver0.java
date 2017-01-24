@@ -6,10 +6,10 @@ import java.util.List;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 
-import furgl.mobEvents.common.MobEvents;
 import furgl.mobEvents.common.Events.Event;
 import furgl.mobEvents.common.entity.EntityGuiPlayer;
 import furgl.mobEvents.common.item.ModItems;
+import furgl.mobEvents.common.world.WorldData;
 import net.minecraft.client.Minecraft;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.Entity;
@@ -27,7 +27,6 @@ import net.minecraft.util.EnumHand;
 import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.translation.I18n;
 import net.minecraft.world.World;
@@ -88,8 +87,8 @@ public class ItemButchersCleaver0 extends ItemSword implements IEventItem
 		}
 
 		tooltip.set(0, TextFormatting.AQUA+tooltip.get(0));
-		int index = MobEvents.proxy.getWorldData().getPlayerIndex(player.getDisplayNameString());
-		if (MobEvents.proxy.getWorldData().unlockedItems.get(index).contains("Butcher's Cleaver") || player.capabilities.isCreativeMode) {
+		int index = WorldData.get(player.worldObj).getPlayerIndex(player.getDisplayNameString());
+		if (WorldData.get(player.worldObj).unlockedItems.get(index).contains("Butcher's Cleaver") || player.capabilities.isCreativeMode) {
 			tooltip.add(TextFormatting.DARK_RED+""+TextFormatting.ITALIC+"Blood Capacity: "+(int)((blood/MAX_BLOOD)*100D)+"%");
 			tooltip.add(TextFormatting.GOLD+"Derives strength from");
 			tooltip.add(TextFormatting.GOLD+"its enemies' blood");
@@ -214,12 +213,12 @@ public class ItemButchersCleaver0 extends ItemSword implements IEventItem
 	public void onUpdate(ItemStack stack, World worldIn, Entity entityIn, int itemSlot, boolean isSelected) {
 		//unlock
 		if (this.getClass() == ItemButchersCleaver0.class && !worldIn.isRemote && entityIn instanceof EntityPlayer && !(entityIn instanceof FakePlayer)) {
-			int index = MobEvents.proxy.getWorldData().getPlayerIndex(entityIn.getName());
-			if (!MobEvents.proxy.getWorldData().unlockedItems.get(index).contains(this.getName()))
+			int index = WorldData.get(worldIn).getPlayerIndex(entityIn.getName());
+			if (!WorldData.get(worldIn).unlockedItems.get(index).contains(this.getName()))
 			{
-				MobEvents.proxy.getWorldData().unlockedItems.get(index).add(this.getName());
+				WorldData.get(worldIn).unlockedItems.get(index).add(this.getName());
 				Event.displayUnlockMessage((EntityPlayer) entityIn, "Unlocked information about the "+stack.getDisplayName()+" item in the Event Book");
-				MobEvents.proxy.getWorldData().markDirty();
+				WorldData.get(worldIn).markDirty();
 			}
 		}
 
@@ -264,7 +263,7 @@ public class ItemButchersCleaver0 extends ItemSword implements IEventItem
 			worldIn.playSound(null, entityIn.getPosition(), SoundEvents.ENTITY_WOLF_WHINE, SoundCategory.PLAYERS, 0.1f*(after+1), 0.5f+(0.2f*after));
 	}
 
-	/**Copied from Entity to make accessible on server*/
+	/**Copied from Entity to make accessible on server*//*//TODO clean up class and possibly replace classes with changing textures
 	public RayTraceResult rayTrace(Entity entity, double blockReachDistance, float partialTicks)
 	{
 		Vec3d vec3d = this.getPositionEyes(entity, partialTicks);
@@ -273,7 +272,7 @@ public class ItemButchersCleaver0 extends ItemSword implements IEventItem
 		return entity.worldObj.rayTraceBlocks(vec3d, vec3d2, false, false, true);
 	}
 
-	/**Copied from Entity to make accessible on server*/
+	*//**Copied from Entity to make accessible on server*//*
 	public Vec3d getPositionEyes(Entity entity, float partialTicks)
 	{
 		if (partialTicks == 1.0F)
@@ -287,7 +286,7 @@ public class ItemButchersCleaver0 extends ItemSword implements IEventItem
 			double d2 = entity.prevPosZ + (entity.posZ - entity.prevPosZ) * (double)partialTicks;
 			return new Vec3d(d0, d1, d2);
 		}
-	}
+	}*/
 
 	@SubscribeEvent(priority=EventPriority.NORMAL, receiveCanceled=true)
 	public void onEvent(LivingAttackEvent event)

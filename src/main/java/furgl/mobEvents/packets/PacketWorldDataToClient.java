@@ -1,6 +1,6 @@
 package furgl.mobEvents.packets;
 
-import furgl.mobEvents.common.MobEvents;
+import furgl.mobEvents.common.world.WorldData;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.NBTTagCompound;
@@ -47,7 +47,8 @@ public class PacketWorldDataToClient implements IMessage
 				@Override
 				public void run() 
 				{
-					MobEvents.proxy.getWorldData().readFromNBT(packet.nbt);
+					WorldData data = WorldData.get(Minecraft.getMinecraft().theWorld);
+					data.readFromNBT(packet.nbt);
 				}
 			});
 			return null;

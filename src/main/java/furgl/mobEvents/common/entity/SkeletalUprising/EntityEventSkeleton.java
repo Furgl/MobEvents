@@ -6,12 +6,15 @@ import furgl.mobEvents.common.MobEvents;
 import furgl.mobEvents.common.Events.ChaoticTurmoil;
 import furgl.mobEvents.common.Events.Event;
 import furgl.mobEvents.common.entity.IEventMob;
+import furgl.mobEvents.common.entity.ModEntities;
 import furgl.mobEvents.common.item.ModItems;
+import furgl.mobEvents.common.world.WorldData;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.IEntityLivingData;
 import net.minecraft.entity.SharedMonsterAttributes;
+import net.minecraft.entity.ai.EntityAIAttackRangedBow;
 import net.minecraft.entity.monster.EntitySkeleton;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.MobEffects;
@@ -19,13 +22,13 @@ import net.minecraft.init.SoundEvents;
 import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemArmor;
+import net.minecraft.item.ItemBow;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.datasync.DataParameter;
 import net.minecraft.network.datasync.DataSerializers;
 import net.minecraft.network.datasync.EntityDataManager;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.DamageSource;
-import net.minecraft.util.EnumHand;
 import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.RayTraceResult;
@@ -34,8 +37,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.fml.relauncher.ReflectionHelper;
 
-public class EntityEventSkeleton extends EntitySkeleton implements IEventMob
-{
+public class EntityEventSkeleton extends EntitySkeleton implements IEventMob {
 	private static final DataParameter<Byte> SUMMONED = EntityDataManager.<Byte>createKey(EntityEventSkeleton.class, DataSerializers.BYTE);
 	/**Bosses have 100 progressOnDeath*/
 	protected int progressOnDeath;
@@ -50,52 +52,46 @@ public class EntityEventSkeleton extends EntitySkeleton implements IEventMob
 	/**Wave that mob thinks it is currently*/
 	public int currentWave;
 
-	public EntityEventSkeleton(World world) 
-	{
+	public EntityEventSkeleton(World world) {
 		super(world);
 		this.setEquipmentBasedOnDifficulty(null);
 		this.setBookDescription();
 	}
 
-	public void setBookDescription()
-	{
+	public void setBookDescription() {
 		this.bookDescription = "";
 		this.bookDrops = new ArrayList<ItemStack>();
 	}
 
 	@Override
-	public int getMaxSpawnedInChunk()
-	{
+	public int getMaxSpawnedInChunk() {
 		return this.maxSpawnedInChunk;
 	}
 
 	@Override
-	protected void entityInit()
-	{
+	protected void entityInit()	{
 		super.entityInit();
 		this.getDataManager().register(SUMMONED, Byte.valueOf((byte)0)); //summoned
 	}
+	
+	@Override
+	protected void initEntityAI() {
+		super.initEntityAI();
+		this.tasks.addTask(4, new EntityEventSkeletonAIAttackRangedBow(this, 1.0D, 20, 15.0F));	
+    }
 
 	@Override
-	public boolean processInteract(EntityPlayer player, EnumHand p_184645_2_, ItemStack stack)
-	{
-		return false;
-	}
-
-	@Override
-	public void setNoAI(boolean disable)
-	{
+	public void setNoAI(boolean disable) {
 		super.setNoAI(disable);
 		this.onInitialSpawn(null, null);
 	}
 
 	@Override
-	public void onUpdate()
-	{
+	public void onUpdate() {
 		//play living sound on wave change
-		if (this.currentWave != MobEvents.proxy.getWorldData().currentWave)
+		if (this.currentWave != WorldData.get(worldObj).currentWave)
 		{
-			this.currentWave = MobEvents.proxy.getWorldData().currentWave;
+			this.currentWave = WorldData.get(worldObj).currentWave;
 			this.playLivingSound();
 		}
 
@@ -118,7 +114,7 @@ public class EntityEventSkeleton extends EntitySkeleton implements IEventMob
 		}
 
 		//damage outside of event
-		if (MobEvents.proxy.getWorldData().currentEvent.getClass() != this.getEvent().getClass() && MobEvents.proxy.getWorldData().currentEvent.getClass() != ChaoticTurmoil.class)
+		if (WorldData.get(worldObj).currentEvent.getClass() != this.getEvent().getClass() && WorldData.get(worldObj).currentEvent.getClass() != ChaoticTurmoil.class)
 		{
 			if (this.worldObj.isRemote)
 				this.worldObj.spawnParticle(EnumParticleTypes.SMOKE_LARGE, this.posX+rand.nextDouble()-0.5D, this.posY+rand.nextDouble(), this.posZ+rand.nextDouble()-0.5D, 0, 0, 0, 0);
@@ -208,13 +204,11 @@ public class EntityEventSkeleton extends EntitySkeleton implements IEventMob
 	}
 
 	@Override //prevents fire damage in sun
-	public float getBrightness(float partialTicks)
-	{
+	public float getBrightness(float partialTicks) {
 		return super.getBrightness(partialTicks);//0.0f;
 	}
 
-	public void applyBardsBoost()
-	{
+	public void applyBardsBoost() {
 		/*if (this instanceof EntityBossZombie)
 			return;*///TODO
 		this.bardsBoost = 150;
@@ -226,8 +220,7 @@ public class EntityEventSkeleton extends EntitySkeleton implements IEventMob
 	}
 
 	@Override
-	protected float getSoundPitch()
-	{
+	protected float getSoundPitch() {
 		return this.isChild() ? (this.rand.nextFloat() - this.rand.nextFloat()) * 0.2F + 1.2F : (this.rand.nextFloat() - this.rand.nextFloat()) * 0.2F + 1.0F;
 	}
 
@@ -260,21 +253,18 @@ public class EntityEventSkeleton extends EntitySkeleton implements IEventMob
 	}*/
 
 	@Override
-	protected void applyEntityAttributes()
-	{
+	protected void applyEntityAttributes() {
 		super.applyEntityAttributes();
 		this.getEntityAttribute(SharedMonsterAttributes.FOLLOW_RANGE).setBaseValue(60.0D);
 	}
 
 	@Override
-	public ItemStack getPickedResult(RayTraceResult target)
-	{
-		return ModItems.getSpawnEgg(this);
+	public ItemStack getPickedResult(RayTraceResult target)	{
+		return ModEntities.getSpawnEgg(this.getClass());
 	}
 
 	@Override
-	protected void setEquipmentBasedOnDifficulty(DifficultyInstance difficulty) 
-	{ 
+	protected void setEquipmentBasedOnDifficulty(DifficultyInstance difficulty) { 
 		for (int i=0; i<5; i++)
 			this.setDropChance(EntityEquipmentSlot.values()[i], 0.01f);
 		if (this.armorColor > -1)
@@ -283,44 +273,39 @@ public class EntityEventSkeleton extends EntitySkeleton implements IEventMob
 					((ItemArmor)this.getItemStackFromSlot(EntityEquipmentSlot.values()[i]).getItem()).setColor(this.getItemStackFromSlot(EntityEquipmentSlot.values()[i]), this.armorColor);
 	}
 
-	private void addRandomDrop()
-	{
+	private void addRandomDrop() {
 		if (bookDrops != null && bookDrops.size() > 0)
 			this.entityDropItem(bookDrops.get(rand.nextInt(bookDrops.size())), 0);
 	}
 
 	@Override
-	public IEntityLivingData onInitialSpawn(DifficultyInstance difficulty, IEntityLivingData livingdata)
-	{
-		if (MobEvents.proxy.world != null)
-			this.currentWave = MobEvents.proxy.getWorldData().currentWave;
+	public IEntityLivingData onInitialSpawn(DifficultyInstance difficulty, IEntityLivingData livingdata) {
+		if (worldObj != null)
+			this.currentWave = WorldData.get(worldObj).currentWave;
 		this.setEquipmentBasedOnDifficulty(difficulty);
 		return livingdata;
 	}
 
 	@Override
-	public void setItemStackToSlot(EntityEquipmentSlot slotIn, ItemStack stack)
-	{
-		switch (slotIn.getSlotType()) //TODO is this needed anymore, now that world is not null?
-		{
+	public void setItemStackToSlot(EntityEquipmentSlot slot, ItemStack stack)	{
+		switch (slot.getSlotType()) { //TODO is this needed anymore, now that world is not null?
 		case HAND:
 			ItemStack[] hands = ReflectionHelper.getPrivateValue(EntityLiving.class, this, 12); //inventoryHands
-			hands[slotIn.getIndex()] = stack;
+			hands[slot.getIndex()] = stack;
 			ReflectionHelper.setPrivateValue(EntityLiving.class, this, hands, 12); //inventoryHands
 			break;
 		case ARMOR:
 			ItemStack[] armor = ReflectionHelper.getPrivateValue(EntityLiving.class, this, 14); //inventoryArmor
-			armor[slotIn.getIndex()] = stack;
+			armor[slot.getIndex()] = stack;
 			ReflectionHelper.setPrivateValue(EntityLiving.class, this, armor, 14); //inventoryArmor
 		}
 	}
 
 	@Override
-	public void onDeath(DamageSource cause)
-	{
+	public void onDeath(DamageSource cause)	{
 		if (!this.worldObj.isRemote && cause.getEntity() instanceof EntityPlayer)
 		{
-			MobEvents.proxy.getWorldData().currentEvent.increaseProgress(progressOnDeath);
+			WorldData.get(worldObj).currentEvent.increaseProgress(progressOnDeath);
 			//drop random drop
 			int i = EnchantmentHelper.getLootingModifier((EntityLivingBase)cause.getEntity());
 			if (this.recentlyHit > 0 && this.rand.nextInt(100) < (30 + i * 5))
@@ -337,52 +322,48 @@ public class EntityEventSkeleton extends EntitySkeleton implements IEventMob
 		super.onDeath(cause);
 	}
 
-	private void unlockEntityInBook(EntityPlayer player)
-	{ 
-		int index = MobEvents.proxy.getWorldData().getPlayerIndex(player.getDisplayNameString());
+	private void unlockEntityInBook(EntityPlayer player) { 
+		int index = WorldData.get(worldObj).getPlayerIndex(player.getDisplayNameString());
 		if (!this.isNonBoss())
 		{
 			if (!Event.bossDefeated)
 				return;
-			for (String entity : MobEvents.proxy.getWorldData().unlockedEntities.get(index))
+			for (String entity : WorldData.get(worldObj).unlockedEntities.get(index))
 				if (entity.equals("Zombie Boss"))
 					return;
-			MobEvents.proxy.getWorldData().unlockedEntities.get(index).add("Zombie Boss");
-			MobEvents.proxy.getWorldData().markDirty();
+			WorldData.get(worldObj).unlockedEntities.get(index).add("Zombie Boss");
+			WorldData.get(worldObj).markDirty();
 			if (player.worldObj.isRemote)
 				Event.displayUnlockMessage(player, "Unlocked information about the Zombie Boss in the Event Book");
 		}
 		else 
 		{
-			for (String entity : MobEvents.proxy.getWorldData().unlockedEntities.get(index))
+			for (String entity : WorldData.get(worldObj).unlockedEntities.get(index))
 				if (entity.equals(this.getName()))
 					return;
-			MobEvents.proxy.getWorldData().unlockedEntities.get(index).add(this.getName());
-			MobEvents.proxy.getWorldData().markDirty();
+			WorldData.get(worldObj).unlockedEntities.get(index).add(this.getName());
+			WorldData.get(worldObj).markDirty();
 			if (player.worldObj.isRemote)
 				Event.displayUnlockMessage(player, "Unlocked information about the "+this.getName()+" in the Event Book");
 		}
 	}
 
 	@Override
-	protected boolean canDropLoot()
-	{
-		if (MobEvents.proxy.getWorldData().currentEvent.getClass() != this.getEvent().getClass() && MobEvents.proxy.getWorldData().currentEvent.getClass() != ChaoticTurmoil.class)
+	protected boolean canDropLoot() {
+		if (WorldData.get(worldObj).currentEvent.getClass() != this.getEvent().getClass() && WorldData.get(worldObj).currentEvent.getClass() != ChaoticTurmoil.class)
 			return false;
 		else
 			return true;
 	}
 
-	protected void addDrops(Item item, int amount)
-	{
+	protected void addDrops(Item item, int amount) {
 		if (this.bookDrops == null)
 			this.bookDrops = new ArrayList<ItemStack>();
 		for (int i=0; i<amount; i++)
 			this.bookDrops.add(new ItemStack(item));
 	}
 
-	protected void addDrops(ItemStack stack, int amount)
-	{
+	protected void addDrops(ItemStack stack, int amount) {
 		if (this.bookDrops == null)
 			this.bookDrops = new ArrayList<ItemStack>();
 		for (int i=0; i<amount; i++)
@@ -390,28 +371,39 @@ public class EntityEventSkeleton extends EntitySkeleton implements IEventMob
 	}
 
 	@Override
-	public String getBookDescription() 
-	{
+	public String getBookDescription() {
 		return this.bookDescription;
 	}
 
 	@Override
-	public ArrayList<ItemStack> getBookDrops() 
-	{
+	public ArrayList<ItemStack> getBookDrops() {
 		return this.bookDrops;
 	}
 
 	@Override
-	public int getProgressOnDeath() 
-	{
+	public int getProgressOnDeath() {
 		return this.progressOnDeath;
 	}
 
 	@Override
-	public void doSpecialRender(int displayTicks) { }
+	public void doSpecialRender(int displayTicks) {}
 
 	@Override
 	public Event getEvent() {
 		return Event.SKELETAL_UPRISING;
+	}
+	
+	class EntityEventSkeletonAIAttackRangedBow extends EntityAIAttackRangedBow {
+		EntitySkeleton entity;
+		
+		public EntityEventSkeletonAIAttackRangedBow(EntitySkeleton skeleton, double speedAmplifier, int delay, float maxDistance) {
+			super(skeleton, speedAmplifier, delay, maxDistance);
+			this.entity = skeleton;
+		}
+		
+		@Override
+	    protected boolean isBowInMainhand() {
+	        return this.entity.getHeldItemMainhand() != null && this.entity.getHeldItemMainhand().getItem() instanceof ItemBow;
+	    }		
 	}
 }

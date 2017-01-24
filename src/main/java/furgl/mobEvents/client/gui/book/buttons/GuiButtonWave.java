@@ -1,6 +1,6 @@
 package furgl.mobEvents.client.gui.book.buttons;
 
-import furgl.mobEvents.common.MobEvents;
+import furgl.mobEvents.common.world.WorldData;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.GuiButton;
@@ -24,7 +24,7 @@ public class GuiButtonWave extends GuiButton
 	{
 		if (this.visible)
 		{
-			this.displayString = "Wave: "+MobEvents.proxy.getWorldData().currentWave;
+			this.displayString = "Wave: "+WorldData.get(Minecraft.getMinecraft().theWorld).currentWave;
 
 			FontRenderer fontrenderer = mc.fontRendererObj;
 			mc.getTextureManager().bindTexture(BUTTON_TEXTURES);

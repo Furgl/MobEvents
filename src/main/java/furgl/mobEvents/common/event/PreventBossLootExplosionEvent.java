@@ -1,6 +1,6 @@
 package furgl.mobEvents.common.event;
 
-import furgl.mobEvents.common.entity.bosses.spawner.EntityBossSpawner;
+import furgl.mobEvents.common.entity.boss.spawner.EntityBossSpawner;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.event.world.ExplosionEvent;

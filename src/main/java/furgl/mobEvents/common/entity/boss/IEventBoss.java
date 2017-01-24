@@ -1,4 +1,4 @@
-package furgl.mobEvents.common.entity.bosses;
+package furgl.mobEvents.common.entity.boss;
 
 import net.minecraft.util.text.TextFormatting;
 

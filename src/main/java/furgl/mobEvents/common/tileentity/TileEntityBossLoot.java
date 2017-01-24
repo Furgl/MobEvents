@@ -6,10 +6,10 @@ import java.util.List;
 
 import com.google.common.collect.Lists;
 
-import furgl.mobEvents.common.MobEvents;
 import furgl.mobEvents.common.Events.Event;
 import furgl.mobEvents.common.event.EventFogEvent;
 import furgl.mobEvents.common.inventory.ContainerBossLoot;
+import furgl.mobEvents.common.world.WorldData;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockChest;
 import net.minecraft.block.BlockStainedGlass;
@@ -79,10 +79,10 @@ public class TileEntityBossLoot extends TileEntityLockable implements ITickable,
 			if (MobEvents.DEBUG)
 				System.out.println("Unloaded "+ pos);
 			EntityPlayer player = this.worldObj.getClosestPlayerToEntity(pos.getX(), pos.getY(), pos.getZ(), -1);
-			if (player != null && MobEvents.proxy.getWorldData().currentEvent.boss != null && this.getDistanceSq(player.posX, player.posY, player.posZ) > 60D && MobEvents.proxy.getWorldData().currentEvent.boss.getPosition().equals(this.getPos().down(2)))
+			if (player != null && WorldData.get(world).currentEvent.boss != null && this.getDistanceSq(player.posX, player.posY, player.posZ) > 60D && WorldData.get(world).currentEvent.boss.getPosition().equals(this.getPos().down(2)))
 			{
-				if (MobEvents.proxy.getWorldData().currentEvent.boss != null && MobEvents.proxy.getWorldData().currentEvent.boss.stage == 2)
-					MobEvents.proxy.getWorldData().currentEvent.boss.tpPlayerAndBoss(this.worldObj.getClosestPlayerToEntity(pos.getX(), pos.getY(), pos.getZ(), -1));
+				if (WorldData.get(world).currentEvent.boss != null && WorldData.get(world).currentEvent.boss.stage == 2)
+					WorldData.get(world).currentEvent.boss.tpPlayerAndBoss(this.worldObj.getClosestPlayerToEntity(pos.getX(), pos.getY(), pos.getZ(), -1));
 			}
 		}*/
 	}
@@ -455,7 +455,7 @@ public class TileEntityBossLoot extends TileEntityLockable implements ITickable,
 		this.beamSegments.clear();
 		//this.isComplete = true;
 		TileEntityBossLoot.BeamSegment tileentitybeacon$beamsegment;
-		if (MobEvents.proxy.getWorldData().currentEvent.getClass() != Event.class)
+		if (WorldData.get(this.worldObj).currentEvent.getClass() != Event.class)
 			tileentitybeacon$beamsegment = new TileEntityBossLoot.BeamSegment(EventFogEvent.currentColors/*EntitySheep.func_175513_a(EnumDyeColor.WHITE)*/);
 		else
 			tileentitybeacon$beamsegment = new TileEntityBossLoot.BeamSegment(new float[]{1, 1, 1});

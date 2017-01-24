@@ -1,4 +1,4 @@
-package furgl.mobEvents.common.entity.bosses.spawner;
+package furgl.mobEvents.common.entity.boss.spawner;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,9 +10,10 @@ import furgl.mobEvents.common.Events.Event;
 import furgl.mobEvents.common.block.BlockBossLoot;
 import furgl.mobEvents.common.block.ModBlocks;
 import furgl.mobEvents.common.entity.IEventMob;
-import furgl.mobEvents.common.entity.bosses.IEventBoss;
-import furgl.mobEvents.common.item.ModItems;
+import furgl.mobEvents.common.entity.ModEntities;
+import furgl.mobEvents.common.entity.boss.IEventBoss;
 import furgl.mobEvents.common.tileentity.TileEntityBossLoot;
+import furgl.mobEvents.common.world.WorldData;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.enchantment.EnchantmentHelper;
@@ -130,8 +131,7 @@ public class EntityBossSpawner extends EntityMob implements IEventMob
 	}
 
 	@Override
-	public IEntityLivingData onInitialSpawn(DifficultyInstance difficulty, IEntityLivingData livingdata)
-	{
+	public IEntityLivingData onInitialSpawn(DifficultyInstance difficulty, IEntityLivingData livingdata) {
 		if (this.event == null) //if created for book
 			return null;
 
@@ -142,25 +142,19 @@ public class EntityBossSpawner extends EntityMob implements IEventMob
 			this.posZ = (int) this.posZ + 0.5D;
 			//kill if can't see sky - check posY+1 bc pos is lowered and it rounds down
 			if (!this.worldObj.canSeeSky(new BlockPos(this.posX, this.posY+1, this.posZ)))
-			{killOnceSpawned = true;if (MobEvents.DEBUG)System.out.println("killing bc can't see sky");}
+				killOnceSpawned = true;
 			//validate existing boss
-			EntityBossSpawner boss = MobEvents.proxy.getWorldData().currentEvent.boss;
-			if (boss != null && boss.position != null && !MobEvents.proxy.world.getEntitiesWithinAABB(boss.getClass(), new AxisAlignedBB(new BlockPos(boss.position), new BlockPos(boss.position))).isEmpty())
-			{
-				System.out.println("Set boss to null");
-				MobEvents.proxy.getWorldData().currentEvent.boss = null;
-			}
+			EntityBossSpawner boss = WorldData.get(worldObj).currentEvent.boss;
+			if (boss != null && boss.position != null && !worldObj.getEntitiesWithinAABB(boss.getClass(), new AxisAlignedBB(new BlockPos(boss.position), new BlockPos(boss.position))).isEmpty())
+				WorldData.get(worldObj).currentEvent.boss = null;
 			//set this to boss
-			boss = MobEvents.proxy.getWorldData().currentEvent.boss;
+			boss = WorldData.get(worldObj).currentEvent.boss;
 			if (boss == null && !killOnceSpawned)
-			{MobEvents.proxy.getWorldData().currentEvent.boss = this; System.out.println("boss set to: "+this.getPosition());}
+				WorldData.get(worldObj).currentEvent.boss = this;
 			//existing boss - delete this and prevent more spawns
 			else if (boss != this && boss != null) {
-				if (MobEvents.DEBUG)
-					System.out.println("Existing boss: "+boss.getPosition());
-				MobEvents.proxy.getWorldData().currentEvent.removeCustomSpawns();
+				WorldData.get(worldObj).currentEvent.removeCustomSpawns();
 				killOnceSpawned = true;
-				System.out.println("killing "+this.getPosition()+" bc existing boss");
 			}
 		}
 
@@ -179,7 +173,7 @@ public class EntityBossSpawner extends EntityMob implements IEventMob
 		if (!this.isDead)
 		{
 			//stop more spawning
-			MobEvents.proxy.getWorldData().currentEvent.removeCustomSpawns();
+			WorldData.get(worldObj).currentEvent.removeCustomSpawns();
 			//add blocks
 			this.addBlocks(Blocks.COAL_ORE, 18);
 			this.addBlocks(Blocks.IRON_ORE, 18);
@@ -220,9 +214,7 @@ public class EntityBossSpawner extends EntityMob implements IEventMob
 				if (stack.getItem() != Item.getItemFromBlock(Blocks.AIR))
 					chest.setInventorySlotContents(i, stack);
 			}
-			Event.sendServerMessage(new TextComponentTranslation("A beacon appears in the distance...").setStyle(new Style().setColor(MobEvents.proxy.getWorldData().currentEvent.enumColor).setItalic(true)));
-			if (MobEvents.DEBUG)
-				System.out.println("Spawning: "+new BlockPos(this.posX, this.posY, this.posZ));
+			WorldData.get(worldObj).currentEvent.sendServerMessage(new TextComponentTranslation("A beacon appears in the distance...").setStyle(new Style().setColor(WorldData.get(worldObj).currentEvent.enumColor).setItalic(true)));
 		}
 	}
 
@@ -263,7 +255,7 @@ public class EntityBossSpawner extends EntityMob implements IEventMob
 						}
 					}
 			if (blocks == 0)
-			{this.setDead();System.out.println("killed bc no blocks found");}
+				this.setDead();
 		}
 	}
 
@@ -282,7 +274,7 @@ public class EntityBossSpawner extends EntityMob implements IEventMob
 				if (this.position != null)
 					this.setPosition(this.position.xCoord, this.position.yCoord, this.position.zCoord);
 				if (this.stage != 4 && !(this.worldObj.getBlockState(new BlockPos(this.posX, this.posY+3, this.posZ)).getBlock() instanceof BlockBossLoot) && this.ticksExisted > 1)
-				{this.setDead(); System.out.print("killed bc no loot found");}//TODO remove
+					this.setDead();
 			}
 		}
 		//update stage
@@ -292,7 +284,7 @@ public class EntityBossSpawner extends EntityMob implements IEventMob
 		{
 			if (this.isDead)
 				this.stage = 5;
-			else if (MobEvents.proxy.getWorldData().currentEvent.getClass() != this.event.getClass() && !Event.bossDefeated && MobEvents.proxy.getWorldData().currentEvent.getClass() != Event.CHAOTIC_TURMOIL.getClass())
+			else if (WorldData.get(worldObj).currentEvent.getClass() != this.event.getClass() && !Event.bossDefeated && WorldData.get(worldObj).currentEvent.getClass() != Event.CHAOTIC_TURMOIL.getClass())
 				this.stage = 4;
 			else if (!Event.bossDefeated && this.worldObj.getEntitiesWithinAABB(this.bossesToSummon.get(0).getClass(), getEntityBoundingBox().expand(65, 65, 65)).isEmpty())
 				this.stage = 1;
@@ -320,13 +312,13 @@ public class EntityBossSpawner extends EntityMob implements IEventMob
 		{
 			if (celebrateTime++ < 150)
 			{
-				if (celebrateTime == 1 && (MobEvents.proxy.getWorldData().currentEvent.getClass() == this.event.getClass() || MobEvents.proxy.getWorldData().currentEvent.getClass() == Event.CHAOTIC_TURMOIL.getClass()))
-					MobEvents.proxy.getWorldData().currentEvent.stopEvent();
+				if (celebrateTime == 1 && (WorldData.get(worldObj).currentEvent.getClass() == this.event.getClass() || WorldData.get(worldObj).currentEvent.getClass() == Event.CHAOTIC_TURMOIL.getClass()))
+					WorldData.get(worldObj).currentEvent.stopEvent();
 				if  (worldObj.rand.nextInt(15) == 0 || celebrateTime == 2)
 					this.spawnFireworks();
 			}
 			else
-			{this.setDead();System.out.println("killing bc boss defeated and done celebrating");}
+				this.setDead();
 		}
 		//spawn blocks
 		if (this.ticksExisted == 1 && !this.worldObj.isRemote && this.stage == 1 && !(this.worldObj.getBlockState(new BlockPos(this.posX, this.posY+2, this.posZ)).getBlock() instanceof BlockBossLoot) && !this.isDead)
@@ -354,12 +346,10 @@ public class EntityBossSpawner extends EntityMob implements IEventMob
 	public void setDead()
 	{
 		this.stage = 5;
-		if (!this.worldObj.isRemote && (this.worldObj.getBlockState(new BlockPos(this.posX, this.posY+2, this.posZ)).getBlock() instanceof BlockBossLoot || (MobEvents.proxy.getWorldData().currentEvent.getClass() != this.event.getClass() && MobEvents.proxy.getWorldData().currentEvent.getClass() != Event.CHAOTIC_TURMOIL.getClass())))
+		if (!this.worldObj.isRemote && (this.worldObj.getBlockState(new BlockPos(this.posX, this.posY+2, this.posZ)).getBlock() instanceof BlockBossLoot || (WorldData.get(worldObj).currentEvent.getClass() != this.event.getClass() && WorldData.get(worldObj).currentEvent.getClass() != Event.CHAOTIC_TURMOIL.getClass())))
 		{
-			if (this.position == null || MobEvents.proxy.getWorldData().currentEvent.boss == null || MobEvents.proxy.getWorldData().currentEvent.boss.position.xCoord != this.position.xCoord || MobEvents.proxy.getWorldData().currentEvent.boss.position.yCoord != this.position.yCoord || MobEvents.proxy.getWorldData().currentEvent.boss.position.zCoord != this.position.zCoord)
-				MobEvents.proxy.getWorldData().currentEvent.boss = null;
-			if (MobEvents.DEBUG)
-				System.out.println("Killing: "+new BlockPos(this));
+			if (this.position == null || WorldData.get(worldObj).currentEvent.boss == null || WorldData.get(worldObj).currentEvent.boss.position.xCoord != this.position.xCoord || WorldData.get(worldObj).currentEvent.boss.position.yCoord != this.position.yCoord || WorldData.get(worldObj).currentEvent.boss.position.zCoord != this.position.zCoord)
+				WorldData.get(worldObj).currentEvent.boss = null;
 			if (!Event.bossDefeated && this.worldObj.getBlockState(new BlockPos(this.posX, this.posY+2, this.posZ)).getBlock() instanceof BlockBossLoot)
 			{
 				for (int x=-2; x<=2; x++)
@@ -441,8 +431,6 @@ public class EntityBossSpawner extends EntityMob implements IEventMob
 				((IEventBoss) mob).setBeaconPosition();
 				mob.addPotionEffect(new PotionEffect(MobEffects.SLOWNESS, 100, 2, true, false));
 				mob.setAttackTarget(player);
-				if (MobEvents.DEBUG)
-					System.out.println("Tp'd "+mob.getName());
 			}
 			this.worldObj.playSound(player.posX, player.posY, player.posZ, SoundEvents.ENTITY_ENDERDRAGON_GROWL, SoundCategory.HOSTILE, 1.0F, 1.5F, true);
 			if (!list.isEmpty())
@@ -462,9 +450,8 @@ public class EntityBossSpawner extends EntityMob implements IEventMob
 	}
 
 	@Override
-	public ItemStack getPickedResult(RayTraceResult target)
-	{
-		return ModItems.getSpawnEgg(this);
+	public ItemStack getPickedResult(RayTraceResult target)	{
+		return ModEntities.getSpawnEgg(this.getClass());
 	}
 
 	@Override

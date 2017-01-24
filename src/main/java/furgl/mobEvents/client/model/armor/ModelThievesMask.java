@@ -1,4 +1,4 @@
-package furgl.mobEvents.client.model.item;
+package furgl.mobEvents.client.model.armor;
 
 import net.minecraft.client.model.ModelBase;
 import net.minecraft.client.model.ModelBiped;
@@ -104,5 +104,4 @@ public class ModelThievesMask extends ModelBiped
 		super.setRotationAngles(f, f1, f2, f3, f4, f5, entity);
 		ModelBase.copyModelAngles(this.bipedHead, this.frontbandana);
 	}
-
 }

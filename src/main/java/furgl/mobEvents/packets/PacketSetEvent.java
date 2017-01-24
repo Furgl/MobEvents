@@ -1,7 +1,7 @@
 package furgl.mobEvents.packets;
 
-import furgl.mobEvents.common.MobEvents;
 import furgl.mobEvents.common.Events.Event;
+import furgl.mobEvents.common.world.WorldData;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.util.IThreadListener;
 import net.minecraft.world.WorldServer;
@@ -47,8 +47,9 @@ public class PacketSetEvent implements IMessage
 				@Override
 				public void run() 
 				{
-					if (MobEvents.proxy.getWorldData().currentEvent.getClass() != Event.class)
-						MobEvents.proxy.getWorldData().currentEvent.stopEvent();
+					WorldData data = WorldData.get(ctx.getServerHandler().playerEntity.worldObj);
+					if (data.currentEvent.getClass() != Event.class)
+						data.currentEvent.stopEvent();
 					if (Event.stringToEvent(packet.event).getClass() != Event.class)
 						Event.stringToEvent(packet.event).startEvent();
 				}

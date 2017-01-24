@@ -2,7 +2,6 @@ package furgl.mobEvents.client;
 
 import furgl.mobEvents.client.gui.book.GuiEventBook;
 import furgl.mobEvents.client.gui.progressBar.GuiEventProgress;
-import furgl.mobEvents.client.model.entity.ModelZombieThief;
 import furgl.mobEvents.client.render.entity.RenderEventBossSummoner;
 import furgl.mobEvents.client.render.entity.RenderEventSkeleton;
 import furgl.mobEvents.client.render.entity.RenderEventZombie;
@@ -10,12 +9,14 @@ import furgl.mobEvents.client.render.entity.TileEntityBossLootRenderer;
 import furgl.mobEvents.common.CommonProxy;
 import furgl.mobEvents.common.MobEvents;
 import furgl.mobEvents.common.block.ModBlocks;
-import furgl.mobEvents.common.entity.EntityFireArrow;
 import furgl.mobEvents.common.entity.EntityGuiPlayer;
 import furgl.mobEvents.common.entity.SkeletalUprising.EntitySkeletonBard;
 import furgl.mobEvents.common.entity.SkeletalUprising.EntitySkeletonClone;
+import furgl.mobEvents.common.entity.SkeletalUprising.EntitySkeletonHorse;
 import furgl.mobEvents.common.entity.SkeletalUprising.EntitySkeletonPyromaniac;
+import furgl.mobEvents.common.entity.SkeletalUprising.EntitySkeletonRider;
 import furgl.mobEvents.common.entity.SkeletalUprising.EntitySkeletonSoldier;
+import furgl.mobEvents.common.entity.SkeletalUprising.EntitySkeletonThief;
 import furgl.mobEvents.common.entity.ZombieApocalypse.EntityZombieBard;
 import furgl.mobEvents.common.entity.ZombieApocalypse.EntityZombieClone;
 import furgl.mobEvents.common.entity.ZombieApocalypse.EntityZombieHorse;
@@ -26,8 +27,9 @@ import furgl.mobEvents.common.entity.ZombieApocalypse.EntityZombieRider;
 import furgl.mobEvents.common.entity.ZombieApocalypse.EntityZombieRunt;
 import furgl.mobEvents.common.entity.ZombieApocalypse.EntityZombieSummoner;
 import furgl.mobEvents.common.entity.ZombieApocalypse.EntityZombieThief;
-import furgl.mobEvents.common.entity.bosses.EntityBossZombie;
-import furgl.mobEvents.common.entity.bosses.spawner.EntityZombieBossSpawner;
+import furgl.mobEvents.common.entity.boss.EntityBossZombie;
+import furgl.mobEvents.common.entity.boss.spawner.EntityZombieBossSpawner;
+import furgl.mobEvents.common.entity.projectile.EntityPyromaniacsArrow;
 import furgl.mobEvents.common.event.EventFogEvent;
 import furgl.mobEvents.common.event.RenderThievesMaskEvent;
 import furgl.mobEvents.common.item.ModItems;
@@ -59,16 +61,32 @@ import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.client.registry.RenderingRegistry;
+import net.minecraftforge.fml.common.event.FMLInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.relauncher.ReflectionHelper;
 
-public class ClientProxy extends CommonProxy
-{
-	public World world;
+public class ClientProxy extends CommonProxy {
 	private SoundLoopedRecord bossSound;
 
 	@Override
-	public void registerRenders() 
-	{	
+	public void preInit(FMLPreInitializationEvent event) {
+		super.preInit(event);
+		this.registerModelsAndVariants();
+	}
+
+	@Override
+	public void init(FMLInitializationEvent event) {
+		super.init(event);
+		this.registerRenders();
+	}
+
+	@Override
+	public void postInit(FMLPostInitializationEvent event) {
+		super.postInit(event);
+	}
+
+	private void registerRenders() {	
 		registerEntityRenders();
 		registerBlockRenders();
 		ModItems.registerRenders();
@@ -79,8 +97,7 @@ public class ClientProxy extends CommonProxy
 	}
 
 	@SuppressWarnings("deprecation")
-	private void registerEntityRenders() 
-	{
+	private void registerEntityRenders() {
 		RenderingRegistry.registerEntityRenderingHandler(EntityGuiPlayer.class, new RenderPlayer(Minecraft.getMinecraft().getRenderManager()));
 		//Zombie Apocalypse
 		RenderingRegistry.registerEntityRenderingHandler(EntityZombieRunt.class, new RenderEventZombie(Minecraft.getMinecraft().getRenderManager()));
@@ -92,29 +109,28 @@ public class ClientProxy extends CommonProxy
 		RenderingRegistry.registerEntityRenderingHandler(EntityZombieSummoner.class, new RenderEventZombie(Minecraft.getMinecraft().getRenderManager()));
 		RenderingRegistry.registerEntityRenderingHandler(EntityZombieMinion.class, new RenderEventZombie(Minecraft.getMinecraft().getRenderManager()));
 		RenderingRegistry.registerEntityRenderingHandler(EntityZombieJumper.class, new RenderEventZombie(Minecraft.getMinecraft().getRenderManager()));
-		RenderingRegistry.registerEntityRenderingHandler(EntityZombieThief.class, new RenderEventZombie(Minecraft.getMinecraft().getRenderManager(), new ModelZombieThief()));
+		RenderingRegistry.registerEntityRenderingHandler(EntityZombieThief.class, new RenderEventZombie(Minecraft.getMinecraft().getRenderManager()/*, new ModelZombieThief()*/));
 		RenderingRegistry.registerEntityRenderingHandler(EntityBossZombie.class, new RenderEventZombie(Minecraft.getMinecraft().getRenderManager()));
 		//Skeletal Uprising
 		RenderingRegistry.registerEntityRenderingHandler(EntitySkeletonSoldier.class, new RenderEventSkeleton(Minecraft.getMinecraft().getRenderManager()));
 		RenderingRegistry.registerEntityRenderingHandler(EntitySkeletonBard.class, new RenderEventSkeleton(Minecraft.getMinecraft().getRenderManager()));
 		RenderingRegistry.registerEntityRenderingHandler(EntitySkeletonClone.class, new RenderEventSkeleton(Minecraft.getMinecraft().getRenderManager()));
 		RenderingRegistry.registerEntityRenderingHandler(EntitySkeletonPyromaniac.class, new RenderEventSkeleton(Minecraft.getMinecraft().getRenderManager()));
+		RenderingRegistry.registerEntityRenderingHandler(EntitySkeletonRider.class, new RenderEventSkeleton(Minecraft.getMinecraft().getRenderManager()));
+		RenderingRegistry.registerEntityRenderingHandler(EntitySkeletonHorse.class, new RenderHorse(Minecraft.getMinecraft().getRenderManager(), new ModelHorse(), 0.75f));
+		RenderingRegistry.registerEntityRenderingHandler(EntitySkeletonThief.class, new RenderEventSkeleton(Minecraft.getMinecraft().getRenderManager()/*, new ModelSkeletonThief()*/));
 		//Bosses
 		RenderingRegistry.registerEntityRenderingHandler(EntityZombieBossSpawner.class, new RenderEventBossSummoner(Minecraft.getMinecraft().getRenderManager(), null, 0));
 		//other
-		RenderingRegistry.registerEntityRenderingHandler(EntityFireArrow.class, new RenderTippedArrow(Minecraft.getMinecraft().getRenderManager()));
+		RenderingRegistry.registerEntityRenderingHandler(EntityPyromaniacsArrow.class, new RenderTippedArrow(Minecraft.getMinecraft().getRenderManager()));
 	}
 
-	@Override
-	public void registerModelsAndVariants() 
-	{
+	private void registerModelsAndVariants() {
 		ModelLoader.setCustomStateMapper(ModBlocks.bardsJukebox, (new StateMap.Builder()).ignore(new IProperty[] {BlockJukebox.HAS_RECORD}).build());
 		ModelBakery.registerItemVariants(Item.getItemFromBlock(ModBlocks.upgradedAnvil), new ResourceLocation(MobEvents.MODID+":upgraded_anvil"), new ResourceLocation(MobEvents.MODID+":upgraded_anvil_slightly_damaged"), new ResourceLocation(MobEvents.MODID+":upgraded_anvil_very_damaged"));
 	}
 
-	@Override
-	public void registerBlockRenders() 
-	{
+	private void registerBlockRenders() {
 		registerRender(ModBlocks.summonersHelm);
 		registerRender(ModBlocks.litSummonersHelm);
 		registerRender(ModBlocks.bardsJukebox);
@@ -125,44 +141,37 @@ public class ClientProxy extends CommonProxy
 		registerRender(ModBlocks.bossLoot);
 	}
 
-	public static void registerRender(Block block)
-	{	
+	private static void registerRender(Block block) {	
 		Minecraft.getMinecraft().getRenderItem().getItemModelMesher().register(Item.getItemFromBlock(block), 0, new ModelResourceLocation(MobEvents.MODID+":" + block.getUnlocalizedName().substring(5), "inventory"));
 	}
 
-	public static void registerRender(Block block, int meta, String unlocalizedName)
-	{	
+	private static void registerRender(Block block, int meta, String unlocalizedName) {	
 		Minecraft.getMinecraft().getRenderItem().getItemModelMesher().register(Item.getItemFromBlock(block), meta, new ModelResourceLocation(MobEvents.MODID+":" + unlocalizedName, "inventory"));
 	}
 
 	@Override
-	public void openBookGui(EntityPlayer player, boolean creative) 
-	{ 
+	public void openBookGui(EntityPlayer player, boolean creative) { 
 		Minecraft.getMinecraft().displayGuiScreen(new GuiEventBook(player, creative));
 	}
 
 	@Override
-	public void playSoundJukebox(SoundEvent sound, World world, BlockPos pos, float volume) 
-	{ 
+	public void playSoundJukebox(SoundEvent sound, World world, BlockPos pos, float volume) { 
 		Minecraft.getMinecraft().getSoundHandler().playSound(new SoundLoopedRecord(sound, world, pos, volume));
 	}
 
 	@Override
-	public void playSoundEntity(SoundEvent sound, Entity entity, float volume) 
-	{ 
+	public void playSoundEntity(SoundEvent sound, Entity entity, float volume) { 
 		Minecraft.getMinecraft().getSoundHandler().playSound(new SoundLoopedRecord(sound, entity, volume, false));
 	}
 
 	@Override
-	public void startBossRecord(SoundEvent sound, Entity entity, float volume) 
-	{ 
+	public void startBossRecord(SoundEvent sound, Entity entity, float volume) { 
 		this.bossSound = new SoundLoopedRecord(sound, entity, volume, false);
 		Minecraft.getMinecraft().getSoundHandler().playSound(this.bossSound);
 	}
 
 	@Override
-	public void stopBossRecord() 
-	{ 
+	public void stopBossRecord() { 
 		if (this.bossSound != null)
 		{
 			this.bossSound.donePlaying = true;
@@ -171,14 +180,12 @@ public class ClientProxy extends CommonProxy
 	}
 
 	@Override
-	public void stopSounds()
-	{
+	public void stopSounds() {
 		Minecraft.getMinecraft().getSoundHandler().stopSounds();
 	}
 
 	@Override
-	public void doubleJumpBootsTick(EntityPlayer player, ItemDoubleJumpBoots boots) 
-	{ 
+	public void doubleJumpBootsTick(EntityPlayer player, ItemDoubleJumpBoots boots) { 
 		if (!(player instanceof EntityPlayerSP))
 			return;
 		if (!boots.jumped && !player.isOnLadder() && !player.onGround && ((EntityPlayerSP)player).movementInput.jump && ((int)ReflectionHelper.getPrivateValue(EntityLivingBase.class, player, 63)) == 0) { //jumpTicks
@@ -191,8 +198,7 @@ public class ClientProxy extends CommonProxy
 	}
 
 	@Override
-	public void thievesMaskTick(EntityPlayer player, ItemThievesMask mask) 
-	{ 
+	public void thievesMaskTick(EntityPlayer player, ItemThievesMask mask) { 
 		if (!(player instanceof EntityGuiPlayer))
 			return;
 		if (((EntityGuiPlayer) player).book.displayTicks % 90 == 0)
@@ -202,5 +208,4 @@ public class ClientProxy extends CommonProxy
 		else
 			player.setSneaking(false);
 	}
-
 }

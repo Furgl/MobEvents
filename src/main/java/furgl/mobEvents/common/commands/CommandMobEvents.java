@@ -5,8 +5,8 @@ import java.util.List;
 
 import org.apache.commons.lang3.math.NumberUtils;
 
-import furgl.mobEvents.common.MobEvents;
 import furgl.mobEvents.common.Events.Event;
+import furgl.mobEvents.common.world.WorldData;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
@@ -95,16 +95,16 @@ public class CommandMobEvents implements ICommand
 			Event event = Event.stringToEvent(args[1].replace("_", " "));
 			if (event.getClass() != Event.class)
 			{
-				MobEvents.proxy.getWorldData().currentEvent.stopEvent();
+				WorldData.get(sender.getEntityWorld()).currentEvent.stopEvent();
 				event.startEvent();
 			}
 			else if (args[1].equalsIgnoreCase("none"))
-				MobEvents.proxy.getWorldData().currentEvent.stopEvent();				
+				WorldData.get(sender.getEntityWorld()).currentEvent.stopEvent();				
 		}
 		else if (args.length == 2 && args[0].equalsIgnoreCase("setWave"))
 		{
-			if (NumberUtils.isNumber(args[1]) && Integer.valueOf(args[1]) >= 0 && Integer.valueOf(args[1]) <= 4 && MobEvents.proxy.getWorldData().currentEvent.getClass() != Event.class)
-				MobEvents.proxy.getWorldData().currentEvent.startWave(Integer.valueOf(args[1]));
+			if (NumberUtils.isNumber(args[1]) && Integer.valueOf(args[1]) >= 0 && Integer.valueOf(args[1]) <= 4 && WorldData.get(sender.getEntityWorld()).currentEvent.getClass() != Event.class)
+				WorldData.get(sender.getEntityWorld()).currentEvent.startWave(Integer.valueOf(args[1]));
 			else
 				sender.addChatMessage(new TextComponentTranslation("Wave must be between 1 and 4 and can only be changed during an event.").setStyle(new Style().setColor(badColor)));
 		}
@@ -112,8 +112,8 @@ public class CommandMobEvents implements ICommand
 		{
 			if (NumberUtils.isNumber(args[1]) && Integer.valueOf(args[1]) >= 0 && Integer.valueOf(args[1]) <= 100)
 			{
-				MobEvents.proxy.getWorldData().eventChance = Integer.valueOf(args[1]);
-				MobEvents.proxy.getWorldData().markDirty();
+				WorldData.get(sender.getEntityWorld()).eventChance = Integer.valueOf(args[1]);
+				WorldData.get(sender.getEntityWorld()).markDirty();
 				sender.addChatMessage(new TextComponentTranslation("Chance of Mob Events occurring now set to: "+Integer.valueOf(args[1])).setStyle(new Style().setColor(goodColor)));
 			}
 			else
@@ -123,8 +123,8 @@ public class CommandMobEvents implements ICommand
 		{
 			for (int i=0; i<lengths.size(); i++) {
 				if (args[1].equalsIgnoreCase(lengths.get(i))) {
-					MobEvents.proxy.getWorldData().eventLength = i;
-					MobEvents.proxy.getWorldData().markDirty();
+					WorldData.get(sender.getEntityWorld()).eventLength = i;
+					WorldData.get(sender.getEntityWorld()).markDirty();
 					sender.addChatMessage(new TextComponentTranslation("Length of Mob Events now set to: "+lengths.get(i)).setStyle(new Style().setColor(goodColor)));
 				}
 			}
@@ -133,8 +133,8 @@ public class CommandMobEvents implements ICommand
 		{
 			for (int i=0; i<lengths.size(); i++) {
 				if (args[1].equalsIgnoreCase(keepInventory.get(i))) {
-					MobEvents.proxy.getWorldData().keepInventory = i;
-					MobEvents.proxy.getWorldData().markDirty();
+					WorldData.get(sender.getEntityWorld()).keepInventory = i;
+					WorldData.get(sender.getEntityWorld()).markDirty();
 					sender.addChatMessage(new TextComponentTranslation("Keep Inventory Gamerule will be set to true: "+keepInventory.get(i)).setStyle(new Style().setColor(goodColor)));
 				}
 			}

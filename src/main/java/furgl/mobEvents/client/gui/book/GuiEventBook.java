@@ -19,14 +19,16 @@ import furgl.mobEvents.common.Events.Event;
 import furgl.mobEvents.common.entity.EntityGuiPlayer;
 import furgl.mobEvents.common.entity.IEventMob;
 import furgl.mobEvents.common.entity.SkeletalUprising.EntitySkeletonClone;
+import furgl.mobEvents.common.entity.SkeletalUprising.EntitySkeletonRider;
 import furgl.mobEvents.common.entity.ZombieApocalypse.EntityZombieClone;
 import furgl.mobEvents.common.entity.ZombieApocalypse.EntityZombieRider;
-import furgl.mobEvents.common.entity.bosses.IEventBoss;
-import furgl.mobEvents.common.entity.bosses.spawner.EntityBossSpawner;
-import furgl.mobEvents.common.entity.bosses.spawner.EntityZombieBossSpawner;
+import furgl.mobEvents.common.entity.boss.IEventBoss;
+import furgl.mobEvents.common.entity.boss.spawner.EntityBossSpawner;
+import furgl.mobEvents.common.entity.boss.spawner.EntityZombieBossSpawner;
 import furgl.mobEvents.common.event.EventFogEvent;
 import furgl.mobEvents.common.item.ModItems;
 import furgl.mobEvents.common.item.drops.IEventItem;
+import furgl.mobEvents.common.world.WorldData;
 import furgl.mobEvents.packets.PacketGiveItem;
 import furgl.mobEvents.packets.PacketSetCurrentPagesAndTabs;
 import furgl.mobEvents.packets.PacketSetEvent;
@@ -114,14 +116,14 @@ public class GuiEventBook extends GuiScreen
 	private IEventBoss guiBoss;
 	/**Current boss being displayed in gui*/
 	private int currentBoss;
-	/**Player index in MobEvents.proxy.getWorldData()*/
+	/**Player index in WorldData.get(Minecraft.getMinecraft().theWorld)*/
 	private int index;
 	/**Current item being rendered*/
 	public ItemStack stack;
 
 	public GuiEventBook(EntityPlayer player, boolean creative)
 	{
-		index = MobEvents.proxy.getWorldData().getPlayerIndex(player.getDisplayNameString());
+		index = WorldData.get(Minecraft.getMinecraft().theWorld).getPlayerIndex(player.getDisplayNameString());
 		if (creative)
 		{
 			this.introPages.add("Creative");
@@ -129,8 +131,8 @@ public class GuiEventBook extends GuiScreen
 		}
 		this.editingPlayer = player;
 		this.creative = creative;
-		this.currentPage = creative ? MobEvents.proxy.getWorldData().currentCreativePages.get(index) : MobEvents.proxy.getWorldData().currentPages.get(index);
-		this.currentTab = creative ? MobEvents.proxy.getWorldData().currentCreativeTabs.get(index) : MobEvents.proxy.getWorldData().currentTabs.get(index);
+		this.currentPage = creative ? WorldData.get(Minecraft.getMinecraft().theWorld).currentCreativePages.get(index) : WorldData.get(Minecraft.getMinecraft().theWorld).currentPages.get(index);
+		this.currentTab = creative ? WorldData.get(Minecraft.getMinecraft().theWorld).currentCreativeTabs.get(index) : WorldData.get(Minecraft.getMinecraft().theWorld).currentTabs.get(index);
 		unlockedEntities = new ArrayList<ArrayList<IEventMob>>();
 		unlockedItems = new ArrayList<IEventItem>();
 		maxProgress = new ArrayList<Integer>();
@@ -139,7 +141,7 @@ public class GuiEventBook extends GuiScreen
 			this.unlockedItems = ModItems.drops;
 		else
 		{
-			for (String itemName : MobEvents.proxy.getWorldData().unlockedItems.get(index))
+			for (String itemName : WorldData.get(Minecraft.getMinecraft().theWorld).unlockedItems.get(index))
 			{
 				for (IEventItem item : ModItems.drops)
 					if (itemName.equalsIgnoreCase(item.getName()))
@@ -165,7 +167,7 @@ public class GuiEventBook extends GuiScreen
 					for (IEventMob mob : Event.allEvents.get(i).mobs) //iterate through mobs in event
 					{
 						this.maxProgress.add(0);
-						for (String entity : MobEvents.proxy.getWorldData().unlockedEntities.get(index)) //iterate through unlockedEntities in world data 
+						for (String entity : WorldData.get(Minecraft.getMinecraft().theWorld).unlockedEntities.get(index)) //iterate through unlockedEntities in world data 
 						{
 							if (entity.equalsIgnoreCase(((Entity) mob).getName())) 
 								entities.add(mob);
@@ -254,12 +256,12 @@ public class GuiEventBook extends GuiScreen
 		for (int i=0; i<ModItems.drops.size(); i++)
 		{
 			this.buttonItemPages.get(i).visible = this.currentPage == 0 && this.currentTab == 1;
-			this.buttonItemPages.get(i).enabled = creative || MobEvents.proxy.getWorldData().unlockedItems.get(index).contains(ModItems.drops.get(i).getName());
+			this.buttonItemPages.get(i).enabled = creative || WorldData.get(Minecraft.getMinecraft().theWorld).unlockedItems.get(index).contains(ModItems.drops.get(i).getName());
 		}
 		if (currentTab == 0)
 			buttonNextPage.visible = currentPage < this.numIntroPages;
 		else if (currentTab == 1)
-			buttonNextPage.visible = currentPage < this.unlockedItems.size();//MobEvents.proxy.getWorldData().unlockedItems.get(index).size();//ModItems.drops.size();
+			buttonNextPage.visible = currentPage < this.unlockedItems.size();//WorldData.get(Minecraft.getMinecraft().theWorld).unlockedItems.get(index).size();//ModItems.drops.size();
 		else
 			buttonNextPage.visible = currentPage < this.unlockedEntities.get(currentTab-numNonEventTabs).size() && this.currentTab != this.buttonTabs.size()-1;
 		buttonPreviousPage.visible = currentPage > 0;
@@ -279,7 +281,7 @@ public class GuiEventBook extends GuiScreen
 			}
 		}
 		this.buttonStartEvent.visible = this.creative && this.currentTab > numNonEventTabs-1 && this.currentPage == 0;
-		this.buttonWave.visible = this.creative && this.currentTab > numNonEventTabs-1 && this.currentPage == 0 && Event.allEvents.get(this.currentTab-this.numNonEventTabs).getClass() == MobEvents.proxy.getWorldData().currentEvent.getClass();
+		this.buttonWave.visible = this.creative && this.currentTab > numNonEventTabs-1 && this.currentPage == 0 && Event.allEvents.get(this.currentTab-this.numNonEventTabs).getClass() == WorldData.get(Minecraft.getMinecraft().theWorld).currentEvent.getClass();
 		this.buttonSummonMob.visible = this.creative && this.currentTab > numNonEventTabs-1 && this.currentPage > 0;
 		this.buttonGiveItem.visible = this.creative && this.currentTab < numNonEventTabs && this.nonEventTabs.get(this.currentTab).equals("Items") && this.currentPage > 0;
 	}
@@ -371,7 +373,7 @@ public class GuiEventBook extends GuiScreen
 			mc.getRenderManager().setPlayerViewY(-20f);
 			if (entity.worldObj == null)
 				entity.worldObj = this.editingPlayer.worldObj;
-			if (entity instanceof EntityZombieRider) {
+			if (entity instanceof EntityZombieRider || entity instanceof EntitySkeletonRider) {
 				entity.hurtTime = 0;
 				((EntityLiving)entity.getRidingEntity()).rotationYawHead = 0.0F;
 				((EntityLiving)entity.getRidingEntity()).renderYawOffset = 0.0F;
@@ -651,7 +653,7 @@ public class GuiEventBook extends GuiScreen
 			{
 				String title = "Events";
 				String text1 = "Events typically begin and end with the day/night cycle.\n\n"
-						+ "Events currently have a "+MobEvents.proxy.getWorldData().eventChance+"% chance of occurring at the start of each day/night cycle   (can be changed in config).";
+						+ "Events currently have a "+WorldData.get(Minecraft.getMinecraft().theWorld).eventChance+"% chance of occurring at the start of each day/night cycle   (can be changed in config).";
 				String text2 = "Events have a certain number of waves and then conclude with a boss.\n\n"
 						+ "";
 				float x = w+3-this.fontRendererObj.getStringWidth(title)/2;
@@ -713,7 +715,7 @@ public class GuiEventBook extends GuiScreen
 				this.mc.fontRendererObj.drawSplitString(text2, (int)w+85, (int)h-20, 110, 0);
 				//beacon image
 				mc.getTextureManager().bindTexture(bookPageTexture);
-				if (MobEvents.proxy.getWorldData().currentEvent.getClass() != Event.class)
+				if (WorldData.get(Minecraft.getMinecraft().theWorld).currentEvent.getClass() != Event.class)
 					GlStateManager.color(EventFogEvent.currentColors[0], EventFogEvent.currentColors[1], EventFogEvent.currentColors[2]);				
 				else
 					GlStateManager.color(1f, 1f, 1f);
@@ -876,28 +878,28 @@ public class GuiEventBook extends GuiScreen
 			if (this.currentTab > this.numNonEventTabs-1 && this.currentPage >= this.unlockedEntities.get(currentTab-numNonEventTabs).size())
 				return;
 			if (creative)
-				MobEvents.network.sendToServer(new PacketSetCurrentPagesAndTabs(MobEvents.proxy.getWorldData().currentPages.get(index), MobEvents.proxy.getWorldData().currentTabs.get(index), MobEvents.proxy.getWorldData().currentCreativePages.get(index)+1, MobEvents.proxy.getWorldData().currentCreativeTabs.get(index)));
+				MobEvents.network.sendToServer(new PacketSetCurrentPagesAndTabs(WorldData.get(Minecraft.getMinecraft().theWorld).currentPages.get(index), WorldData.get(Minecraft.getMinecraft().theWorld).currentTabs.get(index), WorldData.get(Minecraft.getMinecraft().theWorld).currentCreativePages.get(index)+1, WorldData.get(Minecraft.getMinecraft().theWorld).currentCreativeTabs.get(index)));
 			else
-				MobEvents.network.sendToServer(new PacketSetCurrentPagesAndTabs(MobEvents.proxy.getWorldData().currentPages.get(index)+1, MobEvents.proxy.getWorldData().currentTabs.get(index), MobEvents.proxy.getWorldData().currentCreativePages.get(index), MobEvents.proxy.getWorldData().currentCreativeTabs.get(index)));
+				MobEvents.network.sendToServer(new PacketSetCurrentPagesAndTabs(WorldData.get(Minecraft.getMinecraft().theWorld).currentPages.get(index)+1, WorldData.get(Minecraft.getMinecraft().theWorld).currentTabs.get(index), WorldData.get(Minecraft.getMinecraft().theWorld).currentCreativePages.get(index), WorldData.get(Minecraft.getMinecraft().theWorld).currentCreativeTabs.get(index)));
 			this.currentPage++;
 		}
 		else if (button == this.buttonPreviousPage)
 		{
 			if (creative)
-				MobEvents.network.sendToServer(new PacketSetCurrentPagesAndTabs(MobEvents.proxy.getWorldData().currentPages.get(index), MobEvents.proxy.getWorldData().currentTabs.get(index), MobEvents.proxy.getWorldData().currentCreativePages.get(index)-1, MobEvents.proxy.getWorldData().currentCreativeTabs.get(index)));
+				MobEvents.network.sendToServer(new PacketSetCurrentPagesAndTabs(WorldData.get(Minecraft.getMinecraft().theWorld).currentPages.get(index), WorldData.get(Minecraft.getMinecraft().theWorld).currentTabs.get(index), WorldData.get(Minecraft.getMinecraft().theWorld).currentCreativePages.get(index)-1, WorldData.get(Minecraft.getMinecraft().theWorld).currentCreativeTabs.get(index)));
 			else
-				MobEvents.network.sendToServer(new PacketSetCurrentPagesAndTabs(MobEvents.proxy.getWorldData().currentPages.get(index)-1, MobEvents.proxy.getWorldData().currentTabs.get(index), MobEvents.proxy.getWorldData().currentCreativePages.get(index), MobEvents.proxy.getWorldData().currentCreativeTabs.get(index)));
+				MobEvents.network.sendToServer(new PacketSetCurrentPagesAndTabs(WorldData.get(Minecraft.getMinecraft().theWorld).currentPages.get(index)-1, WorldData.get(Minecraft.getMinecraft().theWorld).currentTabs.get(index), WorldData.get(Minecraft.getMinecraft().theWorld).currentCreativePages.get(index), WorldData.get(Minecraft.getMinecraft().theWorld).currentCreativeTabs.get(index)));
 			this.currentPage--;
 		}
 		else if (button instanceof GuiButtonTab)
 		{
 			for (int i=0; i<this.buttonTabs.size(); i++)
-				if (this.buttonTabs.get(i) == button && (i < numNonEventTabs || MobEvents.proxy.getWorldData().unlockedTabs.get(index).contains(Event.allEvents.get(buttonTabs.get(i).id-numNonEventTabs).toString()) || creative))
+				if (this.buttonTabs.get(i) == button && (i < numNonEventTabs || WorldData.get(Minecraft.getMinecraft().theWorld).unlockedTabs.get(index).contains(Event.allEvents.get(buttonTabs.get(i).id-numNonEventTabs).toString()) || creative))
 				{
 					if (creative)
-						MobEvents.network.sendToServer(new PacketSetCurrentPagesAndTabs(MobEvents.proxy.getWorldData().currentPages.get(index), MobEvents.proxy.getWorldData().currentTabs.get(index), 0, i));
+						MobEvents.network.sendToServer(new PacketSetCurrentPagesAndTabs(WorldData.get(Minecraft.getMinecraft().theWorld).currentPages.get(index), WorldData.get(Minecraft.getMinecraft().theWorld).currentTabs.get(index), 0, i));
 					else
-						MobEvents.network.sendToServer(new PacketSetCurrentPagesAndTabs(0, i, MobEvents.proxy.getWorldData().currentCreativePages.get(index), MobEvents.proxy.getWorldData().currentCreativeTabs.get(index)));
+						MobEvents.network.sendToServer(new PacketSetCurrentPagesAndTabs(0, i, WorldData.get(Minecraft.getMinecraft().theWorld).currentCreativePages.get(index), WorldData.get(Minecraft.getMinecraft().theWorld).currentCreativeTabs.get(index)));
 					this.currentTab = i;
 					this.currentPage = 0;
 					break;
@@ -912,9 +914,9 @@ public class GuiEventBook extends GuiScreen
 					if (this.unlockedEntities.get(currentTab-numNonEventTabs).get(i).equals(((GuiButtonMobPage) button).mob))
 					{
 						if (creative)
-							MobEvents.network.sendToServer(new PacketSetCurrentPagesAndTabs(MobEvents.proxy.getWorldData().currentPages.get(index), MobEvents.proxy.getWorldData().currentTabs.get(index), i+1, MobEvents.proxy.getWorldData().currentCreativeTabs.get(index)));
+							MobEvents.network.sendToServer(new PacketSetCurrentPagesAndTabs(WorldData.get(Minecraft.getMinecraft().theWorld).currentPages.get(index), WorldData.get(Minecraft.getMinecraft().theWorld).currentTabs.get(index), i+1, WorldData.get(Minecraft.getMinecraft().theWorld).currentCreativeTabs.get(index)));
 						else
-							MobEvents.network.sendToServer(new PacketSetCurrentPagesAndTabs(i+1, MobEvents.proxy.getWorldData().currentTabs.get(index), MobEvents.proxy.getWorldData().currentCreativePages.get(index), MobEvents.proxy.getWorldData().currentCreativeTabs.get(index)));
+							MobEvents.network.sendToServer(new PacketSetCurrentPagesAndTabs(i+1, WorldData.get(Minecraft.getMinecraft().theWorld).currentTabs.get(index), WorldData.get(Minecraft.getMinecraft().theWorld).currentCreativePages.get(index), WorldData.get(Minecraft.getMinecraft().theWorld).currentCreativeTabs.get(index)));
 						this.currentPage = i+1;
 						break;
 					}
@@ -923,9 +925,9 @@ public class GuiEventBook extends GuiScreen
 		}
 		else if (button instanceof GuiButtonStartEvent)
 		{
-			if (MobEvents.proxy.getWorldData().currentEvent.getClass() != Event.class)
+			if (WorldData.get(Minecraft.getMinecraft().theWorld).currentEvent.getClass() != Event.class)
 			{
-				this.editingPlayer.addChatMessage(new TextComponentTranslation("Stopped "+MobEvents.proxy.getWorldData().currentEvent.toString()+" Event.").setStyle(new Style().setItalic(true).setColor(TextFormatting.DARK_PURPLE)));
+				this.editingPlayer.addChatMessage(new TextComponentTranslation("Stopped "+WorldData.get(Minecraft.getMinecraft().theWorld).currentEvent.toString()+" Event.").setStyle(new Style().setItalic(true).setColor(TextFormatting.DARK_PURPLE)));
 				MobEvents.network.sendToServer(new PacketSetEvent(Event.EVENT.toString()));
 			}
 			if (button.displayString.equals("Start Event"))
@@ -936,10 +938,10 @@ public class GuiEventBook extends GuiScreen
 		}
 		else if (button instanceof GuiButtonWave)
 		{
-			if (MobEvents.proxy.getWorldData().currentWave + 1 > 4) 
+			if (WorldData.get(Minecraft.getMinecraft().theWorld).currentWave + 1 > 4) 
 				MobEvents.network.sendToServer(new PacketSetWave(0));
 			else 
-				MobEvents.network.sendToServer(new PacketSetWave(MobEvents.proxy.getWorldData().currentWave+1));
+				MobEvents.network.sendToServer(new PacketSetWave(WorldData.get(Minecraft.getMinecraft().theWorld).currentWave+1));
 		}
 		else if (button instanceof GuiButtonSummonMob)
 		{
@@ -956,9 +958,9 @@ public class GuiEventBook extends GuiScreen
 				if (this.introPages.get(i).equals(button.displayString))
 				{
 					if (creative)
-						MobEvents.network.sendToServer(new PacketSetCurrentPagesAndTabs(MobEvents.proxy.getWorldData().currentPages.get(index), MobEvents.proxy.getWorldData().currentTabs.get(index), i+1, MobEvents.proxy.getWorldData().currentCreativeTabs.get(index)));
+						MobEvents.network.sendToServer(new PacketSetCurrentPagesAndTabs(WorldData.get(Minecraft.getMinecraft().theWorld).currentPages.get(index), WorldData.get(Minecraft.getMinecraft().theWorld).currentTabs.get(index), i+1, WorldData.get(Minecraft.getMinecraft().theWorld).currentCreativeTabs.get(index)));
 					else
-						MobEvents.network.sendToServer(new PacketSetCurrentPagesAndTabs(i+1, MobEvents.proxy.getWorldData().currentTabs.get(index), MobEvents.proxy.getWorldData().currentCreativePages.get(index), MobEvents.proxy.getWorldData().currentCreativeTabs.get(index)));
+						MobEvents.network.sendToServer(new PacketSetCurrentPagesAndTabs(i+1, WorldData.get(Minecraft.getMinecraft().theWorld).currentTabs.get(index), WorldData.get(Minecraft.getMinecraft().theWorld).currentCreativePages.get(index), WorldData.get(Minecraft.getMinecraft().theWorld).currentCreativeTabs.get(index)));
 					this.currentPage = i+1;
 					break;
 				}
@@ -971,9 +973,9 @@ public class GuiEventBook extends GuiScreen
 				if (this.unlockedItems.get(i).getName().equals(button.displayString))
 				{
 					if (creative)
-						MobEvents.network.sendToServer(new PacketSetCurrentPagesAndTabs(MobEvents.proxy.getWorldData().currentPages.get(index), MobEvents.proxy.getWorldData().currentTabs.get(index), i+1, MobEvents.proxy.getWorldData().currentCreativeTabs.get(index)));
+						MobEvents.network.sendToServer(new PacketSetCurrentPagesAndTabs(WorldData.get(Minecraft.getMinecraft().theWorld).currentPages.get(index), WorldData.get(Minecraft.getMinecraft().theWorld).currentTabs.get(index), i+1, WorldData.get(Minecraft.getMinecraft().theWorld).currentCreativeTabs.get(index)));
 					else
-						MobEvents.network.sendToServer(new PacketSetCurrentPagesAndTabs(i+1, MobEvents.proxy.getWorldData().currentTabs.get(index), MobEvents.proxy.getWorldData().currentCreativePages.get(index), MobEvents.proxy.getWorldData().currentCreativeTabs.get(index)));
+						MobEvents.network.sendToServer(new PacketSetCurrentPagesAndTabs(i+1, WorldData.get(Minecraft.getMinecraft().theWorld).currentTabs.get(index), WorldData.get(Minecraft.getMinecraft().theWorld).currentCreativePages.get(index), WorldData.get(Minecraft.getMinecraft().theWorld).currentCreativeTabs.get(index)));
 					this.currentPage = i+1;
 					break;
 				}

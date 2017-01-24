@@ -10,6 +10,7 @@ import furgl.mobEvents.common.block.BlockBossLoot;
 import furgl.mobEvents.common.block.ModBlocks;
 import furgl.mobEvents.common.event.EventFogEvent;
 import furgl.mobEvents.common.tileentity.TileEntityBossLoot;
+import furgl.mobEvents.common.world.WorldData;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockChest;
 import net.minecraft.client.model.ModelChest;
@@ -117,11 +118,11 @@ public class TileEntityBossLootRenderer extends TileEntitySpecialRenderer<TileEn
 			GlStateManager.enableRescaleNormal();
 
 			if (destroyStage < 0)//TODO set color
-				if (MobEvents.proxy.getWorldData().currentEvent.getClass() != Event.class)
+				if (WorldData.get(getWorld()).currentEvent.getClass() != Event.class)
 					GlStateManager.color(EventFogEvent.currentColors[0], EventFogEvent.currentColors[1], EventFogEvent.currentColors[2]);				
 				else
 					GlStateManager.color(1, 1, 1);
-			//GlStateManager.color(MobEvents.proxy.getWorldData().currentEvent.red-0.0f, MobEvents.proxy.getWorldData().currentEvent.green-0.0f, MobEvents.proxy.getWorldData().currentEvent.blue-0.0f, 1.0F);
+			//GlStateManager.color(WorldData.get(world).currentEvent.red-0.0f, WorldData.get(world).currentEvent.green-0.0f, WorldData.get(world).currentEvent.blue-0.0f, 1.0F);
 
 			GlStateManager.translate((float)x, (float)y + 1.0F, (float)z + 1.0F);
 			GlStateManager.scale(1.0F, -1.0F, -1.0F);

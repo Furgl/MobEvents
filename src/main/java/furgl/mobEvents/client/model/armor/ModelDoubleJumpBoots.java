@@ -1,4 +1,4 @@
-package furgl.mobEvents.client.model.item;
+package furgl.mobEvents.client.model.armor;
 
 import net.minecraft.client.model.ModelBiped;
 import net.minecraft.client.model.ModelRenderer;

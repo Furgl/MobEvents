@@ -1,6 +1,6 @@
 package furgl.mobEvents.packets;
 
-import furgl.mobEvents.common.MobEvents;
+import furgl.mobEvents.common.world.WorldData;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.util.IThreadListener;
 import net.minecraft.world.WorldServer;
@@ -45,7 +45,8 @@ public class PacketSetWave implements IMessage
 				@Override
 				public void run() 
 				{
-					MobEvents.proxy.getWorldData().currentEvent.startWave(packet.wave);
+					WorldData data = WorldData.get(ctx.getServerHandler().playerEntity.worldObj);
+					data.currentEvent.startWave(packet.wave);
 				}
 			});
 			return null;

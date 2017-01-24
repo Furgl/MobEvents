@@ -1,10 +1,10 @@
 package furgl.mobEvents.packets;
 
-import furgl.mobEvents.common.MobEvents;
 import furgl.mobEvents.common.Events.ChaoticTurmoil;
 import furgl.mobEvents.common.Events.Event;
 import furgl.mobEvents.common.entity.IEventMob;
-import furgl.mobEvents.common.entity.bosses.spawner.EntityBossSpawner;
+import furgl.mobEvents.common.entity.boss.spawner.EntityBossSpawner;
+import furgl.mobEvents.common.world.WorldData;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -64,6 +64,7 @@ public class PacketSummonMob implements IMessage
 				@Override
 				public void run() 
 				{
+					WorldData data = WorldData.get(ctx.getServerHandler().playerEntity.worldObj);
 					EntityPlayerMP player = ctx.getServerHandler().playerEntity;
 					try 
 					{//north -z = 2, west -x = 1, south +z = 0, east +x = 3
@@ -86,11 +87,11 @@ public class PacketSummonMob implements IMessage
 							break;
 						}
 						EntityLiving mob = (EntityLiving) Event.allEvents.get(packet.event).mobs.get(packet.mob).getClass().getDeclaredConstructor(World.class).newInstance(player.worldObj);
-						if (mob instanceof EntityBossSpawner || ((IEventMob) mob).getEvent().getClass() == MobEvents.proxy.getWorldData().currentEvent.getClass() || MobEvents.proxy.getWorldData().currentEvent.getClass() == ChaoticTurmoil.class) {
+						if (mob instanceof EntityBossSpawner || ((IEventMob) mob).getEvent().getClass() == data.currentEvent.getClass() || data.currentEvent.getClass() == ChaoticTurmoil.class) {
 							mob.setLocationAndAngles(x, player.posY, z, 0, 0);//needs to be done before initial spawn for boss spawners
 							mob.onInitialSpawn(null, null);//needs to be done to get name
 						}
-						if (((IEventMob) mob).getEvent().getClass() == MobEvents.proxy.getWorldData().currentEvent.getClass() || MobEvents.proxy.getWorldData().currentEvent.getClass() == ChaoticTurmoil.class) {
+						if (((IEventMob) mob).getEvent().getClass() == data.currentEvent.getClass() || data.currentEvent.getClass() == ChaoticTurmoil.class) {
 							player.worldObj.spawnEntityInWorld(mob);
 							player.addChatMessage(new TextComponentTranslation("Summoned "+mob.getName()+".").setStyle(new Style().setItalic(true).setColor(TextFormatting.DARK_PURPLE)));
 						}

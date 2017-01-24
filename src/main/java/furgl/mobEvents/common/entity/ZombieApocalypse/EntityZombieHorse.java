@@ -1,9 +1,9 @@
 package furgl.mobEvents.common.entity.ZombieApocalypse;
 
-import furgl.mobEvents.common.MobEvents;
 import furgl.mobEvents.common.Events.Event;
 import furgl.mobEvents.common.Events.ZombieApocalypse;
-import furgl.mobEvents.common.item.ModItems;
+import furgl.mobEvents.common.entity.ModEntities;
+import furgl.mobEvents.common.world.WorldData;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.IEntityLivingData;
 import net.minecraft.entity.SharedMonsterAttributes;
@@ -35,9 +35,8 @@ public class EntityZombieHorse extends EntityHorse
 	}
 	
 	@Override
-	public ItemStack getPickedResult(RayTraceResult target)
-	{
-		return new ItemStack(ModItems.zombieRiderEgg);
+	public ItemStack getPickedResult(RayTraceResult target)	{
+		return ModEntities.getSpawnEgg(this.getClass());
 	}
 
 	protected boolean canDespawn()
@@ -60,7 +59,7 @@ public class EntityZombieHorse extends EntityHorse
 			}
 		}
 
-		if (this.getRidingEntity() instanceof EntityZombieRider && this.ticksExisted % 20 == 0 && MobEvents.proxy.getWorldData().currentEvent.getClass() != ZombieApocalypse.class && !this.worldObj.isRemote && MobEvents.proxy.getWorldData().currentEvent.getClass() != Event.CHAOTIC_TURMOIL.getClass())
+		if (this.getRidingEntity() instanceof EntityZombieRider && this.ticksExisted % 20 == 0 && WorldData.get(worldObj).currentEvent.getClass() != ZombieApocalypse.class && !this.worldObj.isRemote && WorldData.get(worldObj).currentEvent.getClass() != Event.CHAOTIC_TURMOIL.getClass())
 			this.dealFireDamage((int) (this.getMaxHealth()/3));
 
 		if (this.attackTime > 0)

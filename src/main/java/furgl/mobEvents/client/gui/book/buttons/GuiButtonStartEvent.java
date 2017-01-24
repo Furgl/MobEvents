@@ -1,8 +1,8 @@
 package furgl.mobEvents.client.gui.book.buttons;
 
 import furgl.mobEvents.client.gui.book.GuiEventBook;
-import furgl.mobEvents.common.MobEvents;
 import furgl.mobEvents.common.Events.Event;
+import furgl.mobEvents.common.world.WorldData;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.GuiButton;
@@ -28,7 +28,7 @@ public class GuiButtonStartEvent extends GuiButton
 	{
 		if (this.visible)
 		{
-			if (Event.allEvents.get(book.currentTab-book.numNonEventTabs).getClass() == MobEvents.proxy.getWorldData().currentEvent.getClass())
+			if (Event.allEvents.get(book.currentTab-book.numNonEventTabs).getClass() == WorldData.get(Minecraft.getMinecraft().theWorld).currentEvent.getClass())
 				this.displayString = "Stop Event";
 			else
 				this.displayString = "Start Event";

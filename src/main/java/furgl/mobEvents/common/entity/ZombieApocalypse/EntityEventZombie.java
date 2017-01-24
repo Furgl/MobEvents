@@ -6,9 +6,11 @@ import furgl.mobEvents.common.MobEvents;
 import furgl.mobEvents.common.Events.ChaoticTurmoil;
 import furgl.mobEvents.common.Events.Event;
 import furgl.mobEvents.common.entity.IEventMob;
-import furgl.mobEvents.common.entity.bosses.EntityBossZombie;
+import furgl.mobEvents.common.entity.ModEntities;
+import furgl.mobEvents.common.entity.boss.EntityBossZombie;
 import furgl.mobEvents.common.item.ModItems;
 import furgl.mobEvents.common.sound.ModSoundEvents;
+import furgl.mobEvents.common.world.WorldData;
 import net.minecraft.block.Block;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.EntityLivingBase;
@@ -17,6 +19,7 @@ import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.ai.EntityAIHurtByTarget;
 import net.minecraft.entity.ai.EntityAIMoveThroughVillage;
 import net.minecraft.entity.ai.EntityAINearestAttackableTarget;
+import net.minecraft.entity.monster.EntityIronGolem;
 import net.minecraft.entity.monster.EntityPigZombie;
 import net.minecraft.entity.monster.EntityZombie;
 import net.minecraft.entity.player.EntityPlayer;
@@ -57,60 +60,53 @@ public class EntityEventZombie extends EntityZombie implements IEventMob
 	/**Wave that mob thinks it is currently*/
 	public int currentWave;
 
-	public EntityEventZombie(World world) 
-	{
+	public EntityEventZombie(World world) {
 		super(world);
 		this.setEquipmentBasedOnDifficulty(null);
 		this.setBookDescription();
 	}
 
-	public void setBookDescription()
-	{
+	public void setBookDescription() {
 		this.bookDescription = "";
 		this.bookDrops = new ArrayList<ItemStack>();
 	}
-//TODO REMOVE ATTACK VILLAGER AI
+	
 	@Override
-	protected void applyEntityAI()
-	{
+	protected void applyEntityAI() {
 		this.tasks.addTask(6, new EntityAIMoveThroughVillage(this, 1.0D, false));
 		this.targetTasks.addTask(1, new EntityAIHurtByTarget(this, true, new Class[] {EntityPigZombie.class}));
 		this.targetTasks.addTask(2, new EntityAINearestAttackableTarget(this, EntityPlayer.class, true));
+		this.targetTasks.addTask(3, new EntityAINearestAttackableTarget(this, EntityIronGolem.class, true));
 	}
 
 	@Override
-	public int getMaxSpawnedInChunk()
-	{
+	public int getMaxSpawnedInChunk() {
 		return this.maxSpawnedInChunk;
 	}
 
 	@Override
-	protected void entityInit()
-	{
+	protected void entityInit()	{
 		super.entityInit();
 		this.getDataManager().register(SUMMONED, Byte.valueOf((byte)0)); //summoned
 	}
 
 	@Override
-	public boolean processInteract(EntityPlayer player, EnumHand p_184645_2_, ItemStack stack)
-	{
+	public boolean processInteract(EntityPlayer player, EnumHand hand, ItemStack stack)	{
 		return false;
 	}
 
 	@Override
-	public void setNoAI(boolean disable)
-	{
+	public void setNoAI(boolean disable) {
 		super.setNoAI(disable);
 		this.onInitialSpawn(null, null);
 	}
 
 	@Override
-	public void onUpdate()
-	{
+	public void onUpdate() {
 		//play living sound on wave change
-		if (this.currentWave != MobEvents.proxy.getWorldData().currentWave)
+		if (this.currentWave != WorldData.get(worldObj).currentWave)
 		{
-			this.currentWave = MobEvents.proxy.getWorldData().currentWave;
+			this.currentWave = WorldData.get(worldObj).currentWave;
 			this.playLivingSound();
 		}
 
@@ -133,7 +129,7 @@ public class EntityEventZombie extends EntityZombie implements IEventMob
 		}
 
 		//damage outside of event
-		if (MobEvents.proxy.getWorldData().currentEvent.getClass() != this.getEvent().getClass() && MobEvents.proxy.getWorldData().currentEvent.getClass() != ChaoticTurmoil.class)
+		if (WorldData.get(worldObj).currentEvent.getClass() != this.getEvent().getClass() && WorldData.get(worldObj).currentEvent.getClass() != ChaoticTurmoil.class)
 		{
 			if (this.worldObj.isRemote)
 				this.worldObj.spawnParticle(EnumParticleTypes.SMOKE_LARGE, this.posX+rand.nextDouble()-0.5D, this.posY+rand.nextDouble(), this.posZ+rand.nextDouble()-0.5D, 0, 0, 0, 0);
@@ -223,13 +219,11 @@ public class EntityEventZombie extends EntityZombie implements IEventMob
 	}
 
 	@Override //prevents fire damage in sun
-	public float getBrightness(float partialTicks)
-	{
+	public float getBrightness(float partialTicks) {
 		return super.getBrightness(partialTicks);//0.0f;
 	}
 
-	public void applyBardsBoost()
-	{
+	public void applyBardsBoost() {
 		if (this instanceof EntityBossZombie)
 			return;
 		this.bardsBoost = 150;
@@ -241,32 +235,27 @@ public class EntityEventZombie extends EntityZombie implements IEventMob
 	}
 
 	@Override
-	protected float getSoundPitch()
-	{
+	protected float getSoundPitch()	{
 		return this.isChild() ? (this.rand.nextFloat() - this.rand.nextFloat()) * 0.2F + 1.2F : (this.rand.nextFloat() - this.rand.nextFloat()) * 0.2F + 1.0F;
 	}
 
 	@Override
-	protected SoundEvent getAmbientSound()
-	{
+	protected SoundEvent getAmbientSound() {
 		return (this.bardsBoost > 0 || this instanceof EntityZombieBard) ? SoundEvents.BLOCK_NOTE_SNARE : ModSoundEvents.mob_event_zombie_say;
 	}
 
 	@Override
-	protected SoundEvent getHurtSound()
-	{
+	protected SoundEvent getHurtSound()	{
 		return (this.bardsBoost > 0 || this instanceof EntityZombieBard) ? SoundEvents.BLOCK_NOTE_PLING : ModSoundEvents.mob_event_zombie_hurt;
 	}
 
 	@Override
-	protected SoundEvent getDeathSound()
-	{
+	protected SoundEvent getDeathSound() {
 		return (this.bardsBoost > 0 || this instanceof EntityZombieBard) ? SoundEvents.BLOCK_NOTE_SNARE : ModSoundEvents.mob_event_zombie_death;
 	}
 
 	@Override
-	protected void playStepSound(BlockPos pos, Block blockIn)
-	{
+	protected void playStepSound(BlockPos pos, Block blockIn) {
 		if (this.bardsBoost > 0 || this instanceof EntityZombieBard)
 			this.playSound(SoundEvents.BLOCK_NOTE_HARP, 1.0F, rand.nextFloat()+1F);
 		else
@@ -274,21 +263,18 @@ public class EntityEventZombie extends EntityZombie implements IEventMob
 	}
 
 	@Override
-	protected void applyEntityAttributes()
-	{
+	protected void applyEntityAttributes() {
 		super.applyEntityAttributes();
 		this.getEntityAttribute(SharedMonsterAttributes.FOLLOW_RANGE).setBaseValue(60.0D);
 	}
 
 	@Override
-	public ItemStack getPickedResult(RayTraceResult target)
-	{
-		return ModItems.getSpawnEgg(this);
+	public ItemStack getPickedResult(RayTraceResult target)	{
+		return ModEntities.getSpawnEgg(this.getClass());
 	}
 
 	@Override
-	protected void setEquipmentBasedOnDifficulty(DifficultyInstance difficulty) 
-	{ 
+	protected void setEquipmentBasedOnDifficulty(DifficultyInstance difficulty) { 
 		for (int i=0; i<5; i++)
 			this.setDropChance(EntityEquipmentSlot.values()[i], 0.01f);
 		if (this.armorColor > -1)
@@ -297,17 +283,15 @@ public class EntityEventZombie extends EntityZombie implements IEventMob
 					((ItemArmor)this.getItemStackFromSlot(EntityEquipmentSlot.values()[i]).getItem()).setColor(this.getItemStackFromSlot(EntityEquipmentSlot.values()[i]), this.armorColor);
 	}
 
-	private void addRandomDrop()
-	{
+	private void addRandomDrop() {
 		if (bookDrops != null && bookDrops.size() > 0)
 			this.entityDropItem(bookDrops.get(rand.nextInt(bookDrops.size())), 0);
 	}
 
 	@Override
-	public IEntityLivingData onInitialSpawn(DifficultyInstance difficulty, IEntityLivingData livingdata)
-	{
-		if (MobEvents.proxy.world != null)
-			this.currentWave = MobEvents.proxy.getWorldData().currentWave;
+	public IEntityLivingData onInitialSpawn(DifficultyInstance difficulty, IEntityLivingData livingdata) {
+		if (worldObj != null)
+			this.currentWave = WorldData.get(worldObj).currentWave;
 		this.setChild(false);
 		this.setVillagerType(null);
 		this.setEquipmentBasedOnDifficulty(difficulty);
@@ -315,11 +299,10 @@ public class EntityEventZombie extends EntityZombie implements IEventMob
 	}
 
 	@Override
-	public void onDeath(DamageSource cause)
-	{
+	public void onDeath(DamageSource cause)	{
 		if (!this.worldObj.isRemote && cause.getEntity() instanceof EntityPlayer)
 		{
-			MobEvents.proxy.getWorldData().currentEvent.increaseProgress(progressOnDeath);
+			WorldData.get(worldObj).currentEvent.increaseProgress(progressOnDeath);
 			//drop random drop
 			int i = EnchantmentHelper.getLootingModifier((EntityLivingBase)cause.getEntity());
 			if (this.recentlyHit > 0 && this.rand.nextInt(100) < (30 + i * 5))
@@ -336,52 +319,48 @@ public class EntityEventZombie extends EntityZombie implements IEventMob
 		super.onDeath(cause);
 	}
 
-	private void unlockEntityInBook(EntityPlayer player)
-	{ 
-		int index = MobEvents.proxy.getWorldData().getPlayerIndex(player.getDisplayNameString());
+	private void unlockEntityInBook(EntityPlayer player) { 
+		int index = WorldData.get(worldObj).getPlayerIndex(player.getDisplayNameString());
 		if (!this.isNonBoss())
 		{
 			if (!Event.bossDefeated)
 				return;
-			for (String entity : MobEvents.proxy.getWorldData().unlockedEntities.get(index))
+			for (String entity : WorldData.get(worldObj).unlockedEntities.get(index))
 				if (entity.equals("Zombie Boss"))
 					return;
-			MobEvents.proxy.getWorldData().unlockedEntities.get(index).add("Zombie Boss");
-			MobEvents.proxy.getWorldData().markDirty();
+			WorldData.get(worldObj).unlockedEntities.get(index).add("Zombie Boss");
+			WorldData.get(worldObj).markDirty();
 			if (player.worldObj.isRemote)
 				Event.displayUnlockMessage(player, "Unlocked information about the Zombie Boss in the Event Book");
 		}
 		else 
 		{
-			for (String entity : MobEvents.proxy.getWorldData().unlockedEntities.get(index))
+			for (String entity : WorldData.get(worldObj).unlockedEntities.get(index))
 				if (entity.equals(this.getName()))
 					return;
-			MobEvents.proxy.getWorldData().unlockedEntities.get(index).add(this.getName());
-			MobEvents.proxy.getWorldData().markDirty();
+			WorldData.get(worldObj).unlockedEntities.get(index).add(this.getName());
+			WorldData.get(worldObj).markDirty();
 			if (player.worldObj.isRemote)
 				Event.displayUnlockMessage(player, "Unlocked information about the "+this.getName()+" in the Event Book");
 		}
 	}
 
 	@Override
-	protected boolean canDropLoot()
-	{
-		if (MobEvents.proxy.getWorldData().currentEvent.getClass() != this.getEvent().getClass() && MobEvents.proxy.getWorldData().currentEvent.getClass() != ChaoticTurmoil.class)
+	protected boolean canDropLoot()	{
+		if (WorldData.get(worldObj).currentEvent.getClass() != this.getEvent().getClass() && WorldData.get(worldObj).currentEvent.getClass() != ChaoticTurmoil.class)
 			return false;
 		else
 			return true;
 	}
 
-	protected void addDrops(Item item, int amount)
-	{
+	protected void addDrops(Item item, int amount) {
 		if (this.bookDrops == null)
 			this.bookDrops = new ArrayList<ItemStack>();
 		for (int i=0; i<amount; i++)
 			this.bookDrops.add(new ItemStack(item));
 	}
 
-	protected void addDrops(ItemStack stack, int amount)
-	{
+	protected void addDrops(ItemStack stack, int amount) {
 		if (this.bookDrops == null)
 			this.bookDrops = new ArrayList<ItemStack>();
 		for (int i=0; i<amount; i++)
@@ -389,25 +368,22 @@ public class EntityEventZombie extends EntityZombie implements IEventMob
 	}
 
 	@Override
-	public String getBookDescription() 
-	{
+	public String getBookDescription() {
 		return this.bookDescription;
 	}
 
 	@Override
-	public ArrayList<ItemStack> getBookDrops() 
-	{
+	public ArrayList<ItemStack> getBookDrops() {
 		return this.bookDrops;
 	}
 
 	@Override
-	public int getProgressOnDeath() 
-	{
+	public int getProgressOnDeath() {
 		return this.progressOnDeath;
 	}
 
 	@Override
-	public void doSpecialRender(int displayTicks) { }
+	public void doSpecialRender(int displayTicks) {}
 
 	@Override
 	public Event getEvent() {
