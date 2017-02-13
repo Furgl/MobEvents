@@ -810,7 +810,7 @@ public class GuiEventBook extends GuiScreen
 				GlStateManager.popMatrix();
 				RenderHelper.disableStandardItemLighting();
 				//render item
-				RenderHelper.enableStandardItemLighting();
+				RenderHelper.enableGUIStandardItemLighting();
 				GlStateManager.pushMatrix();
 				scale = 2f;
 				GlStateManager.translate(w - 100, h, 0);
